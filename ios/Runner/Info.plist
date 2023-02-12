@@ -16,7 +16,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>task_app</string>
+	<string>TASKAPP</string>
 	<key>CFBundlePackageType</key>
 	<string>APPLY</string>
 	<key>CFBundleShortVersionString</key>
@@ -55,8 +55,6 @@
     		<string>Editor</string>
     		<key>CFBundleURLSchemes</key>
     		<array>
-    			<!-- TODO Replace this value: -->
-    			<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
     			<string>com.googleusercontent.apps.302312792607-hpg83umn5r5k529ge5odho1l7ctoofee</string>
     		</array>
     	</dict>

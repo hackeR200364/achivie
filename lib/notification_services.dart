@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -8,7 +9,7 @@ class NotificationServices {
   final onNotifications = BehaviorSubject<String?>();
 
   AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings("notificationicon");
+      const AndroidInitializationSettings("notificationicon");
   var initializationSettingsIOS = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -17,21 +18,32 @@ class NotificationServices {
           (int id, String? title, String? body, String? payload) async {});
 
   Future init({bool initSchedule = false}) async {
-    var initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+    var status = Permission.notification.status;
 
-    await notificationsPlugin.initialize(initializationSettings,
-        onDidReceiveNotificationResponse: (payload) async {
-      onNotifications.add(payload.payload);
-    });
+    if (await status.isDenied) {
+      Permission.notification.request();
+    }
+    if (await status.isPermanentlyDenied || await status.isRestricted) {
+      openAppSettings();
+    }
+
+    if (await status.isGranted) {
+      var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
+
+      await notificationsPlugin.initialize(initializationSettings,
+          onDidReceiveNotificationResponse: (payload) async {
+        onNotifications.add(payload.payload);
+      });
+    }
   }
 
   NotificationDetails notificationDetails() {
     // final styleInformation = ();
 
-    return NotificationDetails(
+    return const NotificationDetails(
       android: AndroidNotificationDetails(
         "tasks",
         'Tasks',
@@ -47,8 +59,6 @@ class NotificationServices {
     String? body,
     String? payload,
   }) async {
-    print("showNotification");
-
     return notificationsPlugin.show(
       id,
       title,
@@ -65,8 +75,6 @@ class NotificationServices {
     required String payload,
     required DateTime dateTime,
   }) async {
-    print("scheduleNotification");
-
     return notificationsPlugin.zonedSchedule(
       id,
       title,
@@ -86,7 +94,6 @@ class NotificationServices {
   Future cancelScheduledNotification({
     required int id,
   }) async {
-    print("cancelScheduledNotification");
     notificationsPlugin.cancel(
       id,
     );

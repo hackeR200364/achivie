@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/providers/app_providers.dart';
 import 'package:task_app/providers/google_sign_in.dart';
 import 'package:task_app/styles.dart';
 
@@ -25,9 +25,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
     bool isNewUser = await StorageServices.getIsNewUser();
     await provider.googleLogin();
-    setState(() {
-      isLoading = true;
-    });
 
     final user = FirebaseAuth.instance.currentUser;
     StorageServices.setUID(user!.uid);
@@ -54,7 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(),
+        builder: (context) => const HomeScreen(),
       ),
     );
   }
@@ -70,61 +67,67 @@ class _SignUpScreenState extends State<SignUpScreen> {
             left: 15,
             right: 15,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset("assets/undraw_superhero_kguv.png"),
-              SizedBox(
-                height: 30,
-              ),
-              (isLoading)
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.backgroundColour,
-                      ),
-                    )
-                  : Container(
-                      height: 50,
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.all(5),
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.grey,
-                              spreadRadius: 2,
-                              blurRadius: 4,
+          child: Consumer<AllAppProviders>(
+            builder: (allAppProvidersContext, allAppProvidersProvider,
+                allAppProvidersChild) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/undraw_superhero_kguv.png"),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  (allAppProvidersProvider.isLoading)
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.backgroundColour,
+                          ),
+                        )
+                      : Container(
+                          height: 50,
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.all(5),
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppColors.grey,
+                                  spreadRadius: 2,
+                                  blurRadius: 4,
+                                ),
+                              ]),
+                          child: InkWell(
+                            onTap: (() {
+                              googleSignIn(context);
+                              allAppProvidersProvider.isLoadingFunc(true);
+                            }),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  "assets/google.png",
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                const Text(
+                                  "Google Login",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              ],
                             ),
-                          ]),
-                      child: InkWell(
-                        onTap: (() {
-                          googleSignIn(context);
-                        }),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              "assets/google.png",
-                              width: 30,
-                              height: 30,
-                            ),
-                            SizedBox(
-                              width: 20,
-                            ),
-                            Text(
-                              "Google Login",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-            ],
+                ],
+              );
+            },
           ),
         ),
       ),

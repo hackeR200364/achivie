@@ -22,7 +22,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskCount = 0;
   void taskCountFunc() async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
@@ -36,7 +35,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskDelete = 0;
   void taskDeleteFunc() async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
@@ -50,7 +48,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskPending = 0;
   void taskPendingFunc() async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
@@ -64,7 +61,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskBusiness = 0;
   void taskBusinessFunc() async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
@@ -78,7 +74,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskPersonal = 0;
   void taskPersonalFunc() async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
@@ -92,7 +87,6 @@ class TaskDetailsProvider extends ChangeNotifier {
   int taskCountWithType = 0;
   void taskCountWithTypeFunc(String type) async {
     String email = await StorageServices.getUserEmail();
-    bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
 
