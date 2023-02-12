@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:task_app/screens/sign_screen.dart';
 import 'package:task_app/shared_preferences.dart';
@@ -22,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     getUserSignStatus();
     super.initState();
     Timer(
-      const Duration(seconds: 5),
+      const Duration(seconds: 7),
       () => Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -44,19 +45,17 @@ class _SplashScreenState extends State<SplashScreen> {
       home: Scaffold(
         backgroundColor: AppColors.backgroundColour,
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: const [
-              Text(
-                "TASKAPP",
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          child: TextLiquidFill(
+            boxHeight: 70,
+            boxWidth: 200,
+            waveColor: Colors.white,
+            boxBackgroundColor: AppColors.backgroundColour,
+            text: 'TASKAPP',
+            textStyle: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 40,
+            ),
           ),
         ),
       ),

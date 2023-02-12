@@ -13,6 +13,7 @@ import '../providers/app_providers.dart';
 
 class NewTaskScreen extends StatefulWidget {
   NewTaskScreen({
+    super.key,
     this.taskType,
     this.taskTime,
     this.taskDate,
@@ -41,7 +42,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   late TextEditingController _notificationController;
   DateTime date = DateTime.now();
   DateTime scheduleDateTIme = DateTime.now();
-  String taskTime = "", taskDate = "", taskID = "dsds", inputDateTime = "";
+  String taskTime = "", taskDate = "", taskID = "taskID", inputDateTime = "";
   bool taskNameTapped = false, desTapped = false, loading = false;
   String selected = "Personal";
   List<String> taskType = ["Business", "Personal"];
@@ -99,7 +100,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     // bool isNewUser = await StorageServices.getIsNewUser();
 
     DocumentSnapshot userDoc = await users.doc(email).get();
-    print(userDoc.exists);
 
     taskCount = userDoc[Keys.taskCount];
     taskPending = userDoc[Keys.taskPending];
@@ -181,8 +181,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     );
   }
 
-  void pickDateTime(BuildContext context) async {}
-
   void taskDetails() {
     if (widget.taskName != null &&
         widget.taskDes != null &&
@@ -192,14 +190,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
       _taskNameController.text = widget.taskName!;
       _descriptionController.text = widget.taskDes!;
       _notificationController.text = widget.taskNoti!;
-      int prevHour = int.parse("${widget.taskTime![0]}${widget.taskTime![1]}");
-      int prevMinute =
-          int.parse("${widget.taskTime![3]}${widget.taskTime![4]}");
-      // if (int.parse(DateFormat.H().format(date)) >= prevHour ||
-      //     int.parse(DateFormat.m().format(date)) > prevMinute) {
-      //   inputDateTime =
-      //       "${DateFormat.Hm().format(date.add(Duration(minutes: 5)))} on ${DateFormat("dd/MM/yyyy").format(date)}";
-      // }
+
       editOrNew = true;
     }
   }
@@ -276,13 +267,13 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     width: MediaQuery.of(context).size.width,
                     child: Consumer<AllAppProviders>(
-                      builder: (AllAppProvidersContext, AllAppProvidersProvider,
-                          AllAppProvidersChild) {
+                      builder: (allAppProvidersContext, allAppProvidersProvider,
+                          allAppProvidersChild) {
                         return DropdownButton<String>(
                           hint: Text(
                             (widget.taskType != null)
                                 ? widget.taskType!
-                                : AllAppProvidersProvider.selectedType,
+                                : allAppProvidersProvider.selectedType,
                             style: const TextStyle(
                               color: AppColors.white,
                             ),
@@ -296,7 +287,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                             },
                           ).toList(),
                           onChanged: (value) {
-                            AllAppProvidersProvider.selectedTypeFunc(value!);
+                            allAppProvidersProvider.selectedTypeFunc(value!);
                           },
                         );
                       },
@@ -339,8 +330,8 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                     ),
                   ),
                   Consumer<AllAppProviders>(
-                    builder: (AllAppProvidersContext, AllAppProvidersProvider,
-                        AllAppProvidersChild) {
+                    builder: (allAppProvidersContext, allAppProvidersProvider,
+                        allAppProvidersChild) {
                       return InkWell(
                         onTap: (() async {
                           String initialYear = '';
@@ -394,7 +385,9 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                                 initialMinuteSelection(
                                                         date.minute) ==
                                                     45)
-                                            ? date.add(Duration(hours: 1)).hour
+                                            ? date
+                                                .add(const Duration(hours: 1))
+                                                .hour
                                             : date.hour,
                                     minute: initialMinuteSelection(
                                         DateTime.now().minute),
@@ -420,7 +413,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                           //   // "${newTime?.hour}:${newTime?.minute} on ${newDate?.day}/${newDate?.month}/${newDate?.year}"
                           // });
 
-                          String formatedTime = DateFormat.Hm().format(
+                          String formattedTime = DateFormat.Hm().format(
                             DateTime(
                               newDate.year,
                               newDate.month,
@@ -430,21 +423,19 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                             ),
                           );
 
-                          String formatedDate =
+                          String formattedDate =
                               DateFormat("dd/MM/yyyy").format(newDate);
 
-                          AllAppProvidersProvider.dateTextFunc(formatedDate);
-                          AllAppProvidersProvider.timeTextFunc(formatedTime);
-
-                          print(DateFormat.Hm().format(date));
+                          allAppProvidersProvider.dateTextFunc(formattedDate);
+                          allAppProvidersProvider.timeTextFunc(formattedTime);
 
                           if (scheduleDateTIme.difference(date).inSeconds > 0) {
                             inputDateTime =
-                                "${AllAppProvidersProvider.timeText} on ${AllAppProvidersProvider.dateText}";
+                                "${allAppProvidersProvider.timeText} on ${allAppProvidersProvider.dateText}";
                           } else {
-                            ScaffoldMessenger.of(AllAppProvidersContext)
+                            ScaffoldMessenger.of(allAppProvidersContext)
                                 .showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 backgroundColor: AppColors.white,
                                 content: Text(
                                   "Please select a date of future",
@@ -460,7 +451,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                         }),
                         child: Container(
                           alignment: Alignment.centerLeft,
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             left: 20,
                             right: 20,
                           ),
@@ -468,7 +459,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                             top: 20,
                             bottom: 15,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
                                 color: AppColors.grey,
@@ -510,36 +501,34 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                     ),
                   ),
                   Consumer<AllAppProviders>(
-                    builder: ((AllAppProvidersContext, AllAppProvidersProvider,
-                        AllAppProvidersChild) {
+                    builder: ((allAppProvidersContext, allAppProvidersProvider,
+                        allAppProvidersChild) {
                       return GestureDetector(
-                        onTap: (AllAppProvidersProvider.newTaskUploadLoading)
+                        onTap: (allAppProvidersProvider.newTaskUploadLoading)
                             ? null
                             : (() async {
                                 if (_taskNameController.text.isNotEmpty &&
                                     _notificationController.text.isNotEmpty &&
                                     inputDateTime.isNotEmpty &&
                                     _descriptionController.text.isNotEmpty) {
-                                  AllAppProvidersProvider
+                                  allAppProvidersProvider
                                       .newTaskUploadLoadingFunc(true);
-
-                                  print(taskCount);
 
                                   if (!editOrNew) {
                                     await addTask(
                                       type:
-                                          AllAppProvidersProvider.selectedType,
+                                          allAppProvidersProvider.selectedType,
                                       name: _taskNameController.text.trim(),
-                                      date: AllAppProvidersProvider.dateText,
+                                      date: allAppProvidersProvider.dateText,
                                       des: _descriptionController.text.trim(),
                                       notify:
                                           _notificationController.text.trim(),
-                                      time: AllAppProvidersProvider.timeText,
+                                      time: allAppProvidersProvider.timeText,
                                     );
                                     await updateUserDetails(
                                       updateTaskCount: taskCount,
                                       taskType:
-                                          AllAppProvidersProvider.selectedType,
+                                          allAppProvidersProvider.selectedType,
                                     );
                                   } else if (widget.userEmail != null &&
                                       widget.taskDoc != null) {
@@ -562,7 +551,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                       taskDocRefUpdate.update(
                                         {
                                           Keys.taskDate:
-                                              AllAppProvidersProvider.dateText,
+                                              allAppProvidersProvider.dateText,
                                         },
                                       );
                                     }
@@ -571,7 +560,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                       taskDocRefUpdate.update(
                                         {
                                           Keys.taskTime:
-                                              AllAppProvidersProvider.timeText,
+                                              allAppProvidersProvider.timeText,
                                         },
                                       );
                                     }
@@ -604,11 +593,11 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                         },
                                       );
                                     }
-                                    if (AllAppProvidersProvider.selectedType !=
+                                    if (allAppProvidersProvider.selectedType !=
                                         widget.taskType) {
                                       taskDocRefUpdate.update(
                                         {
-                                          Keys.taskType: AllAppProvidersProvider
+                                          Keys.taskType: allAppProvidersProvider
                                               .selectedType,
                                         },
                                       );
@@ -618,8 +607,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                         .cancelScheduledNotification(
                                       id: taskDoc[Keys.notificationID],
                                     );
-
-                                    print(scheduleDateTIme);
 
                                     NotificationServices().scheduleNotification(
                                       id: taskDoc[Keys.notificationID],
@@ -632,9 +619,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                     );
                                   }
 
-                                  print(scheduleDateTIme);
-
-                                  AllAppProvidersProvider
+                                  allAppProvidersProvider
                                       .newTaskUploadLoadingFunc(false);
                                   Navigator.pop(context);
                                 } else {
@@ -675,7 +660,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                             ),
                             child: Center(
                               child:
-                                  (AllAppProvidersProvider.newTaskUploadLoading)
+                                  (allAppProvidersProvider.newTaskUploadLoading)
                                       ? const CircularProgressIndicator(
                                           color: AppColors.backgroundColour,
                                         )
