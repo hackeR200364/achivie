@@ -63,7 +63,7 @@ class AllAppProviders extends ChangeNotifier {
 
   bool isLoading = false;
   void isLoadingFunc(bool load) async {
-    optionsVisible = load;
+    isLoading = load;
     notifyListeners();
   }
 }
