@@ -8,14 +8,10 @@ import '../shared_preferences.dart';
 class GoogleSignInProvider extends ChangeNotifier {
   final googleSignIn = GoogleSignIn();
 
-  GoogleSignInAccount? _user;
-
-  GoogleSignInAccount get user => _user!;
-
   Future googleLogin() async {
     final googleUser = await googleSignIn.signIn();
     if (googleUser == null) return;
-    _user = googleUser;
+    GoogleSignInAccount? user = googleUser;
 
     final googleAuth = await googleUser.authentication;
 
@@ -37,17 +33,20 @@ class GoogleSignInProvider extends ChangeNotifier {
     DocumentSnapshot<Map<String, dynamic>> document = await FirebaseFirestore
         .instance
         .collection("users")
-        .doc(_user!.email)
+        .doc(user.email)
         .get();
 
     if (document.exists) {
     } else {
-      FirebaseFirestore.instance.collection("users").doc(_user!.email).set(
+      FirebaseFirestore.instance.collection("users").doc(user.email).set(
         {
-          Keys.taskBusiness: 0,
-          Keys.taskPersonal: 0,
-          Keys.taskPending: 0,
+          Keys.userName: user.displayName,
+          Keys.userEmail: user.email,
+          Keys.uid: user.id,
           Keys.taskDone: 0,
+          Keys.taskPending: 0,
+          Keys.taskPersonal: 0,
+          Keys.taskBusiness: 0,
           Keys.taskCount: 0,
           Keys.taskDelete: 0,
         },
@@ -58,8 +57,9 @@ class GoogleSignInProvider extends ChangeNotifier {
   }
 
   Future logOut() async {
-    await GoogleSignIn().signOut();
+    await googleSignIn.signOut();
     await FirebaseAuth.instance.signOut();
     StorageServices.setSignStatus(false);
+    notifyListeners();
   }
 }

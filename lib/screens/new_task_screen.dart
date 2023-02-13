@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:task_app/notification_services.dart';
 import 'package:task_app/shared_preferences.dart';
 import 'package:task_app/styles.dart';
-import 'package:timezone/data/latest.dart' as tz;
 
 import '../providers/app_providers.dart';
 
@@ -62,11 +61,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     _descriptionController = TextEditingController();
     _notificationController = TextEditingController();
     taskDetails();
-    tz.initializeTimeZones();
     super.initState();
-    NotificationServices().init();
-    listenNotification();
-    // notificationServices.initialiseNotification();
   }
 
   @override
@@ -76,16 +71,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     _notificationController.dispose();
     super.dispose();
   }
-
-  void listenNotification() =>
-      NotificationServices().onNotifications.stream.listen((event) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => NewTaskScreen(),
-          ),
-        );
-      });
 
   Future<void> addTask({
     required String type,
@@ -107,7 +92,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
     taskPersonal = userDoc[Keys.taskPersonal];
     taskID = "TID${(taskCount + 1).toString()}";
 
-    await NotificationServices().scheduleNotification(
+    await NotificationServices().createScheduledTaskNotification(
       id: taskCount + 1,
       title: _notificationController.text,
       body: "${_taskNameController.text}\n${_descriptionController.text}",
@@ -128,6 +113,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   }
 
   Future<void> updateUserDetails({
+    required AllAppProviders loadingProvider,
     required int updateTaskCount,
     required String taskType,
   }) async {
@@ -157,28 +143,19 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
       },
     );
 
-    // String updateAnotherTaskType =
-    //     (taskType == "Business") ? Keys.taskPersonal : Keys.taskBusiness;
-    // users.doc(email).update(
-    //   {
-    //     updateAnotherTaskType: (updateAnotherTaskType == Keys.taskPersonal)
-    //         ? taskBusiness
-    //         : taskPersonal,
-    //   },
-    // );
-
     await users.doc(email).update(
       {
         Keys.taskDone: userDoc[Keys.taskDone],
       },
-    ).whenComplete(
-      () => AwesomeDialog(
+    ).whenComplete(() {
+      loadingProvider.newTaskUploadLoadingFunc(false);
+      return AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         title: "Hurray",
         desc: "Your next goal is stored successfully",
-      ).show(),
-    );
+      ).show();
+    });
   }
 
   void taskDetails() {
@@ -405,14 +382,6 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                             newTime.minute,
                           );
 
-                          // print(DateFormat.m().format(scheduleDateTIme));
-
-                          // setState(() {
-                          //   _dateAndTimeController.text =
-                          //       AllAppProvidersProvider.dateText;
-                          //   // "${newTime?.hour}:${newTime?.minute} on ${newDate?.day}/${newDate?.month}/${newDate?.year}"
-                          // });
-
                           String formattedTime = DateFormat.Hm().format(
                             DateTime(
                               newDate.year,
@@ -526,6 +495,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                       time: allAppProvidersProvider.timeText,
                                     );
                                     await updateUserDetails(
+                                      loadingProvider: allAppProvidersProvider,
                                       updateTaskCount: taskCount,
                                       taskType:
                                           allAppProvidersProvider.selectedType,
@@ -546,69 +516,114 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                         .collection("tasks")
                                         .doc(widget.taskDoc);
 
-                                    if (inputDateTime !=
-                                        "${widget.taskTime!} on ${widget.taskDate}") {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskDate:
-                                              allAppProvidersProvider.dateText,
-                                        },
-                                      );
-                                    }
-                                    if (inputDateTime !=
-                                        "${widget.taskTime!} on ${widget.taskDate}") {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskTime:
-                                              allAppProvidersProvider.timeText,
-                                        },
-                                      );
-                                    }
-                                    if (_descriptionController.text !=
-                                        widget.taskDes) {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskDes: _descriptionController
-                                              .text
-                                              .trim(),
-                                        },
-                                      );
-                                    }
-                                    if (_taskNameController.text !=
-                                        widget.taskName) {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskName:
-                                              _taskNameController.text.trim(),
-                                        },
-                                      );
-                                    }
-                                    if (_notificationController.text !=
-                                        widget.taskNoti) {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskNotification:
-                                              _notificationController.text
-                                                  .trim(),
-                                        },
-                                      );
-                                    }
-                                    if (allAppProvidersProvider.selectedType !=
-                                        widget.taskType) {
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskType: allAppProvidersProvider
-                                              .selectedType,
-                                        },
-                                      );
+                                    DocumentSnapshot userDoc =
+                                        await FirebaseFirestore.instance
+                                            .collection("users")
+                                            .doc(widget.userEmail)
+                                            .get();
+
+                                    final userDocRefUpdate = FirebaseFirestore
+                                        .instance
+                                        .collection("users")
+                                        .doc(widget.userEmail);
+
+                                    if (taskDoc[Keys.taskStatus] != "Pending") {
+                                      if (taskDoc[Keys.taskStatus] ==
+                                          "Deleted") {
+                                        userDocRefUpdate.update(
+                                          {
+                                            Keys.taskDelete:
+                                                userDoc[Keys.taskDelete] - 1,
+                                          },
+                                        );
+
+                                        if (taskDoc[Keys.taskType] ==
+                                            "Business") {
+                                          userDocRefUpdate.update(
+                                            {
+                                              Keys.taskBusiness:
+                                                  userDoc[Keys.taskBusiness] +
+                                                      1,
+                                            },
+                                          );
+                                        }
+                                        if (taskDoc[Keys.taskType] ==
+                                            "Personal") {
+                                          userDocRefUpdate.update(
+                                            {
+                                              Keys.taskPersonal:
+                                                  userDoc[Keys.taskPersonal] +
+                                                      1,
+                                            },
+                                          );
+                                        }
+                                      }
+                                      if (taskDoc[Keys.taskStatus] ==
+                                          "Completed") {
+                                        userDocRefUpdate.update({
+                                          Keys.taskDone:
+                                              userDoc[Keys.taskDone] - 1,
+                                        });
+                                      }
+                                      userDocRefUpdate.update({
+                                        Keys.taskPending:
+                                            userDoc[Keys.taskPending] + 1,
+                                      });
                                     }
 
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskDate:
+                                            allAppProvidersProvider.dateText,
+                                      },
+                                    );
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskTime:
+                                            allAppProvidersProvider.timeText,
+                                      },
+                                    );
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskDes:
+                                            _descriptionController.text.trim(),
+                                      },
+                                    );
+
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskName:
+                                            _taskNameController.text.trim(),
+                                      },
+                                    );
+
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskNotification:
+                                            _notificationController.text.trim(),
+                                      },
+                                    );
+
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskType: allAppProvidersProvider
+                                            .selectedType,
+                                      },
+                                    );
+
+                                    taskDocRefUpdate.update(
+                                      {
+                                        Keys.taskStatus: "Pending",
+                                      },
+                                    );
+
                                     NotificationServices()
-                                        .cancelScheduledNotification(
+                                        .cancelTaskScheduledNotification(
                                       id: taskDoc[Keys.notificationID],
                                     );
 
-                                    NotificationServices().scheduleNotification(
+                                    NotificationServices()
+                                        .createScheduledTaskNotification(
                                       id: taskDoc[Keys.notificationID],
                                       title:
                                           _notificationController.text.trim(),
@@ -621,6 +636,7 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
 
                                   allAppProvidersProvider
                                       .newTaskUploadLoadingFunc(false);
+
                                   Navigator.pop(context);
                                 } else {
                                   AwesomeDialog(
@@ -667,9 +683,10 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
                                       : const Text(
                                           "ADD YOUR TASK",
                                           style: TextStyle(
-                                              color: AppColors.backgroundColour,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 17),
+                                            color: AppColors.backgroundColour,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 17,
+                                          ),
                                         ),
                             ),
                           ),

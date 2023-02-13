@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
     getUserSignStatus();
     super.initState();
     Timer(
-      const Duration(seconds: 7),
+      const Duration(seconds: 5),
       () => Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -46,6 +46,8 @@ class _SplashScreenState extends State<SplashScreen> {
         backgroundColor: AppColors.backgroundColour,
         body: Center(
           child: TextLiquidFill(
+            loadDuration: const Duration(seconds: 4),
+            waveDuration: const Duration(seconds: 4),
             boxHeight: 70,
             boxWidth: 200,
             waveColor: Colors.white,

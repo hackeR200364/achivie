@@ -6,6 +6,7 @@ class Keys {
   static const String userName = "userName";
   static const String uid = "uid";
   static const String userEmail = "userEmail";
+  static const String userPhoto = "userPhoto";
   static const String taskName = "taskName";
   static const String taskDes = "taskDes";
   static const String taskNotification = "taskNotification";
@@ -23,6 +24,13 @@ class Keys {
   static const String deleteStatus = "Deleted";
   static const String notDeleteStatus = "Deleted";
   static const String notificationID = "notificationID";
+  static const String tasksInstantChannelKey = "tasks_instant_channel";
+  static const String tasksInstantChannelName = "Tasks_Instant";
+  static const String tasksInstantChannelDes = "Instant Tasks Notifications";
+  static const String tasksScheduledChannelKey = "Tasks_Scheduled";
+  static const String tasksScheduledChannelName = "Tasks_Instant";
+  static const String tasksScheduledChannelDes =
+      "Scheduled Tasks Notifications";
 }
 
 class StorageServices {
@@ -49,6 +57,17 @@ class StorageServices {
   static void setIsNewUser(bool isNewUser) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setBool(Keys.isNewUser, isNewUser);
+  }
+
+  static void setUserPhotoURL(String url) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.userPhoto, url);
+  }
+
+  static Future<String> getUserPhotoURL() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? photoURL = pref.getString(Keys.userPhoto) ?? "";
+    return photoURL;
   }
 
   static Future<bool> getIsNewUser() async {

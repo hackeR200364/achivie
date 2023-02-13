@@ -1,13 +1,15 @@
 import 'dart:io';
-import 'dart:math' as math;
 
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:intl/intl.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/notification_services.dart';
 import 'package:task_app/providers/google_sign_in.dart';
@@ -53,11 +55,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     getEmail();
     super.initState();
+
+    AwesomeNotifications().actionStream.listen(
+      (notification) {
+        if ((notification.channelKey == Keys.tasksInstantChannelKey ||
+                notification.channelKey == Keys.tasksScheduledChannelKey) &&
+            Platform.isIOS) {
+          AwesomeNotifications().getGlobalBadgeCounter().then(
+                (value) => AwesomeNotifications().setGlobalBadgeCounter(
+                  value - 1,
+                ),
+              );
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
     tabController.dispose();
+    AwesomeNotifications().actionSink.close();
     super.dispose();
   }
 
@@ -70,19 +87,98 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: (Platform.isIOS)
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(0),
-                child: AppBar(
-                  elevation: 0,
-                  backgroundColor: AppColors.backgroundColour,
+        backgroundColor: AppColors.mainColor,
+        appBar: AppBar(
+          leading: Consumer<UserDetailsProvider>(
+            builder:
+                (_, userDetailsProviderProvider, userDetailsProviderChild) {
+              Future.delayed(
+                Duration.zero,
+                (() {
+                  userDetailsProviderProvider.userProfileImageFunc();
+                }),
+              );
+              return Padding(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  right: 5,
                 ),
-              )
-            : null,
+                child: CircleAvatar(
+                  minRadius: 20,
+                  maxRadius: 30,
+                  backgroundImage: CachedNetworkImageProvider(
+                    userDetailsProviderProvider.userProfileImage!,
+                  ),
+                ),
+              );
+            },
+          ),
+          title: Consumer<UserDetailsProvider>(
+            builder:
+                (_, userDetailsProviderProvider, userDetailsProviderChild) {
+              Future.delayed(
+                Duration.zero,
+                (() {
+                  userDetailsProviderProvider.userNameFunc();
+                }),
+              );
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userDetailsProviderProvider.userName!,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    Text(
+                      "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
+                      style: TextStyle(
+                        color: AppColors.white.withOpacity(0.7),
+                        fontSize: 15,
+                      ),
+                    )
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: [
+            Consumer<GoogleSignInProvider>(builder:
+                (googleSignInContext, googleSignInProvider, googleSignInChild) {
+              return IconButton(
+                onPressed: (() async {
+                  const CircularProgressIndicator(
+                    color: AppColors.backgroundColour,
+                  );
+                  await googleSignInProvider.logOut();
+                  await NotificationServices().cancelTasksNotification();
+                  Navigator.pushReplacement(
+                    googleSignInContext,
+                    MaterialPageRoute(
+                      builder: (signOutContext) => const SignUpScreen(),
+                    ),
+                  );
+                }),
+                icon: const Icon(
+                  Icons.logout,
+                  color: AppColors.white,
+                  size: 25,
+                ),
+              );
+            }),
+          ],
+          elevation: 0,
+          backgroundColor: AppColors.backgroundColour,
+        ),
         floatingActionButton: Container(
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.backgroundColour,
+            color: AppColors.floatingButton,
           ),
           child: IconButton(
             icon: const Icon(
@@ -128,241 +224,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
-                      // padding: EdgeInsets.symmetric(horizontal: 15),
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height / 20,
+                        bottom: MediaQuery.of(context).size.height / 30,
+                        left: 15,
+                        right: 15,
+                      ),
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height / 2.9,
-
+                      height: MediaQuery.of(context).size.height / 3.5,
                       decoration: const BoxDecoration(
-                        image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(
-                              "assets/bg.png",
-                            )),
-                        // color: AppColors.backgroundColour,
+                        color: AppColors.backgroundColour,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(50),
+                          bottomRight: Radius.circular(50),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              left: 20,
-                              top: 20,
-                              bottom: 20,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Consumer<GoogleSignInProvider>(builder:
-                                    (googleSignInContext, googleSignInProvider,
-                                        googleSignInChild) {
-                                  return IconButton(
-                                    onPressed: (() async {
-                                      const CircularProgressIndicator(
-                                        color: AppColors.backgroundColour,
-                                      );
-                                      await googleSignInProvider.logOut();
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (signOutContext) =>
-                                              const SignUpScreen(),
-                                        ),
-                                      );
-                                    }),
-                                    icon: Transform(
-                                      alignment: Alignment.center,
-                                      transform: Matrix4.rotationY(math.pi),
-                                      child: const Icon(
-                                        Icons.logout,
-                                        color: AppColors.white,
-                                        size: 25,
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                Consumer<UserDetailsProvider>(builder:
-                                    (userContext, userProvider, child) {
-                                  Future.delayed(Duration.zero, () {
-                                    userProvider.userNameFunc();
-                                  });
-
-                                  String newUserName = userProvider.userName!
-                                      .replaceAll(RegExp('\\s+'), '\n');
-                                  return Text(
-                                    newUserName,
-                                    softWrap: true,
-                                    style: const TextStyle(
-                                      color: AppColors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 2,
-                                    ),
-                                  );
-                                }),
-                                Text(
-                                  "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
-                                  style: TextStyle(
-                                    color: AppColors.white.withOpacity(0.7),
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      child: Consumer<TaskDetailsProvider>(builder:
+                          (taskDetailsContext, taskDetailsProvider,
+                              taskDetailChild) {
+                        taskDetailsProvider.taskCountFunc();
+                        taskDetailsProvider.taskDoneFunc();
+                        taskDetailsProvider.taskDeleteFunc();
+                        taskDetailsProvider.taskPendingFunc();
+                        taskDetailsProvider.taskBusinessFunc();
+                        taskDetailsProvider.taskPersonalFunc();
+                        return AspectRatio(
+                          aspectRatio: 2,
+                          child: _BarChart(
+                            done: taskDetailsProvider.taskDone,
+                            deleted: taskDetailsProvider.taskDelete,
+                            personal: taskDetailsProvider.taskPersonal,
+                            pending: taskDetailsProvider.taskPending,
+                            business: taskDetailsProvider.taskBusiness,
+                            count: taskDetailsProvider.taskCount,
                           ),
-                          Container(
-                            padding: const EdgeInsets.only(
-                              right: 10,
-                              top: 30,
-                              bottom: 20,
-                            ),
-                            width: MediaQuery.of(context).size.width / 2.5,
-                            color: AppColors.blackLow.withOpacity(0.4),
-                            child: GridView(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                              ),
-                              children: [
-                                Consumer<TaskDetailsProvider>(
-                                  builder: (taskDoneContext, taskDoneProvider,
-                                      taskDoneChild) {
-                                    taskDoneProvider.taskDoneFunc();
-                                    return tasksBrief(
-                                      value:
-                                          taskDoneProvider.taskDone.toString(),
-                                      head: "Done",
-                                    );
-                                  },
-                                ),
-                                Consumer<TaskDetailsProvider>(
-                                  builder: (taskPersonalContext,
-                                      taskPersonalProvider, taskPersonalChild) {
-                                    taskPersonalProvider.taskPersonalFunc();
-                                    return tasksBrief(
-                                      value: taskPersonalProvider.taskPersonal
-                                          .toString(),
-                                      head: "Personal",
-                                    );
-                                  },
-                                ),
-                                Consumer<TaskDetailsProvider>(
-                                  builder: (taskPendingContext,
-                                      taskPendingProvider, taskPendingChild) {
-                                    taskPendingProvider.taskPendingFunc();
-                                    return tasksBrief(
-                                      value: taskPendingProvider.taskPending
-                                          .toString(),
-                                      head: "Pending",
-                                    );
-                                  },
-                                ),
-                                Consumer<TaskDetailsProvider>(
-                                  builder: (taskBusinessContext,
-                                      taskBusinessProvider, taskBusinessChild) {
-                                    taskBusinessProvider.taskBusinessFunc();
-                                    return tasksBrief(
-                                      value: taskBusinessProvider.taskBusiness
-                                          .toString(),
-                                      head: "Business",
-                                    );
-                                  },
-                                ),
-                                Consumer<TaskDetailsProvider>(
-                                  builder: (taskDeleteContext,
-                                      taskDeleteProvider, taskDeleteChild) {
-                                    taskDeleteProvider.taskDeleteFunc();
-                                    return tasksBrief(
-                                      value: taskDeleteProvider.taskDelete
-                                          .toString(),
-                                      head: "Deleted",
-                                    );
-                                  },
-                                ),
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Consumer<TaskDetailsProvider>(
-                                    builder: (taskDoneContext, taskDoneProvider,
-                                        taskDoneChild) {
-                                      taskDoneProvider.taskDoneFunc();
-                                      taskDoneProvider.taskCountFunc();
-
-                                      if (taskDoneProvider.taskCount != 0) {
-                                        int newTaskCount =
-                                            (taskDoneProvider.taskDelete <
-                                                    taskDoneProvider.taskCount)
-                                                ? (taskDoneProvider.taskCount -
-                                                    taskDoneProvider.taskDelete)
-                                                : (taskDoneProvider.taskDelete -
-                                                    taskDoneProvider.taskCount);
-
-                                        if (newTaskCount != 0) {
-                                          percent = (taskDoneProvider.taskDone /
-                                              newTaskCount);
-                                          newPercent = (percent * 100).round();
-                                        } else {
-                                          percent = 0;
-                                        }
-                                      } else {
-                                        percent = 0;
-                                      }
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          CircularPercentIndicator(
-                                            circularStrokeCap:
-                                                CircularStrokeCap.round,
-                                            animation: true,
-                                            percent: percent,
-                                            radius: 13,
-                                            lineWidth: 3,
-                                            progressColor: (newPercent <= 25)
-                                                ? AppColors.red
-                                                : ((newPercent > 25) &&
-                                                        (newPercent <= 50))
-                                                    ? AppColors.orange
-                                                    : ((newPercent > 50) &&
-                                                            (newPercent <= 75))
-                                                        ? AppColors.yellow
-                                                        : AppColors.lightGreen,
-                                          ),
-                                          const SizedBox(
-                                            height: 10,
-                                          ),
-                                          Text(
-                                            (newPercent == 100)
-                                                ? "$newPercent%\ndone"
-                                                : "$newPercent% done",
-                                            textAlign: TextAlign.right,
-                                            style: TextStyle(
-                                              color: AppColors.white
-                                                  .withOpacity(0.5),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      }),
                     ),
-                    Container(
-                      height: 3,
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [
-                        AppColors.sky!,
-                        AppColors.backgroundColour,
-                        AppColors.white,
-                      ])),
-                    ),
+
                     Container(
                       margin: const EdgeInsets.all(15),
                       padding: const EdgeInsets.only(left: 10),
@@ -377,12 +276,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         builder: (allAppProvidersCtx, allAppProvidersProvider,
                             allAppProvidersChild) {
                           return DropdownButton<String>(
-                            hint: Text(allAppProvidersProvider.selectedType),
+                            dropdownColor: AppColors.backgroundColour,
+                            hint: Text(
+                              allAppProvidersProvider.selectedType,
+                              style: const TextStyle(
+                                color: AppColors.white,
+                              ),
+                            ),
                             items: taskType.map(
                               (String task) {
                                 return DropdownMenuItem<String>(
                                   value: task,
-                                  child: Text(task),
+                                  child: Text(
+                                    task,
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                    ),
+                                  ),
                                 );
                               },
                             ).toList(),
@@ -589,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     if (taskSavedDate.difference(date).inMinutes > 0) {
-      NotificationServices().cancelScheduledNotification(
+      NotificationServices().cancelTaskScheduledNotification(
         id: taskDoc[Keys.notificationID],
       );
     }
@@ -667,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     if (taskSavedDate.difference(date).inMinutes > 0) {
-      NotificationServices().scheduleNotification(
+      NotificationServices().createScheduledTaskNotification(
         id: taskDoc[Keys.notificationID],
         title: taskDoc[Keys.taskNotification],
         body: "${taskDoc[Keys.taskName]}\n${taskDoc[Keys.taskDes]}",
@@ -732,7 +642,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
 
       if (taskSavedDate.difference(date).inMinutes > 0) {
-        NotificationServices().cancelScheduledNotification(
+        NotificationServices().cancelTaskScheduledNotification(
           id: taskDocRef[Keys.notificationID],
         );
       }
@@ -755,7 +665,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
 
       if (taskSavedDate.difference(date).inMinutes > 0) {
-        NotificationServices().scheduleNotification(
+        NotificationServices().createScheduledTaskNotification(
           title: taskDocRef[Keys.taskNotification],
           body: "${taskDocRef[Keys.taskName]}\n${taskDocRef[Keys.taskDes]}",
           id: taskDocRef[Keys.notificationID],
@@ -811,8 +721,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
 
           if (snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("Not Tasks"),
+            return Center(
+              child: Lottie.asset("assets/empty_animation.json"),
             );
           }
 
@@ -856,6 +766,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       children: [
                         FocusedMenuHolder(
                           onPressed: (() {}),
+                          menuBoxDecoration: const BoxDecoration(
+                            color: AppColors.transparent,
+                          ),
                           openWithTap: true,
                           menuItems: [
                             if ((snapshot.data!.docs[listIndex]
@@ -865,14 +778,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 title: (snapshot.data!.docs[listIndex]
                                             [Keys.taskStatus] ==
                                         "Pending")
-                                    ? const Text("Done")
-                                    : const Text("Un Done"),
+                                    ? const Text(
+                                        "Done",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        "Un Done",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      ),
                                 trailingIcon: (snapshot.data!.docs[listIndex]
                                             [Keys.taskStatus] ==
                                         "Pending")
                                     ? Icon(
                                         Icons.done,
-                                        color: AppColors.green,
+                                        color: AppColors.lightGreen,
                                         size: 20,
                                       )
                                     : Icon(
@@ -968,9 +891,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     );
                                   }
                                 }),
+                                backgroundColor: AppColors.backgroundColour,
                               ),
                             FocusedMenuItem(
-                              title: const Text("Edit"),
+                              title: const Text(
+                                "Edit",
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                ),
+                              ),
                               onPressed: (() {
                                 String taskDocID =
                                     snapshot.data!.docs[listIndex].reference.id;
@@ -996,13 +925,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                 );
                               }),
+                              backgroundColor: AppColors.backgroundColour,
                             ),
                             FocusedMenuItem(
                               title: ((snapshot.data!.docs[listIndex]
                                           [Keys.taskStatus] ==
                                       Keys.deleteStatus))
-                                  ? const Text("Undo")
-                                  : const Text("Delete"),
+                                  ? const Text(
+                                      "Undo",
+                                      style: TextStyle(
+                                        color: AppColors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Delete",
+                                      style: TextStyle(
+                                        color: AppColors.white,
+                                      ),
+                                    ),
                               onPressed: (() {
                                 String taskDocID =
                                     snapshot.data!.docs[listIndex].reference.id;
@@ -1095,6 +1035,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   }
                                 }
                               }),
+                              backgroundColor: AppColors.backgroundColour,
                             ),
                           ],
                           child: Container(
@@ -1103,7 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               vertical: 15,
                             ),
                             decoration: const BoxDecoration(
-                              color: AppColors.white,
+                              color: AppColors.backgroundColour,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
@@ -1117,16 +1058,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.all(15),
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: AppColors.grey,
-                                        ),
                                       ),
-                                      child: const Icon(
-                                        Icons.work,
-                                        color: AppColors.backgroundColour,
-                                      ),
+                                      child: (snapshot.data!.docs[listIndex]
+                                                  [Keys.taskStatus] ==
+                                              "Deleted")
+                                          ? Image.asset(
+                                              "assets/cancel-task.png",
+                                              width: 35,
+                                              height: 35,
+                                            )
+                                          : Icon(
+                                              shadows: [
+                                                Shadow(
+                                                  color: (snapshot.data!.docs[
+                                                                  listIndex][
+                                                              Keys.taskStatus] ==
+                                                          "Pending")
+                                                      ? AppColors.red!
+                                                      : AppColors.lightGreen!,
+                                                  blurRadius: 10,
+                                                )
+                                              ],
+                                              Icons.work_outline,
+                                              color: (snapshot.data!
+                                                              .docs[listIndex]
+                                                          [Keys.taskStatus] ==
+                                                      "Pending")
+                                                  ? AppColors.red
+                                                  : AppColors.lightGreen,
+                                              size: 35,
+                                            ),
                                     ),
                                     const SizedBox(
                                       width: 15,
@@ -1150,6 +1113,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 17,
+                                              color: AppColors.white,
                                             ),
                                           ),
                                         ),
@@ -1166,8 +1130,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 [Keys.taskDes],
                                             // overflow: TextOverflow.ellipsis,
                                             softWrap: true,
-                                            style: const TextStyle(
-                                              color: AppColors.grey,
+                                            style: TextStyle(
+                                              color: AppColors.white
+                                                  .withOpacity(0.5),
                                               fontWeight: FontWeight.w400,
                                               fontSize: 13,
                                             ),
@@ -1183,8 +1148,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     Text(
                                       "${snapshot.data!.docs[listIndex][Keys.taskTime]}\n${snapshot.data!.docs[listIndex][Keys.taskDate]}",
                                       textAlign: TextAlign.end,
-                                      style: const TextStyle(
-                                        color: AppColors.grey,
+                                      style: TextStyle(
+                                        color: AppColors.white.withOpacity(0.5),
                                       ),
                                     ),
                                     const SizedBox(
@@ -1205,7 +1170,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           [Keys.taskStatus] ==
                                                       "Pending")
                                                   ? AppColors.red
-                                                  : AppColors.green,
+                                                  : AppColors.lightGreen,
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: (snapshot.data!.docs[
@@ -1213,7 +1178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               Keys.taskStatus] ==
                                                           "Pending")
                                                       ? AppColors.red!
-                                                      : AppColors.green!,
+                                                      : AppColors.lightGreen!,
                                                   blurRadius: 5,
                                                   spreadRadius: 3,
                                                 )
@@ -1243,16 +1208,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             margin: const EdgeInsets.all(5),
                                             height: 4,
                                             width: 4,
-                                            decoration: const BoxDecoration(
-                                              color: AppColors.grey,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.white
+                                                  .withOpacity(0.5),
                                               shape: BoxShape.circle,
                                             ),
                                           ),
                                         Text(
                                           snapshot.data!.docs[listIndex]
                                               [Keys.taskType],
-                                          style: const TextStyle(
-                                            color: AppColors.grey,
+                                          style: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.5),
                                           ),
                                         ),
                                       ],
@@ -1274,7 +1241,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         vertical: 10,
                       ),
                       height: 2,
-                      color: AppColors.grey.withOpacity(0.3),
+                      color: AppColors.grey.withOpacity(0.1),
                     );
                   },
                 ),
@@ -1286,30 +1253,231 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Column tasksBrief({
+  Container tasksBrief({
     required String value,
     required String head,
+    required Color color,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.white,
-            fontSize: 20,
-          ),
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: 10,
+      ),
+      height: 70,
+      width: 70,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.white,
+                fontSize: 20,
+              ),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Text(
+              head,
+              style: TextStyle(
+                color: AppColors.white.withOpacity(0.5),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(
-          height: 5,
-        ),
-        Text(
-          head,
-          style: TextStyle(
-            color: AppColors.white.withOpacity(0.5),
-          ),
-        ),
-      ],
+      ),
     );
   }
+}
+
+class _BarChart extends StatelessWidget {
+  _BarChart({
+    required this.done,
+    required this.personal,
+    required this.pending,
+    required this.business,
+    required this.deleted,
+    required this.count,
+  });
+
+  int deleted = 0;
+  int done = 0;
+  int pending = 0;
+  int business = 0;
+  int personal = 0;
+  int count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return BarChart(
+      BarChartData(
+        barTouchData: barTouchData,
+        titlesData: buildTitleDate(),
+        borderData: borderData,
+        barGroups: [
+          BarChartGroupData(
+            x: 0,
+            barRods: [
+              BarChartRodData(
+                toY: done.toDouble(),
+                gradient: _barsGradient,
+              )
+            ],
+            showingTooltipIndicators: [0],
+          ),
+          BarChartGroupData(
+            x: 1,
+            barRods: [
+              BarChartRodData(
+                toY: deleted.toDouble(),
+                gradient: _barsGradient,
+              )
+            ],
+            showingTooltipIndicators: [0],
+          ),
+          BarChartGroupData(
+            x: 2,
+            barRods: [
+              BarChartRodData(
+                toY: pending.toDouble(),
+                gradient: _barsGradient,
+              )
+            ],
+            showingTooltipIndicators: [0],
+          ),
+          BarChartGroupData(
+            x: 3,
+            barRods: [
+              BarChartRodData(
+                toY: business.toDouble(),
+                gradient: _barsGradient,
+              )
+            ],
+            showingTooltipIndicators: [0],
+          ),
+          BarChartGroupData(
+            x: 4,
+            barRods: [
+              BarChartRodData(
+                toY: personal.toDouble(),
+                gradient: _barsGradient,
+              )
+            ],
+            showingTooltipIndicators: [0],
+          ),
+        ],
+        gridData: FlGridData(show: false),
+        alignment: BarChartAlignment.spaceAround,
+        maxY: count.toDouble(),
+      ),
+    );
+  }
+
+  buildTitleDate() => FlTitlesData(
+        show: true,
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 35,
+            getTitlesWidget: (double val, TitleMeta meta) {
+              const textStyle = TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+              );
+              switch (val.toInt()) {
+                case 0:
+                  return const Text(
+                    "\nDone",
+                    style: textStyle,
+                  );
+                case 1:
+                  return const Text(
+                    "\nDeleted",
+                    style: textStyle,
+                  );
+                case 2:
+                  return const Text(
+                    "\nPending",
+                    style: textStyle,
+                  );
+                case 3:
+                  return const Text(
+                    "\nBusiness",
+                    style: textStyle,
+                  );
+                case 4:
+                  return const Text(
+                    "\nPersonal",
+                    style: textStyle,
+                  );
+              }
+              return const Text("");
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        topTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        rightTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+      );
+
+  BarTouchData get barTouchData => BarTouchData(
+        enabled: false,
+        touchTooltipData: BarTouchTooltipData(
+          tooltipBgColor: Colors.transparent,
+          tooltipPadding: EdgeInsets.zero,
+          tooltipMargin: 8,
+          getTooltipItem: (
+            BarChartGroupData group,
+            int groupIndex,
+            BarChartRodData rod,
+            int rodIndex,
+          ) {
+            return BarTooltipItem(
+              rod.toY.round().toString(),
+              const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            );
+          },
+        ),
+      );
+
+  FlBorderData get borderData => FlBorderData(
+        show: false,
+      );
+
+  LinearGradient get _barsGradient => LinearGradient(
+        colors: [
+          AppColors.orange!,
+          AppColors.yellow!,
+        ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      );
+
+  List<BarChartGroupData> get barGroups => [
+        BarChartGroupData(
+          x: 0,
+          barRods: [
+            BarChartRodData(
+              toY: 8,
+              gradient: _barsGradient,
+            )
+          ],
+          showingTooltipIndicators: [0],
+        ),
+      ];
 }

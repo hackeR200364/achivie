@@ -12,5 +12,9 @@ class AppColors {
   static Color? lightGreen = Colors.lightGreenAccent;
   static Color? orange = Colors.orange;
   static Color? yellow = Colors.yellow;
+  static Color? lime = Colors.lime;
+  static const mainColor = Color(0xFF1F1F39);
+  static const mainColor2 = Color(0xFF3845AB);
+  static const floatingButton = Colors.deepPurple;
   static const scrollPhysics = BouncingScrollPhysics();
 }

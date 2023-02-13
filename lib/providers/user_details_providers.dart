@@ -26,4 +26,11 @@ class UserDetailsProvider extends ChangeNotifier {
     StorageServices.setUserEmail(user!.email!);
     notifyListeners();
   }
+
+  String? userProfileImage = "";
+  void userProfileImageFunc() async {
+    userProfileImage = user!.photoURL;
+    StorageServices.setUserPhotoURL(userProfileImage!);
+    notifyListeners();
+  }
 }
