@@ -48,8 +48,8 @@ class _SplashScreenState extends State<SplashScreen> {
           child: TextLiquidFill(
             loadDuration: const Duration(seconds: 4),
             waveDuration: const Duration(seconds: 4),
-            boxHeight: 70,
-            boxWidth: 200,
+            boxHeight: MediaQuery.of(context).size.height,
+            boxWidth: MediaQuery.of(context).size.width,
             waveColor: Colors.white,
             boxBackgroundColor: AppColors.backgroundColour,
             text: 'TASKAPP',

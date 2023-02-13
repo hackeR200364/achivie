@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +13,6 @@ import 'package:provider/provider.dart';
 import 'package:task_app/notification_services.dart';
 import 'package:task_app/providers/google_sign_in.dart';
 import 'package:task_app/screens/new_task_screen.dart';
-import 'package:task_app/screens/sign_screen.dart';
 import 'package:task_app/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
@@ -55,20 +53,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     getEmail();
     super.initState();
-
-    AwesomeNotifications().actionStream.listen(
-      (notification) {
-        if ((notification.channelKey == Keys.tasksInstantChannelKey ||
-                notification.channelKey == Keys.tasksScheduledChannelKey) &&
-            Platform.isIOS) {
-          AwesomeNotifications().getGlobalBadgeCounter().then(
-                (value) => AwesomeNotifications().setGlobalBadgeCounter(
-                  value - 1,
-                ),
-              );
-        }
-      },
-    );
   }
 
   @override
@@ -150,26 +134,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           actions: [
             Consumer<GoogleSignInProvider>(builder:
                 (googleSignInContext, googleSignInProvider, googleSignInChild) {
-              return IconButton(
-                onPressed: (() async {
-                  const CircularProgressIndicator(
-                    color: AppColors.backgroundColour,
-                  );
-                  await googleSignInProvider.logOut();
-                  await NotificationServices().cancelTasksNotification();
-                  Navigator.pushReplacement(
-                    googleSignInContext,
-                    MaterialPageRoute(
-                      builder: (signOutContext) => const SignUpScreen(),
-                    ),
-                  );
-                }),
-                icon: const Icon(
-                  Icons.logout,
-                  color: AppColors.white,
-                  size: 25,
-                ),
-              );
+              return Consumer<AllAppProviders>(
+                  builder: (allAppProviderContext, allAppProvider, _) {
+                return IconButton(
+                  onPressed: (() async {
+                    allAppProvider.isLoadingFunc(false);
+                    const CircularProgressIndicator(
+                      color: AppColors.backgroundColour,
+                    );
+                    await googleSignInProvider.logOut();
+                    await NotificationServices().cancelTasksNotification();
+
+                    SystemNavigator.pop();
+                  }),
+                  icon: const Icon(
+                    Icons.logout,
+                    color: AppColors.white,
+                    size: 25,
+                  ),
+                );
+              });
             }),
           ],
           elevation: 0,
