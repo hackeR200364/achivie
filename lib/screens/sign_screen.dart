@@ -6,7 +6,7 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/providers/google_sign_in.dart';
+import 'package:task_app/providers/auth_services.dart';
 import 'package:task_app/styles.dart';
 
 import '../shared_preferences.dart';
@@ -372,7 +372,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ),
                                         CompanyAuth(
                                           logo: "assets/facebook-logo.png",
-                                          onTap: (() {}),
+                                          onTap: (() async {
+                                            await FaceBookSignInServices()
+                                                .signInWithFacebook();
+                                          }),
                                         ),
                                         CompanyAuth(
                                           logo: "assets/twitter-logo.png",

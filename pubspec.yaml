@@ -63,7 +63,7 @@ dependencies:
   awesome_notifications:
   glassmorphism:
   flutter_neumorphic:
-
+  flutter_facebook_auth:
 
 dev_dependencies:
   flutter_test:

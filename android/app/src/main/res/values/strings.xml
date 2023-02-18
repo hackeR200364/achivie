@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TASKAPP</string>
+    <string name="facebook_app_id">573404808224386</string>
+    <string name="fb_login_protocol_scheme">fb573404808224386</string>
+    <string name="facebook_client_token">289f86cb5f59c20a837c6e4f4549a39e</string>
+</resources>

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../shared_preferences.dart';
@@ -63,5 +64,53 @@ class GoogleSignInProvider extends ChangeNotifier {
     await FirebaseAuth.instance.signOut();
     StorageServices.setSignStatus(false);
     notifyListeners();
+  }
+}
+
+class FaceBookSignInServices {
+  Future signInWithFacebook() async {
+    // Trigger the sign-in flow
+    final LoginResult loginResult = await FacebookAuth.instance.login();
+
+    // Create a credential from the access token
+    final OAuthCredential facebookAuthCredential =
+        FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+    // Once signed in, return the UserCredential
+    UserCredential credential = await FirebaseAuth.instance
+        .signInWithCredential(facebookAuthCredential);
+
+    // StorageServices.setSignStatus(true);
+    // if (facebookAuthCredential..isNewUser) {
+    //   StorageServices.setIsNewUser(true);
+    // } else {
+    //   StorageServices.setIsNewUser(false);
+    // }
+
+    DocumentSnapshot<Map<String, dynamic>> document = await FirebaseFirestore
+        .instance
+        .collection("users")
+        .doc(credential.user!.email)
+        .get();
+
+    if (document.exists) {
+    } else {
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(credential.user!.email)
+          .set(
+        {
+          Keys.userName: credential.user!.displayName,
+          Keys.userEmail: credential.user!.email,
+          Keys.uid: credential.user!.uid,
+          Keys.taskDone: 0,
+          Keys.taskPending: 0,
+          Keys.taskPersonal: 0,
+          Keys.taskBusiness: 0,
+          Keys.taskCount: 0,
+          Keys.taskDelete: 0,
+        },
+      );
+    }
   }
 }

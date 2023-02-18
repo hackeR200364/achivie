@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/notification_services.dart';
-import 'package:task_app/providers/google_sign_in.dart';
+import 'package:task_app/providers/auth_services.dart';
 import 'package:task_app/screens/new_task_screen.dart';
 import 'package:task_app/shared_preferences.dart';
 import 'package:task_app/styles.dart';
