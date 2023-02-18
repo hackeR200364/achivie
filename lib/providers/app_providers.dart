@@ -66,4 +66,16 @@ class AllAppProviders extends ChangeNotifier {
     isLoading = load;
     notifyListeners();
   }
+
+  bool passVisibility = true;
+  void passVisibilityFunc(bool visibility) {
+    passVisibility = visibility;
+    notifyListeners();
+  }
+
+  bool passConfirmVisibility = true;
+  void passConfirmVisibilityFunc(bool visibility) {
+    passConfirmVisibility = visibility;
+    notifyListeners();
+  }
 }

@@ -61,6 +61,8 @@ dependencies:
   fl_chart:
   lottie:
   awesome_notifications:
+  glassmorphism:
+  flutter_neumorphic:
 
 
 dev_dependencies:
