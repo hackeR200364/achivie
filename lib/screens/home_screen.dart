@@ -87,13 +87,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   left: 10,
                   right: 5,
                 ),
-                child: CircleAvatar(
-                  minRadius: 20,
-                  maxRadius: 30,
-                  backgroundImage: CachedNetworkImageProvider(
-                    userDetailsProviderProvider.userProfileImage!,
-                  ),
-                ),
+                child: (userDetailsProviderProvider.userProfileImage != null)
+                    ? CircleAvatar(
+                        minRadius: 20,
+                        maxRadius: 30,
+                        backgroundImage: CachedNetworkImageProvider(
+                          userDetailsProviderProvider.userProfileImage!,
+                        ),
+                      )
+                    : CircularProgressIndicator(
+                        color: AppColors.white,
+                      ),
               );
             },
           ),
@@ -289,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     TabBar(
+                      isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
                       indicator: BoxDecoration(
                         color: AppColors.backgroundColour,
