@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/providers/all_tasks_provider.dart';
 import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/providers/google_sign_in.dart';
+import 'package:task_app/providers/auth_services.dart';
 import 'package:task_app/providers/task_details_provider.dart';
 import 'package:task_app/providers/user_details_providers.dart';
 import 'package:task_app/screens/splash_screen.dart';

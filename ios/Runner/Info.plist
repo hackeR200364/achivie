@@ -3,6 +3,21 @@
 <plist version="1.0">
 <dict>
 
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+  <key>CFBundleURLSchemes</key>
+  <array>
+    <string>fb573404808224386</string>
+  </array>
+  </dict>
+</array>
+<key>FacebookAppID</key>
+<string>573404808224386</string>
+<key>FacebookClientToken</key>
+<string>CLIENT-TOKEN</string>
+<key>FacebookDisplayName</key>
+<string>TASKAPP</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
