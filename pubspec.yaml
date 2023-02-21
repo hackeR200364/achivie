@@ -47,7 +47,6 @@ dependencies:
   awesome_dialog:
   focused_menu:
   interval_time_picker:
-  flutter_local_notifications:
   timezone:
   rxdart:
   workmanager:
@@ -63,7 +62,9 @@ dependencies:
   awesome_notifications:
   glassmorphism:
   flutter_neumorphic:
-  flutter_facebook_auth:
+  email_validator:
+  package_info_plus:
+  google_mobile_ads:
 
 dev_dependencies:
   flutter_test:

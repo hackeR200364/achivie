@@ -1,4 +1,3 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       completedStatus = "Completed",
       pendingStatus = "Pending",
       deleteStatus = "Deleted";
+  BannerAd? bannerAd;
 
   late ScrollController _scrollController;
 
@@ -52,13 +53,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
 
     getEmail();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      listener: BannerAdListener(
+        onAdLoaded: ((ad) {
+          print("Banner ad loaded ${ad.adUnitId}");
+        }),
+      ),
+      request: AdRequest(),
+    );
+    bannerAd!.load();
     super.initState();
   }
 
   @override
   void dispose() {
     tabController.dispose();
-    AwesomeNotifications().actionSink.close();
     super.dispose();
   }
 
@@ -183,6 +194,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
           ),
         ),
+        bottomNavigationBar: SizedBox(
+          height: bannerAd!.size.height.toDouble(),
+          width: MediaQuery.of(context).size.width,
+          child: AdWidget(
+            ad: bannerAd!,
+          ),
+        ),
         body: SafeArea(
           child: SingleChildScrollView(
             physics: AppColors.scrollPhysics,
@@ -293,6 +311,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     TabBar(
+                      physics: AppColors.scrollPhysics,
                       isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
                       indicator: BoxDecoration(
@@ -309,18 +328,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       controller: tabController,
                       tabs: [
                         tabBarContainer(
-                          label: "INBOX",
-                        ),
-                        tabBarContainer(
-                          label: "DONE",
-                        ),
-                        tabBarContainer(
                           label: "PENDING",
+                        ),
+                        tabBarContainer(
+                          label: "COMPLETED",
                         ),
                         tabBarContainer(
                           label: "DELETED",
                         ),
+                        tabBarContainer(
+                          label: "INBOX",
+                        ),
                       ],
+                    ),
+                    SizedBox(
+                      height: 10,
                     ),
                     SizedBox(
                       height: MediaQuery.of(context).size.height / 2.1,
@@ -329,11 +351,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         builder: (allAppProvidersCtx, allAppProvidersProviders,
                             allAppProvidersChild) {
                           return TabBarView(
+                            physics: AppColors.scrollPhysics,
                             controller: tabController,
                             children: [
                               bottomTiles(
                                 type: allAppProvidersProviders.selectedType,
-                                status: inboxStatus,
+                                status: pendingStatus,
                                 firestoreEmail: email,
                               ),
                               bottomTiles(
@@ -343,19 +366,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               ),
                               bottomTiles(
                                 type: allAppProvidersProviders.selectedType,
-                                status: pendingStatus,
+                                status: Keys.deleteStatus,
                                 firestoreEmail: email,
                               ),
                               bottomTiles(
                                 type: allAppProvidersProviders.selectedType,
-                                status: Keys.deleteStatus,
+                                status: inboxStatus,
                                 firestoreEmail: email,
                               ),
                             ],
                           );
                         },
                       ),
-                    )
+                    ),
+
                     // bottomTiles(heading: "COMPLETED", value: "10"),
                   ],
                 );
@@ -371,6 +395,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required String label,
   }) {
     return Container(
+      width: MediaQuery.of(context).size.width / 5,
+      height: 25,
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
         vertical: 5,
@@ -381,8 +407,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         borderRadius: BorderRadius.circular(50),
       ),
-      child: Text(
-        label,
+      child: Center(
+        child: Text(
+          label,
+        ),
       ),
     );
   }

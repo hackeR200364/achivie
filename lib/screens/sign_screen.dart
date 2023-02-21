@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:lottie/lottie.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/providers/app_providers.dart';
 import 'package:task_app/providers/auth_services.dart';
@@ -29,6 +31,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool visibility = true;
   bool visibility2 = true;
   int signPage = 0;
+  PackageInfo? packageInfo;
+
+  // final signUpFormKey = GlobalKey<FormState>();
+  // final signInFormKey = GlobalKey<FormState>();
 
   Future<void> googleSignIn(BuildContext context) async {
     final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
@@ -48,11 +54,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  void getAppDetails() async {
+    packageInfo = await PackageInfo.fromPlatform();
+  }
+
   @override
   void initState() {
     _emailController = TextEditingController();
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
+    getAppDetails();
+
     super.initState();
   }
 
@@ -90,15 +102,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   "assets/auth-bg-pic.jpg",
                   fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
-                  height:
-                      (signPage == 0) ? size.height * 1.25 : size.height * 1.1,
+                  height: (signPage == 0) ? size.height : size.height,
                 ),
               ),
               Positioned(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height:
-                      (signPage == 0) ? size.height * 1.25 : size.height * 1.1,
+                  height: (signPage == 0) ? size.height : size.height,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -134,8 +144,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GlassmorphicContainer(
                           width: size.width,
                           height: (signPage == 0)
-                              ? size.height / 1.25
-                              : size.height / 1.5,
+                              ? size.height / 1.6
+                              : size.height / 1.8,
                           borderRadius: 15,
                           linearGradient: LinearGradient(
                             colors: [
@@ -156,13 +166,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               //SIGN UP
                               if (signPage == 0)
                                 AuthTextField(
-                                  icon: Icons.email_outlined,
-                                  controller: _emailController,
-                                  hintText: "example@gmail.com",
-                                  keyboard: TextInputType.emailAddress,
-                                  isPassField: false,
-                                  isPassConfirmField: false,
-                                ),
+                                    icon: Icons.email_outlined,
+                                    controller: _emailController,
+                                    hintText: "example@gmail.com",
+                                    keyboard: TextInputType.emailAddress,
+                                    isPassField: false,
+                                    isPassConfirmField: false,
+                                    isEmailField: true,
+                                    pageIndex: signPage
+                                    // formKey: signUpFormKey,
+                                    ),
                               if (signPage == 0)
                                 AuthTextField(
                                   icon: Icons.security_outlined,
@@ -171,6 +184,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   keyboard: TextInputType.visiblePassword,
                                   isPassField: true,
                                   isPassConfirmField: false,
+                                  isEmailField: false,
+                                  pageIndex: signPage,
+
+                                  // formKey: signUpFormKey,
                                 ),
                               if (signPage == 0)
                                 AuthTextField(
@@ -180,6 +197,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   keyboard: TextInputType.visiblePassword,
                                   isPassField: false,
                                   isPassConfirmField: true,
+                                  isEmailField: false,
+                                  pageIndex: signPage,
+
+                                  // formKey: signUpFormKey,
                                 ),
                               if (signPage == 0)
                                 Padding(
@@ -215,8 +236,80 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         )
                                       : InkWell(
                                           onTap: (() {
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
+                                            // if (signInFormKey.currentState!
+                                            //     .validate()) {
+                                            //   allAppProvidersProvider
+                                            //       .isLoadingFunc(false);
+                                            // }
+
+                                            print(packageInfo!.version);
+
+                                            if (_emailController
+                                                    .text.isNotEmpty &&
+                                                _passController
+                                                    .text.isNotEmpty &&
+                                                _passConfirmController
+                                                    .text.isNotEmpty) {
+                                              if (_passController.text ==
+                                                  _passConfirmController.text) {
+                                              } else {
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    margin: EdgeInsets.only(
+                                                      bottom: 30,
+                                                      left: size.width / 10,
+                                                      right: size.width / 10,
+                                                    ),
+                                                    behavior: SnackBarBehavior
+                                                        .floating,
+                                                    dismissDirection:
+                                                        DismissDirection
+                                                            .horizontal,
+                                                    backgroundColor: AppColors
+                                                        .backgroundColour,
+                                                    content: const Text(
+                                                      "Please check the password fields",
+                                                      style: TextStyle(
+                                                        color: AppColors.white,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  margin: EdgeInsets.only(
+                                                    bottom: 30,
+                                                    left: 30,
+                                                    right: 30,
+                                                  ),
+                                                  behavior:
+                                                      SnackBarBehavior.floating,
+                                                  dismissDirection:
+                                                      DismissDirection
+                                                          .horizontal,
+                                                  backgroundColor: AppColors
+                                                      .backgroundColour,
+                                                  content: Text(
+                                                    "Please fill the fields properly",
+                                                    style: TextStyle(
+                                                      color: AppColors.white,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
                                           }),
                                           child: Container(
                                             height: 50,
@@ -257,6 +350,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   keyboard: TextInputType.emailAddress,
                                   isPassField: false,
                                   isPassConfirmField: false,
+                                  isEmailField: true,
+                                  pageIndex: signPage,
+                                  // formKey: signInFormKey,
                                 ),
                               if (signPage == 1)
                                 AuthTextField(
@@ -266,6 +362,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   keyboard: TextInputType.visiblePassword,
                                   isPassField: true,
                                   isPassConfirmField: false,
+                                  isEmailField: false,
+                                  pageIndex: signPage,
+                                  // formKey: signInFormKey,
                                 ),
                               if (signPage == 1)
                                 Padding(
@@ -301,8 +400,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         )
                                       : InkWell(
                                           onTap: (() {
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
+                                            // if (signUpFormKey.currentState!
+                                            //     .validate()) {
+                                            //   allAppProvidersProvider
+                                            //       .isLoadingFunc(false);
+                                            // }
                                           }),
                                           child: Container(
                                             height: 50,
@@ -355,7 +457,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   children: [
                                     Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
+                                          MainAxisAlignment.center,
                                       children: [
                                         CompanyAuth(
                                           logo: "assets/google-logo.png",
@@ -370,46 +472,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 .isLoadingFunc(false);
                                           }),
                                         ),
-                                        CompanyAuth(
-                                          logo: "assets/facebook-logo.png",
-                                          onTap: (() async {
-                                            await FaceBookSignInServices()
-                                                .signInWithFacebook();
-                                          }),
+                                        SizedBox(
+                                          width: size.width / 10,
                                         ),
-                                        CompanyAuth(
-                                          logo: "assets/twitter-logo.png",
-                                          onTap: (() {}),
-                                        ),
-                                        CompanyAuth(
-                                          logo: "assets/microsoft-logo.png",
-                                          onTap: (() {}),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
                                         CompanyAuth(
                                           logo: "assets/apple-logo.png",
-                                          onTap: (() {}),
-                                        ),
-                                        SizedBox(
-                                          width: size.width / 15,
-                                        ),
-                                        CompanyAuth(
-                                          logo: "assets/yahoo-logo.png",
-                                          onTap: (() {}),
-                                        ),
-                                        SizedBox(
-                                          width: size.width / 15,
-                                        ),
-                                        CompanyAuth(
-                                          logo: "assets/github-logo.png",
                                           onTap: (() {}),
                                         ),
                                       ],
@@ -506,14 +573,19 @@ class AuthTextField extends StatefulWidget {
     required this.hintText,
     required this.keyboard,
     required this.isPassField,
+    required this.isEmailField,
     required this.isPassConfirmField,
     required this.icon,
+    required this.pageIndex,
+    // required this.formKey,
   });
   TextEditingController controller;
   String hintText;
   TextInputType keyboard;
-  bool isPassField, isPassConfirmField;
+  bool isPassField, isPassConfirmField, isEmailField;
   IconData icon;
+  int pageIndex;
+  // GlobalKey<FormState> formKey;
 
   @override
   State<AuthTextField> createState() => _AuthTextFieldState();
@@ -534,6 +606,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
       ),
       child: TextFormField(
         decoration: InputDecoration(
+          errorStyle: TextStyle(
+            overflow: TextOverflow.clip,
+          ),
           prefixIcon: Icon(
             widget.icon,
             color: AppColors.white,
@@ -549,11 +624,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
           suffixIcon: (widget.isPassField || widget.isPassConfirmField)
               ? IconButton(
                   icon: passVisibility
-                      ? Icon(
+                      ? const Icon(
                           Icons.visibility,
                           color: AppColors.white,
                         )
-                      : Icon(
+                      : const Icon(
                           Icons.visibility_off,
                           color: AppColors.white,
                         ),
@@ -590,87 +665,44 @@ class _AuthTextFieldState extends State<AuthTextField> {
             right: 15,
           ),
         ),
+        validator: (widget.isEmailField)
+            ? (email) => (email != null && !EmailValidator.validate(email))
+                ? "Enter a valid email"
+                : null
+            : (widget.isPassField)
+                ? ((password) {
+                    if (password != null) {
+                      if (password.length < 8) {
+                        return "Password should contain minimum 8 characters";
+                      }
+                      if (!RegExp(r'^(?=.*[A-Z])\w+').hasMatch(password)) {
+                        return "Password should contain minimum 1 Uppercase character";
+                      }
+                      if (!RegExp(r'^(?=.*[a-z])\w+').hasMatch(password)) {
+                        return "Password should contain minimum 1 Lowercase character";
+                      }
+                      if (!RegExp(r'^(?=.*[0-9])\w+').hasMatch(password)) {
+                        return "Password should contain minimum 1 numeric";
+                      }
+                      if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])\w+')
+                          .hasMatch(password)) {
+                        return "Password should contain minimum 1 special character";
+                      }
+                    }
+                  })
+                : null,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: widget.controller,
         keyboardType: widget.keyboard,
         cursorColor: AppColors.white,
+        style: TextStyle(
+          color: AppColors.white,
+        ),
         obscureText: (passVisibility || passConfirmVisibility) ? true : false,
       ),
     );
   }
 }
-//
-// Padding(
-// padding: const EdgeInsets.only(
-// top: 20,
-// left: 15,
-// right: 15,
-// bottom: 10,
-// ),
-// child: TextFormField(
-// decoration: InputDecoration(
-// prefixIcon: const Icon(
-// Icons.password_outlined,
-// color: AppColors.white,
-// ),
-// prefixStyle: const TextStyle(
-// color: AppColors.white,
-// fontSize: 16,
-// ),
-// hintText: "Password",
-// hintStyle: TextStyle(
-// color: AppColors.white.withOpacity(0.5),
-// ),
-// suffixIcon: IconButton(
-// icon: visibility
-// ? Icon(
-// Icons.visibility,
-// color: AppColors.white,
-// )
-// : Icon(
-// Icons.visibility_off,
-// color: AppColors.white,
-// ),
-// onPressed: (() {
-// setState(() {
-// visibility = !visibility;
-// });
-// }),
-// ),
-// focusedBorder: OutlineInputBorder(
-// borderSide: const BorderSide(
-// color: Colors.white,
-// width: 1.0,
-// ),
-// borderRadius:
-// BorderRadius.circular(15.0),
-// ),
-// enabledBorder: OutlineInputBorder(
-// borderSide: const BorderSide(
-// width: 1,
-// color: AppColors.white,
-// ),
-// borderRadius:
-// BorderRadius.circular(15.0),
-// ),
-// border: OutlineInputBorder(
-// borderSide: const BorderSide(
-// width: 1,
-// color: AppColors.white,
-// ),
-// borderRadius:
-// BorderRadius.circular(15.0),
-// ),
-// contentPadding: const EdgeInsets.only(
-// left: 15,
-// right: 15,
-// ),
-// ),
-// cursorColor: AppColors.white,
-// controller: _passController,
-// keyboardType: TextInputType.visiblePassword,
-// obscureText: visibility ? true : false,
-// ),
-// ),
 
 class CompanyAuth extends StatelessWidget {
   CompanyAuth({
