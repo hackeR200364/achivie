@@ -1,6 +1,7 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/providers/all_tasks_provider.dart';
 import 'package:task_app/providers/app_providers.dart';
@@ -37,6 +38,7 @@ Future main() async {
     debug: true,
   );
   await Firebase.initializeApp();
+  MobileAds.instance.initialize();
   runApp(
     MultiProvider(
       providers: [
