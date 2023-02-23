@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:task_app/screens/main_screen.dart';
 import 'package:task_app/screens/sign_screen.dart';
-import 'package:task_app/shared_preferences.dart';
+import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
-
-import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -28,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              (signStatus!) ? const HomeScreen() : const SignUpScreen(),
+              (signStatus!) ? const MainScreen() : const SignUpScreen(),
         ),
       ),
     );

@@ -1,19 +1,23 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:material_dialogs/material_dialogs.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/notification_services.dart';
-import 'package:task_app/providers/auth_services.dart';
+import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/screens/new_task_screen.dart';
-import 'package:task_app/shared_preferences.dart';
+import 'package:task_app/services/auth_services.dart';
+import 'package:task_app/services/notification_services.dart';
+import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
 import '../providers/app_providers.dart';
@@ -33,13 +37,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   DateTime date = DateTime.now();
   late TabController tabController;
   String selected = "Personal", userName = "";
-  List<String> taskType = ["Business", "Personal"];
-  String email = 'email';
+  // List<String> taskType = ["Business", "Personal"];
+  List<String> taskType = [
+    "Personal",
+    "Business",
+  ];
+  String email = 'email', profileType = "";
   String inboxStatus = "INBOX",
       completedStatus = "Completed",
       pendingStatus = "Pending",
       deleteStatus = "Deleted";
   BannerAd? bannerAd;
+  int counter = 0;
+  final assetsAudioPlayer = AssetsAudioPlayer();
 
   late ScrollController _scrollController;
 
@@ -52,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
     );
 
-    getEmail();
+    getUserDetails();
     bannerAd = BannerAd(
       size: AdSize.banner,
       adUnitId: "ca-app-pub-3940256099942544/6300978111",
@@ -64,6 +74,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       request: AdRequest(),
     );
     bannerAd!.load();
+    assetsAudioPlayer.open(
+      Audio("assets/audios/song1.mp3"),
+      autoStart: false,
+      showNotification: false,
+      volume: 50,
+    );
+
     super.initState();
   }
 
@@ -73,8 +90,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void getEmail() async {
+  void getUserDetails() async {
     email = await StorageServices.getUserEmail();
+    profileType = await StorageServices.getUserSignInType();
+    print(profileType);
   }
 
   @override
@@ -84,33 +103,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       home: Scaffold(
         backgroundColor: AppColors.mainColor,
         appBar: AppBar(
-          leading: Consumer<UserDetailsProvider>(
-            builder:
-                (_, userDetailsProviderProvider, userDetailsProviderChild) {
-              Future.delayed(
-                Duration.zero,
-                (() {
-                  userDetailsProviderProvider.userProfileImageFunc();
-                }),
-              );
-              return Padding(
-                padding: const EdgeInsets.only(
-                  left: 10,
-                  right: 5,
-                ),
-                child: (userDetailsProviderProvider.userProfileImage != null)
-                    ? CircleAvatar(
-                        minRadius: 20,
-                        maxRadius: 30,
-                        backgroundImage: CachedNetworkImageProvider(
-                          userDetailsProviderProvider.userProfileImage!,
-                        ),
-                      )
-                    : CircularProgressIndicator(
-                        color: AppColors.white,
-                      ),
-              );
-            },
+          // leading: (profileType != "Email")
+          //     ? Consumer<UserDetailsProvider>(
+          //         builder: (_, userDetailsProviderProvider,
+          //             userDetailsProviderChild) {
+          //           Future.delayed(
+          //             Duration.zero,
+          //             (() {
+          //               userDetailsProviderProvider.userProfileImageFunc();
+          //             }),
+          //           );
+          //           return Padding(
+          //             padding: const EdgeInsets.only(
+          //               left: 10,
+          //               right: 5,
+          //             ),
+          //             child: (userDetailsProviderProvider.userProfileImage !=
+          //                     null)
+          //                 ? CircleAvatar(
+          //                     minRadius: 20,
+          //                     maxRadius: 30,
+          //                     backgroundImage: CachedNetworkImageProvider(
+          //                       userDetailsProviderProvider.userProfileImage!,
+          //                     ),
+          //                   )
+          //                 : CircleAvatar(
+          //                     minRadius: 20,
+          //                     maxRadius: 30,
+          //                     backgroundImage: NetworkImage(
+          //                       "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.allthetests.com%2Fpersonality-tests%2Fare-you-this-star-figure%2Fcartoons-mangas-animes-character%2Favatar-the-last-airbender%2Fquiz22%2F1171831236%2Fwhich-avatar-character-are-you&psig=AOvVaw0dHLg5aSRUkgVePWHpndgd&ust=1677256124183000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCLi10I2IrP0CFQAAAAAdAAAAABAE",
+          //                     ),
+          //                   ),
+          //           );
+          //         },
+          //       )
+          //     : null,
+          leading: IconButton(
+            onPressed: (() {
+              ZoomDrawer.of(context)!.toggle();
+            }),
+            icon: Icon(
+              Icons.menu,
+            ),
           ),
           title: Consumer<UserDetailsProvider>(
             builder:
@@ -127,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      userDetailsProviderProvider.userName!,
+                      userDetailsProviderProvider.userName,
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -152,15 +186,79 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               return Consumer<AllAppProviders>(
                   builder: (allAppProviderContext, allAppProvider, _) {
                 return IconButton(
-                  onPressed: (() async {
+                  onPressed: (() {
                     allAppProvider.isLoadingFunc(false);
                     const CircularProgressIndicator(
                       color: AppColors.backgroundColour,
                     );
-                    await googleSignInProvider.logOut();
-                    await NotificationServices().cancelTasksNotification();
-
-                    SystemNavigator.pop();
+                    Dialogs.bottomMaterialDialog(
+                      enableDrag: false,
+                      isDismissible: false,
+                      barrierDismissible: false,
+                      context: googleSignInContext,
+                      color: AppColors.backgroundColour,
+                      lottieBuilder:
+                          Lottie.asset("assets/warning-animation.json"),
+                      title: "Warning",
+                      titleStyle: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      msg:
+                          "If you logout your, all scheduled reminders will be canceled!",
+                      msgStyle: TextStyle(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      actions: [
+                        InkWell(
+                          onTap: (() {
+                            Navigator.pop(googleSignInContext);
+                          }),
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.mainColor,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Cancel",
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: (() async {
+                            await NotificationServices()
+                                .cancelTasksNotification();
+                            await googleSignInProvider.logOut();
+                            SystemNavigator.pop();
+                          }),
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.mainColor,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Logout",
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   }),
                   icon: const Icon(
                     Icons.logout,
@@ -175,23 +273,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: AppColors.backgroundColour,
         ),
         floatingActionButton: Container(
+          margin: EdgeInsets.only(
+            right: MediaQuery.of(context).size.width / 20,
+          ),
+          width: 50,
+          height: 50,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.floatingButton,
           ),
           child: IconButton(
-            icon: const Icon(
-              Icons.add,
-              color: AppColors.white,
-            ),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => NewTaskScreen(),
+                  builder: (nextPageContext) => NewTaskScreen(),
                 ),
               );
             },
+            icon: const Icon(
+              Icons.add,
+              color: AppColors.white,
+            ),
           ),
         ),
         bottomNavigationBar: SizedBox(
@@ -209,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 height: 25,
                 width: MediaQuery.of(context).size.width,
                 decoration: const BoxDecoration(
-                  color: AppColors.backgroundColour,
+                  color: AppColors.mainColor,
                   borderRadius: BorderRadius.only(
                     bottomRight: Radius.circular(20),
                     bottomLeft: Radius.circular(20),
@@ -281,31 +384,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: Consumer<AllAppProviders>(
                         builder: (allAppProvidersCtx, allAppProvidersProvider,
                             allAppProvidersChild) {
-                          return DropdownButton<String>(
-                            dropdownColor: AppColors.backgroundColour,
-                            hint: Text(
-                              allAppProvidersProvider.selectedType,
-                              style: const TextStyle(
-                                color: AppColors.white,
+                          List<Text> taskTypeTextList = [];
+
+                          for (String type in taskType) {
+                            taskTypeTextList.add(
+                              Text(
+                                type,
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
+                            );
+                          }
+
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundColour,
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            items: taskType.map(
-                              (String task) {
-                                return DropdownMenuItem<String>(
-                                  value: task,
-                                  child: Text(
-                                    task,
-                                    style: const TextStyle(
-                                      color: AppColors.white,
-                                    ),
-                                  ),
-                                );
+                            child: CupertinoPicker(
+                              backgroundColor: AppColors.transparent,
+                              itemExtent: 23,
+                              onSelectedItemChanged: (value) {
+                                allAppProvidersProvider
+                                    .selectedTypeFunc(taskType[value]);
+                                // print(AllAppProvidersProvider.selectedType);
+                                print(taskType[value]);
                               },
-                            ).toList(),
-                            onChanged: (value) {
-                              allAppProvidersProvider.selectedTypeFunc(value!);
-                              // print(AllAppProvidersProvider.selectedType);
-                            },
+                              children: taskTypeTextList,
+                            ),
                           );
                         },
                       ),
@@ -713,6 +822,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         .where(Keys.taskType, isEqualTo: type)
         .snapshots();
 
+    String TotalTaskSuffix(int task) {
+      int count = task % 10;
+      switch (count) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    }
+
     return Padding(
       padding: const EdgeInsets.only(
         right: 10,
@@ -782,7 +905,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     return Column(
                       children: [
                         FocusedMenuHolder(
-                          onPressed: (() {}),
+                          onPressed: (() {
+                            HapticFeedback.heavyImpact();
+                          }),
                           menuBoxDecoration: const BoxDecoration(
                             color: AppColors.transparent,
                           ),
@@ -842,6 +967,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       taskSavedMonth: taskSavedMonth,
                                       taskSavedYear: taskSavedYear,
                                     );
+
+                                    showDialog(
+                                      context: streamContext,
+                                      builder: (BuildContext doneContext) {
+                                        return Consumer<TaskDetailsProvider>(
+                                          builder: (taskDetailsContext,
+                                              taskDetailsProvider,
+                                              taskDetailsChild) {
+                                            return TaskDialog(
+                                              context: context,
+                                              animation:
+                                                  "assets/cancel-undone-animation.json",
+                                              headMessage: "Canceled!",
+                                              subMessage:
+                                                  "Your this task is canceled",
+                                              subMessageBottomDivision: 5,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    );
                                   } else if (snapshot.data!.docs[listIndex]
                                           [Keys.taskStatus] ==
                                       "Pending") {
@@ -856,54 +1002,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       taskSavedMonth: taskSavedMonth,
                                       taskSavedYear: taskSavedYear,
                                     );
+
+                                    showDialog(
+                                      context: streamContext,
+                                      builder: (BuildContext doneContext) {
+                                        return Consumer<TaskDetailsProvider>(
+                                          builder: (taskDetailsContext,
+                                              taskDetailsProvider,
+                                              taskDetailsChild) {
+                                            return TaskDialog(
+                                              context: context,
+                                              animation:
+                                                  "assets/success-done-animation.json",
+                                              headMessage: "Congratulations",
+                                              subMessage:
+                                                  "You completed your ${taskDetailsProvider.taskCount - taskDetailsProvider.taskDelete}${TotalTaskSuffix(taskDetailsProvider.taskCount - taskDetailsProvider.taskDelete)} task",
+                                              subMessageBottomDivision: 5,
+                                            );
+                                          },
+                                        );
+                                      },
+                                    );
                                   } else {
                                     ScaffoldMessenger.of(streamContext)
                                         .showSnackBar(
-                                      SnackBar(
-                                        backgroundColor:
-                                            AppColors.backgroundColour,
-                                        content: const Text(
-                                          "This event is already outdated, Please",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        action: SnackBarAction(
-                                          textColor: AppColors.white,
-                                          label: "Edit",
-                                          onPressed: (() {
-                                            String taskDocID = snapshot.data!
-                                                .docs[listIndex].reference.id;
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (nextPageContext) =>
-                                                    NewTaskScreen(
-                                                  taskName: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskName],
-                                                  taskDes: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskDes],
-                                                  taskNoti: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskNotification],
-                                                  taskTime: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskTime],
-                                                  taskType: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskType],
-                                                  taskDoc: taskDocID,
-                                                  userEmail: firestoreEmail,
-                                                  taskDate: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskDate],
-                                                ),
+                                      AppTaskSnackBar()
+                                          .customizedSnackbarForTasks(
+                                        snapshot: snapshot,
+                                        listIndex: listIndex,
+                                        firestoreEmail: firestoreEmail,
+                                        streamContext: streamContext,
+                                        onPressed: (() {
+                                          String taskDocID = snapshot.data!
+                                              .docs[listIndex].reference.id;
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (nextPageContext) =>
+                                                  NewTaskScreen(
+                                                taskName: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskName],
+                                                taskDes: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskDes],
+                                                taskNoti: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskNotification],
+                                                taskTime: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskTime],
+                                                taskType: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskType],
+                                                taskDoc: taskDocID,
+                                                userEmail: firestoreEmail,
+                                                taskDate: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskDate],
                                               ),
-                                            );
-                                          }),
-                                        ),
+                                            ),
+                                          );
+                                        }),
                                       ),
                                     );
                                   }
@@ -978,6 +1138,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         [Keys.taskStatus],
                                     firestoreEmail: firestoreEmail,
                                   );
+
+                                  showDialog(
+                                    context: streamContext,
+                                    builder: (BuildContext doneContext) {
+                                      return TaskDialog(
+                                        context: context,
+                                        animation:
+                                            "assets/deleted-animation.json",
+                                        headMessage: "Deleted!",
+                                        subMessage: "Your this task is deleted",
+                                        subMessageBottomDivision: 5,
+                                      );
+                                    },
+                                  );
                                 }
 
                                 // (taskSavedDate.difference(date).inMinutes >
@@ -999,54 +1173,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           [Keys.taskStatus],
                                       firestoreEmail: firestoreEmail,
                                     );
+
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (nextPageContext) =>
+                                    //         TempScreen(),
+                                    //   ),
+                                    // );
+
+                                    showDialog(
+                                      context: streamContext,
+                                      builder: (BuildContext doneContext) {
+                                        return TaskDialog(
+                                          context: context,
+                                          animation:
+                                              "assets/success-done-animation.json",
+                                          headMessage: "Woohooo...!",
+                                          subMessage:
+                                              "Your this message is brought back as pending",
+                                          subMessageBottomDivision: 6,
+                                        );
+                                      },
+                                    );
                                   } else {
                                     ScaffoldMessenger.of(streamContext)
                                         .showSnackBar(
-                                      SnackBar(
-                                        backgroundColor:
-                                            AppColors.backgroundColour,
-                                        content: const Text(
-                                          "This event is already outdated, Please",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        action: SnackBarAction(
-                                          textColor: AppColors.white,
-                                          label: "Edit",
-                                          onPressed: (() {
-                                            String taskDocID = snapshot.data!
-                                                .docs[listIndex].reference.id;
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (nextPageContext) =>
-                                                    NewTaskScreen(
-                                                  taskName: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskName],
-                                                  taskDes: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskDes],
-                                                  taskNoti: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskNotification],
-                                                  taskTime: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskTime],
-                                                  taskType: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskType],
-                                                  taskDoc: taskDocID,
-                                                  userEmail: firestoreEmail,
-                                                  taskDate: snapshot
-                                                          .data!.docs[listIndex]
-                                                      [Keys.taskDate],
-                                                ),
+                                      AppTaskSnackBar()
+                                          .customizedSnackbarForTasks(
+                                        snapshot: snapshot,
+                                        listIndex: listIndex,
+                                        firestoreEmail: firestoreEmail,
+                                        streamContext: streamContext,
+                                        onPressed: (() {
+                                          String taskDocID = snapshot.data!
+                                              .docs[listIndex].reference.id;
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (nextPageContext) =>
+                                                  NewTaskScreen(
+                                                taskName: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskName],
+                                                taskDes: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskDes],
+                                                taskNoti: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskNotification],
+                                                taskTime: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskTime],
+                                                taskType: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskType],
+                                                taskDoc: taskDocID,
+                                                userEmail: firestoreEmail,
+                                                taskDate: snapshot
+                                                        .data!.docs[listIndex]
+                                                    [Keys.taskDate],
                                               ),
-                                            );
-                                          }),
-                                        ),
+                                            ),
+                                          );
+                                        }),
                                       ),
                                     );
                                   }
@@ -1308,6 +1498,73 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         ),
       ),
+    );
+  }
+}
+
+class TaskDialog extends StatelessWidget {
+  TaskDialog({
+    super.key,
+    required this.context,
+    required this.animation,
+    required this.headMessage,
+    required this.subMessage,
+    required this.subMessageBottomDivision,
+  });
+
+  final BuildContext context;
+  String animation = "";
+  String headMessage = "";
+  String subMessage = "";
+  int subMessageBottomDivision = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Lottie.asset(animation),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: MediaQuery.of(context).size.height / 4,
+          child: Center(
+            child: Text(
+              headMessage,
+              style: const TextStyle(
+                color: AppColors.white,
+                fontSize: 35,
+                letterSpacing: 3,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: MediaQuery.of(context).size.height / subMessageBottomDivision,
+          left: 0,
+          right: 0,
+          child: Consumer<TaskDetailsProvider>(builder:
+              (taskDetailsContext, taskDetailsProvider, taskDetailsChild) {
+            return Center(
+              child: Text(
+                subMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

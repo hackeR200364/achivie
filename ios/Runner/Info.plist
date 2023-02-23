@@ -58,6 +58,24 @@
     		</array>
     	</dict>
     </array>
+    <key>GADApplicationIdentifier</key>
+    <string>ca-app-pub-7050103229809241~5474149923</string>
+    <key>io.flutter.embedded_views_preview</key>
+    <true/>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>This identifier will be used to deliver personalized ads to you.</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>googlegmail</string>
+        <string>x-dispatch</string>
+        <string>readdle-spark</string>
+        <string>airmail</string>
+        <string>ms-outlook</string>
+        <string>ymail</string>
+        <string>fastmail</string>
+        <string>superhuman</string>
+        <string>protonmail</string>
+    </array>
 </dict>
 </plist>
 

@@ -1,5 +1,5 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:task_app/shared_preferences.dart';
+import 'package:task_app/services/shared_preferences.dart';
 
 class NotificationServices {
   // final FlutterLocalNotificationsPlugin notificationsPlugin =

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,12 +9,13 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/providers/auth_services.dart';
+import 'package:task_app/screens/main_screen.dart';
+import 'package:task_app/services/auth_services.dart';
 import 'package:task_app/styles.dart';
 
-import '../shared_preferences.dart';
-import 'home_screen.dart';
+import '../services/shared_preferences.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -26,6 +29,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool isLoading = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late TextEditingController _emailController;
+  late TextEditingController _nameController;
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
   bool visibility = true;
@@ -49,7 +53,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const MainScreen(),
       ),
     );
   }
@@ -61,6 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     _emailController = TextEditingController();
+    _nameController = TextEditingController();
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
     getAppDetails();
@@ -71,6 +76,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _nameController.dispose();
     _passConfirmController.dispose();
     _passController.dispose();
     super.dispose();
@@ -102,13 +108,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   "assets/auth-bg-pic.jpg",
                   fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height : size.height,
+                  height: (signPage == 0) ? size.height * 1.1 : size.height,
                 ),
               ),
               Positioned(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height : size.height,
+                  height: (signPage == 0) ? size.height * 1.1 : size.height,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -144,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GlassmorphicContainer(
                           width: size.width,
                           height: (signPage == 0)
-                              ? size.height / 1.6
+                              ? size.height / 1.4
                               : size.height / 1.8,
                           borderRadius: 15,
                           linearGradient: LinearGradient(
@@ -164,6 +170,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: Column(
                             children: [
                               //SIGN UP
+                              if (signPage == 0)
+                                AuthTextField(
+                                    icon: Icons.badge_outlined,
+                                    controller: _nameController,
+                                    hintText: "Your name",
+                                    keyboard: TextInputType.name,
+                                    isPassField: false,
+                                    isPassConfirmField: false,
+                                    isEmailField: false,
+                                    pageIndex: signPage
+                                    // formKey: signUpFormKey,
+                                    ),
                               if (signPage == 0)
                                 AuthTextField(
                                     icon: Icons.email_outlined,
@@ -235,13 +253,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ),
                                         )
                                       : InkWell(
-                                          onTap: (() {
-                                            // if (signInFormKey.currentState!
-                                            //     .validate()) {
-                                            //   allAppProvidersProvider
-                                            //       .isLoadingFunc(false);
-                                            // }
-
+                                          onTap: (() async {
                                             print(packageInfo!.version);
 
                                             if (_emailController
@@ -249,9 +261,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 _passController
                                                     .text.isNotEmpty &&
                                                 _passConfirmController
+                                                    .text.isNotEmpty &&
+                                                _nameController
                                                     .text.isNotEmpty) {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(true);
+                                                EmailPassAuthServices()
+                                                    .emailPassSignUp(
+                                                  name: _nameController.text
+                                                      .trim(),
+                                                  email: _emailController.text
+                                                      .trim(),
+                                                  pass: _passController.text
+                                                      .trim(),
+                                                  context: context,
+                                                );
+
+                                                String signInType =
+                                                    await StorageServices
+                                                        .getUserSignInType();
+
+                                                if (signInType == "Email") {
+                                                  _emailController.clear();
+                                                  _passController.clear();
+                                                  _nameController.clear();
+                                                  _passConfirmController
+                                                      .clear();
+                                                  setState(() {
+                                                    signPage = 1;
+                                                  });
+                                                }
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
                                               } else {
                                                 ScaffoldMessenger.of(
                                                         allAppProvidersContext)
@@ -368,6 +411,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                               if (signPage == 1)
                                 Padding(
+                                  padding: const EdgeInsets.only(right: 20),
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: (() {
+                                        if (_emailController.text.isNotEmpty) {
+                                          EmailPassAuthServices()
+                                              .forgotPassword(
+                                            email: _emailController.text.trim(),
+                                            context: allAppProvidersContext,
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                                  allAppProvidersContext)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message:
+                                                  "Please give your registered email",
+                                              context: allAppProvidersContext,
+                                            ),
+                                          );
+                                        }
+                                      }),
+                                      child: Text(
+                                        "Forgot Password",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (signPage == 1)
+                                Padding(
                                   padding: const EdgeInsets.only(
                                     top: 20,
                                     left: 15,
@@ -400,11 +479,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         )
                                       : InkWell(
                                           onTap: (() {
-                                            // if (signUpFormKey.currentState!
-                                            //     .validate()) {
-                                            //   allAppProvidersProvider
-                                            //       .isLoadingFunc(false);
-                                            // }
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(true);
+                                            CircularProgressIndicator(
+                                              backgroundColor:
+                                                  AppColors.backgroundColour,
+                                            );
+                                            if (_emailController
+                                                    .text.isNotEmpty &&
+                                                _passController
+                                                    .text.isNotEmpty) {
+                                              EmailPassAuthServices()
+                                                  .emailPassSignIn(
+                                                email: _emailController.text
+                                                    .trim(),
+                                                pass:
+                                                    _passController.text.trim(),
+                                                context: allAppProvidersContext,
+                                              );
+                                            } else {
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Please fill the fields correctly",
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                            }
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
                                           }),
                                           child: Container(
                                             height: 50,
@@ -477,7 +584,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ),
                                         CompanyAuth(
                                           logo: "assets/apple-logo.png",
-                                          onTap: (() {}),
+                                          onTap: (() {
+                                            if (!Platform.isIOS ||
+                                                !Platform.isMacOS) {
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Your device is not a iOS or macOS device",
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                            }
+                                          }),
                                         ),
                                       ],
                                     ),
@@ -605,6 +727,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
         bottom: 10,
       ),
       child: TextFormField(
+        toolbarOptions: (widget.isPassField || widget.isPassConfirmField)
+            ? const ToolbarOptions(selectAll: true)
+            : const ToolbarOptions(
+                selectAll: true,
+                copy: true,
+                cut: true,
+                paste: true,
+              ),
         decoration: InputDecoration(
           errorStyle: TextStyle(
             overflow: TextOverflow.clip,

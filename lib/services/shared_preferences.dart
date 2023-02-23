@@ -5,8 +5,10 @@ class Keys {
   static const String isNewUser = "isNewUser";
   static const String userName = "userName";
   static const String uid = "uid";
+  static const String userPassword = "userPassword";
   static const String userEmail = "userEmail";
   static const String userPhoto = "userPhoto";
+  static const String userSignInType = "userSignInType";
   static const String taskName = "taskName";
   static const String taskDes = "taskDes";
   static const String taskNotification = "taskNotification";
@@ -62,6 +64,17 @@ class StorageServices {
   static void setUserPhotoURL(String url) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Keys.userPhoto, url);
+  }
+
+  static void setSignInType(String type) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.userSignInType, type);
+  }
+
+  static Future<String> getUserSignInType() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? type = pref.getString(Keys.userSignInType) ?? "";
+    return type;
   }
 
   static Future<String> getUserPhotoURL() async {

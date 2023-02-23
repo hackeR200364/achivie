@@ -1,4 +1,4 @@
-import 'package:task_app/shared_preferences.dart';
+import 'package:task_app/services/shared_preferences.dart';
 
 class TaskModel {
   final String? taskName;
