@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:task_app/shared_preferences.dart';
+import 'package:task_app/services/shared_preferences.dart';
 
 class TaskDetailsProvider extends ChangeNotifier {
   CollectionReference users = FirebaseFirestore.instance.collection("users");

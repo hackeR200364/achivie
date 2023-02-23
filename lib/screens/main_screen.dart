@@ -1,0 +1,55 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_zoom_drawer/config.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
+import 'package:task_app/screens/email_us_screen.dart';
+import 'package:task_app/screens/home_screen.dart';
+import 'package:task_app/screens/info_screen.dart';
+import 'package:task_app/screens/menu_screen.dart';
+import 'package:task_app/screens/send_sms_screen.dart';
+import 'package:task_app/styles.dart';
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int currentPageIndex = 0;
+
+  Widget currentScreen() {
+    switch (currentPageIndex) {
+      case 0:
+        return HomeScreen();
+      case 1:
+        return InfoScreen();
+      case 2:
+        return EmailUSScreen();
+      case 3:
+        return SendSMSScreen();
+      default:
+        return HomeScreen();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ZoomDrawer(
+      androidCloseOnBackTap: true,
+      angle: -17,
+      style: DrawerStyle.defaultStyle,
+      drawerShadowsBackgroundColor: AppColors.white,
+      mainScreen: currentScreen(),
+      menuScreen: MenuScreen(
+        setIndex: ((index) {
+          setState(() {
+            currentPageIndex = index;
+          });
+        }),
+      ),
+      menuBackgroundColor: AppColors.mainColor,
+      showShadow: true,
+    );
+  }
+}

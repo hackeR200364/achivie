@@ -1,36 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../shared_preferences.dart';
+import '../services/shared_preferences.dart';
 
 class UserDetailsProvider extends ChangeNotifier {
   final user = FirebaseAuth.instance.currentUser;
+  CollectionReference users = FirebaseFirestore.instance.collection("users");
 
-  String? userName = "";
+  String userName = "";
   void userNameFunc() async {
-    userName = user!.displayName;
-    StorageServices.setUserName(user!.displayName!);
+    DocumentSnapshot userDoc = await users.doc(user!.email).get();
+    userName = userDoc[Keys.userName];
+    StorageServices.setUserName(userName);
     notifyListeners();
   }
 
-  String? uid = "";
+  String uid = "";
   void uidFunc() async {
-    uid = user!.uid;
-    StorageServices.setUID(user!.uid);
+    DocumentSnapshot userDoc = await users.doc(user!.email).get();
+    uid = userDoc[Keys.uid];
+    StorageServices.setUID(uid);
     notifyListeners();
   }
 
-  String? userEmail = "";
+  String userEmail = "";
   void userEmailFunc() async {
-    userEmail = user!.email;
-    StorageServices.setUserEmail(user!.email!);
+    DocumentSnapshot userDoc = await users.doc(user!.email).get();
+    userEmail = userDoc[Keys.userEmail];
+    StorageServices.setUserEmail(userEmail);
     notifyListeners();
   }
 
-  String? userProfileImage = "";
+  String? userProfileImage =
+      "https://www.allthetests.com/quiz22/picture/pic_1171831236_1.png";
   void userProfileImageFunc() async {
     userProfileImage = user!.photoURL;
-    StorageServices.setUserPhotoURL(userProfileImage!);
+    StorageServices.setUserPhotoURL(userProfileImage ??
+        "https://www.allthetests.com/quiz22/picture/pic_1171831236_1.png");
     notifyListeners();
   }
 }
