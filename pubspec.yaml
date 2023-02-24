@@ -70,7 +70,8 @@ dependencies:
   open_mail_app:
   flutter_zoom_drawer:
   url_launcher:
-  page_flip:
+  flutter_email_sender:
+  flutter_sms:
 
 dev_dependencies:
   flutter_test:
@@ -105,6 +106,7 @@ flutter:
   assets:
     - assets/
     - assets/motivational-pics/
+    - assets/social-icons/
     - assets/task_sounds/confirm.mp3
   #   - images/a_dot_ham.jpeg
 

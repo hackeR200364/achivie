@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -138,12 +139,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           //         },
           //       )
           //     : null,
-          leading: IconButton(
-            onPressed: (() {
-              ZoomDrawer.of(context)!.toggle();
-            }),
-            icon: Icon(
-              Icons.menu,
+          leading: Align(
+            alignment: Alignment.centerRight,
+            child: GlassmorphicContainer(
+              width: 41,
+              height: 41,
+              borderRadius: 40,
+              linearGradient: LinearGradient(
+                colors: [
+                  AppColors.white.withOpacity(0.1),
+                  AppColors.white.withOpacity(0.3),
+                ],
+              ),
+              border: 2,
+              blur: 4,
+              borderGradient: LinearGradient(
+                colors: [
+                  AppColors.white.withOpacity(0.3),
+                  AppColors.white.withOpacity(0.5),
+                ],
+              ),
+              child: IconButton(
+                onPressed: (() {
+                  ZoomDrawer.of(context)!.toggle();
+                }),
+                icon: Icon(
+                  Icons.menu,
+                  color: AppColors.white,
+                ),
+              ),
             ),
           ),
           title: Consumer<UserDetailsProvider>(
@@ -156,26 +180,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }),
               );
               return Align(
-                alignment: Alignment.topLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      userDetailsProviderProvider.userName,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 3,
+                alignment: Alignment.center,
+                child: GlassmorphicContainer(
+                  width: double.infinity,
+                  height: 41,
+                  borderRadius: 40,
+                  linearGradient: LinearGradient(
+                    colors: [
+                      AppColors.white.withOpacity(0.1),
+                      AppColors.white.withOpacity(0.3),
+                    ],
+                  ),
+                  border: 2,
+                  blur: 4,
+                  borderGradient: LinearGradient(
+                    colors: [
+                      AppColors.white.withOpacity(0.3),
+                      AppColors.white.withOpacity(0.5),
+                    ],
+                  ),
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            userDetailsProviderProvider.userName,
+                            style: const TextStyle(
+                              overflow: TextOverflow.fade,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          Text(
+                            "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
+                            style: TextStyle(
+                              color: AppColors.white.withOpacity(0.7),
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
-                      style: TextStyle(
-                        color: AppColors.white.withOpacity(0.7),
-                        fontSize: 15,
-                      ),
-                    )
-                  ],
+                  ),
                 ),
               );
             },
@@ -185,115 +233,149 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 (googleSignInContext, googleSignInProvider, googleSignInChild) {
               return Consumer<AllAppProviders>(
                   builder: (allAppProviderContext, allAppProvider, _) {
-                return IconButton(
-                  onPressed: (() {
-                    allAppProvider.isLoadingFunc(false);
-                    const CircularProgressIndicator(
-                      color: AppColors.backgroundColour,
-                    );
-                    Dialogs.bottomMaterialDialog(
-                      enableDrag: false,
-                      isDismissible: false,
-                      barrierDismissible: false,
-                      context: googleSignInContext,
-                      color: AppColors.backgroundColour,
-                      lottieBuilder:
-                          Lottie.asset("assets/warning-animation.json"),
-                      title: "Warning",
-                      titleStyle: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      msg:
-                          "If you logout your, all scheduled reminders will be canceled!",
-                      msgStyle: TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      actions: [
-                        InkWell(
-                          onTap: (() {
-                            Navigator.pop(googleSignInContext);
-                          }),
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.mainColor,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Cancel",
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: (() async {
-                            await NotificationServices()
-                                .cancelTasksNotification();
-                            await googleSignInProvider.logOut();
-                            SystemNavigator.pop();
-                          }),
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.mainColor,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Logout",
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                return Center(
+                  child: GlassmorphicContainer(
+                    width: 41,
+                    height: 41,
+                    borderRadius: 40,
+                    linearGradient: LinearGradient(
+                      colors: [
+                        AppColors.white.withOpacity(0.1),
+                        AppColors.white.withOpacity(0.3),
                       ],
-                    );
-                  }),
-                  icon: const Icon(
-                    Icons.logout,
-                    color: AppColors.white,
-                    size: 25,
+                    ),
+                    border: 2,
+                    blur: 4,
+                    borderGradient: LinearGradient(
+                      colors: [
+                        AppColors.white.withOpacity(0.3),
+                        AppColors.white.withOpacity(0.5),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: (() {
+                        allAppProvider.isLoadingFunc(false);
+                        const CircularProgressIndicator(
+                          color: AppColors.backgroundColour,
+                        );
+                        Dialogs.bottomMaterialDialog(
+                          enableDrag: false,
+                          isDismissible: false,
+                          barrierDismissible: false,
+                          context: googleSignInContext,
+                          color: AppColors.backgroundColour,
+                          lottieBuilder:
+                              Lottie.asset("assets/warning-animation.json"),
+                          title: "Warning",
+                          titleStyle: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          msg:
+                              "If you logout your, all scheduled reminders will be canceled!",
+                          msgStyle: TextStyle(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          actions: [
+                            InkWell(
+                              onTap: (() {
+                                Navigator.pop(googleSignInContext);
+                              }),
+                              child: Container(
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.mainColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: (() async {
+                                await NotificationServices()
+                                    .cancelTasksNotification();
+                                await googleSignInProvider.logOut();
+                                SystemNavigator.pop();
+                              }),
+                              child: Container(
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.mainColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Logout",
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      icon: const Icon(
+                        Icons.logout,
+                        color: AppColors.white,
+                        size: 25,
+                      ),
+                    ),
                   ),
                 );
               });
             }),
+            SizedBox(
+              width: 15,
+            ),
           ],
           elevation: 0,
           backgroundColor: AppColors.backgroundColour,
         ),
-        floatingActionButton: Container(
-          margin: EdgeInsets.only(
-            right: MediaQuery.of(context).size.width / 20,
-          ),
+        floatingActionButton: GlassmorphicContainer(
           width: 50,
           height: 50,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.floatingButton,
+          borderRadius: 40,
+          linearGradient: LinearGradient(
+            colors: [
+              AppColors.white.withOpacity(0.1),
+              AppColors.white.withOpacity(0.3),
+            ],
           ),
-          child: IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (nextPageContext) => NewTaskScreen(),
-                ),
-              );
-            },
-            icon: const Icon(
-              Icons.add,
-              color: AppColors.white,
+          border: 2,
+          blur: 4,
+          borderGradient: LinearGradient(
+            colors: [
+              AppColors.white.withOpacity(0.3),
+              AppColors.white.withOpacity(0.5),
+            ],
+          ),
+          child: Center(
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (nextPageContext) => NewTaskScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.add,
+                color: AppColors.white,
+              ),
             ),
           ),
         ),
