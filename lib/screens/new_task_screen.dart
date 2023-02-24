@@ -285,6 +285,13 @@ class _NewTaskScreenState extends State<NewTaskScreen>
           backgroundColor: AppColors.transparent,
           elevation: 0,
         ),
+        bottomNavigationBar: Container(
+          width: MediaQuery.of(context).size.width,
+          height: bannerAd!.size.height.toDouble(),
+          child: AdWidget(
+            ad: bannerAd!,
+          ),
+        ),
         backgroundColor: AppColors.backgroundColour,
         body: SingleChildScrollView(
           child: Align(
@@ -753,13 +760,6 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                           ),
                         );
                       }),
-                    ),
-                    Container(
-                      width: bannerAd!.size.width.toDouble(),
-                      height: bannerAd!.size.height.toDouble(),
-                      child: AdWidget(
-                        ad: bannerAd!,
-                      ),
                     ),
                     // UnityBannerAd(
                     //   placementId: "Banner_Android",
