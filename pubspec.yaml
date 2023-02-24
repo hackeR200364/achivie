@@ -70,6 +70,7 @@ dependencies:
   open_mail_app:
   flutter_zoom_drawer:
   url_launcher:
+  page_flip:
 
 dev_dependencies:
   flutter_test:
