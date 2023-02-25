@@ -71,7 +71,8 @@ dependencies:
   flutter_zoom_drawer:
   url_launcher:
   flutter_email_sender:
-  flutter_sms:
+  telephony:
+  smooth_page_indicator:
 
 dev_dependencies:
   flutter_test:

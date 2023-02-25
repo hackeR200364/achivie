@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sms/flutter_sms.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:task_app/providers/app_providers.dart';
+import 'package:telephony/telephony.dart';
 
-import '../Utils/auth_text_field_utils.dart';
+import '../Utils/custom_text_field_utils.dart';
 import '../Utils/snackbar_utils.dart';
 import '../styles.dart';
 
@@ -16,10 +20,24 @@ class SendSMSScreen extends StatefulWidget {
 
 class _SendSMSScreenState extends State<SendSMSScreen> {
   late TextEditingController _bodyController;
+  BannerAd? bannerAd;
+  late FocusNode focusNode;
 
   @override
   void initState() {
     _bodyController = TextEditingController();
+    focusNode = FocusNode();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      listener: BannerAdListener(
+        onAdLoaded: ((ad) {
+          print("Banner ad loaded ${ad.adUnitId}");
+        }),
+      ),
+      request: AdRequest(),
+    );
+    bannerAd!.load();
     super.initState();
   }
 
@@ -53,11 +71,10 @@ class _SendSMSScreenState extends State<SendSMSScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
-                    end: Alignment.bottomCenter,
+                    end: Alignment.bottomRight,
                     colors: [
                       AppColors.mainColor.withOpacity(0.7),
                       AppColors.transparent,
-                      AppColors.mainColor.withOpacity(0.7),
                     ],
                   ),
                 ),
@@ -89,124 +106,134 @@ class _SendSMSScreenState extends State<SendSMSScreen> {
                     AppColors.white.withOpacity(0.5),
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Please enter your query",
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Please enter your query",
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: size.height / 30,
-                    ),
-                    Column(
-                      children: [
-                        AuthTextField(
-                          maxLen: ((size.height / 100).toInt() < 2)
-                              ? 2
-                              : (size.height / 100).toInt(),
-                          minLen: 1,
-                          controller: _bodyController,
-                          hintText: "Body",
-                          keyboard: TextInputType.multiline,
-                          isPassField: false,
-                          isEmailField: false,
-                          isPassConfirmField: false,
-                          icon: Icons.sms,
-                        ),
-                        SizedBox(
-                          height: 30,
-                        ),
-                        InkWell(
-                          onTap: (() async {
-                            if (_bodyController.text.isNotEmpty) {
-                              if (await canSendSMS()) {
-                                await sendSMS(
-                                  message: _bodyController.text.trim(),
-                                  recipients: [
-                                    "8583006560",
+                      SizedBox(
+                        height: size.height / 30,
+                      ),
+                      Column(
+                        children: [
+                          CustomTextField(
+                            maxLen: ((size.height / 100).toInt() < 2)
+                                ? 2
+                                : (size.height / 100).toInt(),
+                            minLen: 1,
+                            controller: _bodyController,
+                            hintText: "Body",
+                            keyboard: TextInputType.multiline,
+                            isPassField: false,
+                            isEmailField: false,
+                            isPassConfirmField: false,
+                            icon: Icons.sms,
+                            focusNode: focusNode,
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          Consumer<AllAppProviders>(builder:
+                              (allAppContext, allAppProvider, allAppChild) {
+                            return InkWell(
+                              onTap: (allAppProvider.isLoading)
+                                  ? null
+                                  : (() async {
+                                      focusNode.unfocus();
+                                      allAppProvider.isLoadingFunc(true);
+                                      if (_bodyController.text.isNotEmpty) {
+                                        var phoneStatus =
+                                            await Permission.phone.status;
+                                        if (phoneStatus.isRestricted) {
+                                          openAppSettings();
+                                          allAppProvider.isLoadingFunc(false);
+                                        }
+                                        if (phoneStatus.isPermanentlyDenied) {
+                                          openAppSettings();
+                                          allAppProvider.isLoadingFunc(false);
+                                        }
+                                        if (phoneStatus.isDenied) {
+                                          Permission.phone.request();
+                                          allAppProvider.isLoadingFunc(false);
+                                        }
+                                        if (phoneStatus.isGranted) {
+                                          await Telephony.instance.sendSms(
+                                            to: "8583006460",
+                                            message:
+                                                _bodyController.text.trim(),
+                                            statusListener: ((statusListener) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Your message ${statusListener.name.toLowerCase()} successfully",
+                                                  context: context,
+                                                ),
+                                              );
+                                            }),
+                                          );
+                                          _bodyController.clear();
+                                          allAppProvider.isLoadingFunc(false);
+                                        }
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                "Please fill the fields properly",
+                                            context: context,
+                                          ),
+                                        );
+                                      }
+                                    }),
+                              child: GlassmorphicContainer(
+                                width: MediaQuery.of(context).size.width / 1.5,
+                                height: 50,
+                                borderRadius: 20,
+                                linearGradient: LinearGradient(
+                                  colors: [
+                                    AppColors.backgroundColour.withOpacity(0.3),
+                                    AppColors.backgroundColour.withOpacity(0.5),
                                   ],
-                                ).catchError(
-                                  (onError) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      AppSnackbar().customizedAppSnackbar(
-                                        message: onError,
-                                        context: context,
-                                      ),
-                                    );
-                                  },
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  AppSnackbar().customizedAppSnackbar(
-                                    message: "SMS sent successfully",
-                                    context: context,
-                                  ),
-                                );
-                              } else {
-                                canSendSMS().catchError((onError) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    AppSnackbar().customizedAppSnackbar(
-                                      message: onError,
-                                      context: context,
+                                ),
+                                border: 2,
+                                blur: 4,
+                                borderGradient: LinearGradient(
+                                  colors: [
+                                    AppColors.white.withOpacity(0.3),
+                                    AppColors.white.withOpacity(0.5),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Send SMS",
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 2,
                                     ),
-                                  );
-                                });
-                              }
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                AppSnackbar().customizedAppSnackbar(
-                                  message: "SMS sent successfully",
-                                  context: context,
-                                ),
-                              );
-                            } else {
-                              print((size.height / 100).toInt());
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                AppSnackbar().customizedAppSnackbar(
-                                  message: "Please fill the fields properly",
-                                  context: context,
-                                ),
-                              );
-                            }
-                          }),
-                          child: GlassmorphicContainer(
-                            width: MediaQuery.of(context).size.width / 1.5,
-                            height: 50,
-                            borderRadius: 20,
-                            linearGradient: LinearGradient(
-                              colors: [
-                                AppColors.backgroundColour.withOpacity(0.3),
-                                AppColors.backgroundColour.withOpacity(0.5),
-                              ],
-                            ),
-                            border: 2,
-                            blur: 4,
-                            borderGradient: LinearGradient(
-                              colors: [
-                                AppColors.white.withOpacity(0.3),
-                                AppColors.white.withOpacity(0.5),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Send SMS",
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 2,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -233,12 +260,25 @@ class _SendSMSScreenState extends State<SendSMSScreen> {
                 ),
                 child: IconButton(
                   onPressed: (() {
+                    focusNode.unfocus();
                     ZoomDrawer.of(context)!.toggle();
                   }),
                   icon: Icon(
                     Icons.menu,
                     color: AppColors.white,
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                height: bannerAd!.size.height.toDouble(),
+                width: MediaQuery.of(context).size.width,
+                child: AdWidget(
+                  ad: bannerAd!,
                 ),
               ),
             ),

@@ -1,8 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:task_app/styles.dart';
 
+import '../Utils/custom_glass_icon.dart';
 import '../models/info_list_model.dart';
 
 class InfoScreen extends StatefulWidget {
@@ -13,7 +16,7 @@ class InfoScreen extends StatefulWidget {
 }
 
 class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
-  late TabController tabController;
+  late PageController tabController;
   List<InfoListModel> infoList = [
     InfoListModel(
       des:
@@ -80,10 +83,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    tabController = TabController(
-      length: infoList.length,
-      vsync: this,
-    );
+    tabController = PageController();
     super.initState();
   }
 
@@ -137,13 +137,16 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               ),
               width: size.width,
               height: size.height,
-              child: TabBarView(
+              child: PageView(
+                onPageChanged: ((page) {
+                  print(page);
+                  setState(() {
+                    tabIndex = page;
+                  });
+                }),
                 controller: tabController,
                 physics: AppColors.scrollPhysics,
                 children: infoList.map<Widget>((e) {
-                  setState(() {
-                    tabIndex = e.index;
-                  });
                   return infoWidget(
                     index: e.index,
                     infoList: infoList,
@@ -152,6 +155,17 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                   );
                 }).toList(),
               ),
+            ),
+          ),
+          Positioned(
+            bottom: size.height / 10,
+            child: SmoothPageIndicator(
+              effect: ExpandingDotsEffect(
+                dotColor: AppColors.backgroundColour.withOpacity(0.2),
+                activeDotColor: AppColors.backgroundColour,
+              ),
+              controller: tabController,
+              count: infoList.length,
             ),
           ),
           // Positioned(
@@ -204,33 +218,46 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
           Positioned(
             top: MediaQuery.of(context).size.height / 15,
             left: 20,
-            child: GlassmorphicContainer(
-              width: 40,
-              height: 40,
-              borderRadius: 25,
-              linearGradient: LinearGradient(
-                colors: [
-                  AppColors.white.withOpacity(0.1),
-                  AppColors.white.withOpacity(0.3),
-                ],
-              ),
-              border: 2,
-              blur: 4,
-              borderGradient: LinearGradient(
-                colors: [
-                  AppColors.white.withOpacity(0.3),
-                  AppColors.white.withOpacity(0.5),
-                ],
-              ),
-              child: IconButton(
-                onPressed: (() {
-                  ZoomDrawer.of(context)!.toggle();
-                }),
-                icon: Icon(
-                  Icons.menu,
-                  color: AppColors.white,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CustomGlassIconButton(
+                  onPressed: (() {
+                    ZoomDrawer.of(context)!.toggle();
+                  }),
+                  icon: Icons.menu,
                 ),
-              ),
+                Row(
+                  children: [
+                    if (tabIndex != 0)
+                      CustomGlassIconButton(
+                        icon: CupertinoIcons.chevron_left,
+                        tabController: tabController,
+                        onPressed: (() {
+                          tabController.previousPage(
+                            duration: Duration(milliseconds: 200),
+                            curve: Curves.ease,
+                          );
+                        }),
+                      ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    if (tabIndex != infoList.length - 1)
+                      CustomGlassIconButton(
+                        icon: CupertinoIcons.chevron_right,
+                        tabController: tabController,
+                        onPressed: (() {
+                          tabController.nextPage(
+                            duration: Duration(milliseconds: 200),
+                            curve: Curves.bounceInOut,
+                          );
+                        }),
+                      ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

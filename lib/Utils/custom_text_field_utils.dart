@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../styles.dart';
 
-class AuthTextField extends StatefulWidget {
-  AuthTextField({
+class CustomTextField extends StatefulWidget {
+  CustomTextField({
     super.key,
     required this.controller,
     required this.hintText,
@@ -16,6 +16,7 @@ class AuthTextField extends StatefulWidget {
     this.pageIndex,
     this.maxLen,
     this.minLen,
+    this.focusNode,
     // required this.formKey,
   });
   TextEditingController controller;
@@ -26,13 +27,14 @@ class AuthTextField extends StatefulWidget {
   int? pageIndex;
   int? maxLen;
   int? minLen;
+  FocusNode? focusNode;
   // GlobalKey<FormState> formKey;
 
   @override
-  State<AuthTextField> createState() => _AuthTextFieldState();
+  State<CustomTextField> createState() => _CustomTextFieldState();
 }
 
-class _AuthTextFieldState extends State<AuthTextField> {
+class _CustomTextFieldState extends State<CustomTextField> {
   bool passVisibility = false;
   bool passConfirmVisibility = false;
 
@@ -46,6 +48,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
         bottom: 10,
       ),
       child: TextFormField(
+        focusNode: widget.focusNode,
+        scrollPhysics: AppColors.scrollPhysics,
         maxLines: widget.maxLen,
         minLines: widget.minLen,
         toolbarOptions: (widget.isPassField || widget.isPassConfirmField)

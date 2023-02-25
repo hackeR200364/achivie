@@ -17,4 +17,16 @@ class AppColors {
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
   static const scrollPhysics = BouncingScrollPhysics();
+  static LinearGradient customGlassButtonGradient = LinearGradient(
+    colors: [
+      AppColors.white.withOpacity(0.1),
+      AppColors.white.withOpacity(0.3),
+    ],
+  );
+  static LinearGradient customGlassButtonBorderGradient = LinearGradient(
+    colors: [
+      AppColors.white.withOpacity(0.3),
+      AppColors.white.withOpacity(0.5),
+    ],
+  );
 }

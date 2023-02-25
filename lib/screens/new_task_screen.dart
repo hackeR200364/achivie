@@ -1,10 +1,16 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:interval_time_picker/interval_time_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/Utils/custom_glass_icon.dart';
+import 'package:task_app/Utils/custom_text_field_utils.dart';
+import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/services/notification_services.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
@@ -57,6 +63,11 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       taskDone = 0;
   NotificationServices notificationServices = NotificationServices();
   BannerAd? bannerAd;
+  RewardedAd? rewardedAd;
+  FocusNode? nameFocusNode;
+  FocusNode? desFocusNode;
+  FocusNode? notiFocusNode;
+  CollectionReference users = FirebaseFirestore.instance.collection("users");
 
   late AnimationController controllerToIncreaseCurve;
   late AnimationController controllerToDecreaseCurve;
@@ -68,6 +79,9 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     _taskNameController = TextEditingController();
     _descriptionController = TextEditingController();
     _notificationController = TextEditingController();
+    nameFocusNode = FocusNode();
+    desFocusNode = FocusNode();
+    notiFocusNode = FocusNode();
     taskDetails();
 
     // controllerToIncreaseCurve = AnimationController(
@@ -124,8 +138,20 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       ),
       request: AdRequest(),
     );
-
     bannerAd!.load();
+
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-3940256099942544/5224354917",
+      request: AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
+    );
     super.initState();
   }
 
@@ -137,6 +163,28 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     // controllerToIncreaseCurve.dispose();
     // controllerToDecreaseCurve.dispose();
     super.dispose();
+  }
+
+  Future<void> updatePoints({required int points}) async {
+    String email = await StorageServices.getUserEmail();
+
+    DocumentSnapshot userDoc = await users.doc(email).get();
+
+    if (!userDoc.data().toString().contains(Keys.userPoints)) {
+      await users.doc(email).set(
+        {
+          Keys.userPoints: 0,
+        },
+        SetOptions(
+          merge: true,
+        ),
+      );
+    }
+    await users.doc(email).update(
+      {
+        Keys.userPoints: await userDoc[Keys.userPoints] + points,
+      },
+    );
   }
 
   Future<void> addTask({
@@ -215,7 +263,6 @@ class _NewTaskScreenState extends State<NewTaskScreen>
         Keys.taskDone: userDoc[Keys.taskDone],
       },
     ).whenComplete(() {
-      loadingProvider.newTaskUploadLoadingFunc(false);
       return AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
@@ -261,284 +308,412 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         key: _scaffoldKey,
+        backgroundColor: AppColors.mainColor,
         appBar: AppBar(
           leading: Align(
-            alignment: Alignment.center,
-            child: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new,
-                color: AppColors.white,
-              ),
-              onPressed: () {
+            alignment: Alignment.centerRight,
+            child: CustomGlassIconButton(
+              onPressed: (() {
                 Navigator.pop(context);
                 // Navigator.pop(context);
-              },
+              }),
+              icon: Icons.arrow_back_ios_new,
             ),
           ),
-          title: const Text(
-            "Add new task",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
+          title: Align(
+            alignment: Alignment.center,
+            child: GlassmorphicContainer(
+              width: double.infinity,
+              height: 41,
+              borderRadius: 40,
+              linearGradient: LinearGradient(
+                colors: [
+                  AppColors.white.withOpacity(0.1),
+                  AppColors.white.withOpacity(0.3),
+                ],
+              ),
+              border: 2,
+              blur: 4,
+              borderGradient: LinearGradient(
+                colors: [
+                  AppColors.white.withOpacity(0.3),
+                  AppColors.white.withOpacity(0.5),
+                ],
+              ),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Add new task",
+                        style: const TextStyle(
+                          overflow: TextOverflow.fade,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-          backgroundColor: AppColors.transparent,
+          backgroundColor: AppColors.backgroundColour,
           elevation: 0,
         ),
         bottomNavigationBar: Container(
+          color: AppColors.backgroundColour,
           width: MediaQuery.of(context).size.width,
           height: bannerAd!.size.height.toDouble(),
           child: AdWidget(
             ad: bannerAd!,
           ),
         ),
-        backgroundColor: AppColors.backgroundColour,
         body: SingleChildScrollView(
+          physics: AppColors.scrollPhysics,
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(15),
-                      padding: const EdgeInsets.all(30),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.grey,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.work,
-                        color: AppColors.white,
-                        size: 30,
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundColour,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(
+                        MediaQuery.of(context).size.width / 3,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      width: MediaQuery.of(context).size.width,
-                      child: Consumer<AllAppProviders>(
+                  ),
+                  child: Center(
+                    child: GlassmorphicContainer(
+                      margin: EdgeInsets.only(
+                        top: 20,
+                        bottom: 30,
+                      ),
+                      width: 100,
+                      height: 100,
+                      borderRadius: 50,
+                      linearGradient: LinearGradient(
+                        colors: [
+                          AppColors.white.withOpacity(0.1),
+                          AppColors.white.withOpacity(0.3),
+                        ],
+                      ),
+                      border: 2,
+                      blur: 4,
+                      borderGradient: LinearGradient(
+                        colors: [
+                          AppColors.white.withOpacity(0.3),
+                          AppColors.white.withOpacity(0.5),
+                        ],
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.work,
+                          color: AppColors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 5,
+                    right: 5,
+                    bottom: 20,
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(
+                          top: 30,
+                          bottom: 15,
+                          left: 15,
+                          right: 15,
+                        ),
+                        padding: const EdgeInsets.only(left: 5, right: 5),
+                        height: 40,
+                        width: MediaQuery.of(context).size.width,
+                        // color: AppColors.sky,
+                        decoration: BoxDecoration(
+                          // color: AppColors.sky,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Consumer<AllAppProviders>(
+                          builder: (allAppProvidersCtx, allAppProvidersProvider,
+                              allAppProvidersChild) {
+                            List<Text> taskTypeTextList = [];
+
+                            for (String type in taskType) {
+                              taskTypeTextList.add(
+                                Text(
+                                  type,
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.backgroundColour,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: CupertinoPicker(
+                                backgroundColor: AppColors.transparent,
+                                itemExtent: 23,
+                                onSelectedItemChanged: (value) {
+                                  allAppProvidersProvider
+                                      .selectedTypeFunc(taskType[value]);
+                                  // print(AllAppProvidersProvider.selectedType);
+                                  print(taskType[value]);
+                                },
+                                children: taskTypeTextList,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                        ),
+                        child: CustomTextField(
+                          focusNode: nameFocusNode,
+                          controller: _taskNameController,
+                          hintText: "Enter your task name",
+                          keyboard: TextInputType.name,
+                          isPassField: false,
+                          isEmailField: false,
+                          isPassConfirmField: false,
+                          icon: Icons.drive_file_rename_outline_rounded,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                        ),
+                        child: CustomTextField(
+                          focusNode: desFocusNode,
+                          controller: _descriptionController,
+                          hintText: "Enter your task description",
+                          keyboard: TextInputType.multiline,
+                          isPassField: false,
+                          isEmailField: false,
+                          isPassConfirmField: false,
+                          icon: Icons.description,
+                          minLen: 1,
+                          maxLen: 5,
+                        ),
+                      ),
+                      Consumer<AllAppProviders>(
                         builder: (allAppProvidersContext,
                             allAppProvidersProvider, allAppProvidersChild) {
-                          return DropdownButton<String>(
-                            hint: Text(
-                              (widget.taskType != null)
-                                  ? widget.taskType!
-                                  : allAppProvidersProvider.selectedType,
-                              style: const TextStyle(
-                                color: AppColors.white,
-                              ),
-                            ),
-                            items: taskType.map(
-                              (String task) {
-                                return DropdownMenuItem<String>(
-                                  value: task,
-                                  child: Text(task),
-                                );
-                              },
-                            ).toList(),
-                            onChanged: (value) {
-                              allAppProvidersProvider.selectedTypeFunc(value!);
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                      ),
-                      child: TextFormField(
-                        controller: _taskNameController,
-                        textCapitalization: TextCapitalization.sentences,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                        ),
-                        decoration: InputDecoration(
-                          suffixIconColor: AppColors.white,
-                          labelText: "Task Name",
-                          labelStyle: TextStyle(
-                            color: AppColors.white.withOpacity(0.6),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: TextFormField(
-                        textCapitalization: TextCapitalization.sentences,
-                        maxLines: 2,
-                        controller: _descriptionController,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: "Description",
-                          labelStyle: TextStyle(
-                            color: AppColors.white.withOpacity(0.6),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Consumer<AllAppProviders>(
-                      builder: (allAppProvidersContext, allAppProvidersProvider,
-                          allAppProvidersChild) {
-                        return InkWell(
-                          onTap: (() async {
-                            String initialYear = '';
-                            String initialMonth = '';
-                            String initialDay = '';
-                            String initialHour = '';
-                            String initialMinute = '';
+                          return GestureDetector(
+                            onTap: (() async {
+                              // String initialYear = '';
+                              // String initialMonth = '';
+                              // String initialDay = '';
+                              // String initialHour = '';
+                              // String initialMinute = '';
+                              //
+                              // if (widget.taskDate != null &&
+                              //     widget.taskTime != null) {
+                              //   int dateStringLen = widget.taskDate!.length;
+                              //   initialYear =
+                              //       "${widget.taskDate![dateStringLen - 4]}${widget.taskDate![dateStringLen - 3]}${widget.taskDate![dateStringLen - 2]}${widget.taskDate![dateStringLen - 1]}";
+                              //   initialDay =
+                              //       "${widget.taskDate![0]}${widget.taskDate![1]}";
+                              //   initialMonth =
+                              //       "${widget.taskDate![3]}${widget.taskDate![4]}";
+                              //
+                              //   initialHour =
+                              //       "${widget.taskTime![0]}${widget.taskTime![1]}";
+                              //   initialMinute =
+                              //       "${widget.taskTime![3]}${widget.taskTime![4]}";
+                              // }
 
-                            if (widget.taskDate != null &&
-                                widget.taskTime != null) {
-                              int dateStringLen = widget.taskDate!.length;
-                              initialYear =
-                                  "${widget.taskDate![dateStringLen - 4]}${widget.taskDate![dateStringLen - 3]}${widget.taskDate![dateStringLen - 2]}${widget.taskDate![dateStringLen - 1]}";
-                              initialDay =
-                                  "${widget.taskDate![0]}${widget.taskDate![1]}";
-                              initialMonth =
-                                  "${widget.taskDate![3]}${widget.taskDate![4]}";
+                              final newDate = await showDatePicker(
+                                context: context,
+                                initialDate: date,
+                                firstDate: date,
+                                lastDate: DateTime(date.year + 2),
+                              );
 
-                              initialHour =
-                                  "${widget.taskTime![0]}${widget.taskTime![1]}";
-                              initialMinute =
-                                  "${widget.taskTime![3]}${widget.taskTime![4]}";
-                            }
+                              final newTime = await showIntervalTimePicker(
+                                interval: 15,
+                                visibleStep: VisibleStep.fifteenths,
+                                context: context,
+                                initialTime: TimeOfDay(
+                                  hour: (initialMinuteSelection(date.minute) ==
+                                              0 ||
+                                          initialMinuteSelection(date.minute) ==
+                                              45)
+                                      ? date.add(const Duration(hours: 1)).hour
+                                      : date.hour,
+                                  minute: initialMinuteSelection(
+                                      DateTime.now().minute),
+                                ),
+                              );
 
-                            final newDate = await showDatePicker(
-                              context: context,
-                              initialDate: date,
-                              firstDate: date,
-                              lastDate: DateTime(date.year + 2),
-                            );
-
-                            final newTime = await showIntervalTimePicker(
-                              interval: 15,
-                              visibleStep: VisibleStep.fifteenths,
-                              context: context,
-                              initialTime: TimeOfDay(
-                                hour: (initialMinuteSelection(date.minute) ==
-                                            0 ||
-                                        initialMinuteSelection(date.minute) ==
-                                            45)
-                                    ? date.add(const Duration(hours: 1)).hour
-                                    : date.hour,
-                                minute: initialMinuteSelection(
-                                    DateTime.now().minute),
-                              ),
-                            );
-
-                            if (newDate == null || newTime == null) {
-                              return;
-                            }
-                            scheduleDateTIme = DateTime(
-                              newDate.year,
-                              newDate.month,
-                              newDate.day,
-                              newTime.hour,
-                              newTime.minute,
-                            );
-
-                            String formattedTime = DateFormat.Hm().format(
-                              DateTime(
+                              if (newDate == null || newTime == null) {
+                                return;
+                              }
+                              scheduleDateTIme = DateTime(
                                 newDate.year,
                                 newDate.month,
                                 newDate.day,
                                 newTime.hour,
                                 newTime.minute,
-                              ),
-                            );
+                              );
 
-                            String formattedDate =
-                                DateFormat("dd/MM/yyyy").format(newDate);
-
-                            allAppProvidersProvider.dateTextFunc(formattedDate);
-                            allAppProvidersProvider.timeTextFunc(formattedTime);
-
-                            if (scheduleDateTIme.difference(date).inSeconds >
-                                0) {
-                              inputDateTime =
-                                  "${allAppProvidersProvider.timeText} on ${allAppProvidersProvider.dateText}";
-                            } else {
-                              ScaffoldMessenger.of(allAppProvidersContext)
-                                  .showSnackBar(
-                                const SnackBar(
-                                  backgroundColor: AppColors.white,
-                                  content: Text(
-                                    "Please select a date of future",
-                                    style: TextStyle(
-                                      color: AppColors.backgroundColour,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              String formattedTime = DateFormat.Hm().format(
+                                DateTime(
+                                  newDate.year,
+                                  newDate.month,
+                                  newDate.day,
+                                  newTime.hour,
+                                  newTime.minute,
                                 ),
                               );
-                            }
-                          }),
-                          child: Container(
-                            alignment: Alignment.centerLeft,
-                            margin: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                            ),
-                            padding: const EdgeInsets.only(
-                              top: 20,
-                              bottom: 15,
-                            ),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(
-                                  color: AppColors.grey,
+
+                              String formattedDate =
+                                  DateFormat("dd/MM/yyyy").format(newDate);
+
+                              allAppProvidersProvider
+                                  .dateTextFunc(formattedDate);
+                              allAppProvidersProvider
+                                  .timeTextFunc(formattedTime);
+
+                              if (scheduleDateTIme.difference(date).inSeconds >
+                                  0) {
+                                inputDateTime =
+                                    "${allAppProvidersProvider.timeText} on ${allAppProvidersProvider.dateText}";
+                              } else {
+                                ScaffoldMessenger.of(allAppProvidersContext)
+                                    .showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Please select a date of future",
+                                    context: allAppProvidersContext,
+                                  ),
+                                );
+                              }
+                            }),
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              margin: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                top: 20,
+                                bottom: 10,
+                              ),
+                              padding: const EdgeInsets.only(
+                                top: 11,
+                                bottom: 11,
+                                left: 13,
+                                right: 13,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  width: 1,
+                                  color: AppColors.white,
                                 ),
                               ),
-                            ),
-                            child: Text(
-                              (inputDateTime.isNotEmpty)
-                                  ? inputDateTime
-                                  : "Time & Date",
-                              style: TextStyle(
-                                color: (inputDateTime.isNotEmpty ||
-                                        (widget.taskDate != null &&
-                                            widget.taskTime != null))
-                                    ? AppColors.white
-                                    : AppColors.white.withOpacity(0.6),
-                                fontSize: 15,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.access_time_filled_rounded,
+                                    color: AppColors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    (inputDateTime.isNotEmpty)
+                                        ? inputDateTime
+                                        : "Time & Date",
+                                    style: TextStyle(
+                                      color: (inputDateTime.isNotEmpty ||
+                                              (widget.taskDate != null &&
+                                                  widget.taskTime != null))
+                                          ? AppColors.white
+                                          : AppColors.white.withOpacity(0.5),
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        );
-                      },
-                      // child: ,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: TextFormField(
-                        textCapitalization: TextCapitalization.sentences,
-                        controller: _notificationController,
-                        style: const TextStyle(
-                          color: AppColors.white,
+                          );
+                        },
+                        // child: ,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
                         ),
-                        decoration: InputDecoration(
-                          labelText: "Notification",
-                          labelStyle: TextStyle(
-                            color: AppColors.white.withOpacity(0.6),
-                          ),
+                        child: CustomTextField(
+                          focusNode: notiFocusNode,
+                          controller: _notificationController,
+                          hintText: "Enter your notification message",
+                          keyboard: TextInputType.name,
+                          isPassField: false,
+                          isEmailField: false,
+                          isPassConfirmField: false,
+                          icon: Icons.drive_file_rename_outline_rounded,
                         ),
                       ),
+                      // UnityBannerAd(
+                      //   placementId: "Banner_Android",
+                      //   onLoad: (placementID) =>
+                      //       print("Banner loaded $placementID"),
+                      //   onClick: (placementID) =>
+                      //       print("Banner clicked $placementID"),
+                      //   onFailed: (placementID, error, message) => print(
+                      //     "Banner failed $placementID Banner loaded $message",
+                      //   ),
+                      // )
+                    ],
+                  ),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                      color: AppColors.backgroundColour,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          MediaQuery.of(context).size.width / 3,
+                        ),
+                      )),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: MediaQuery.of(context).size.width / 6,
+                      right: MediaQuery.of(context).size.width / 6,
                     ),
-                    Consumer<AllAppProviders>(
-                      builder: ((allAppProvidersContext,
-                          allAppProvidersProvider, allAppProvidersChild) {
+                    child: Consumer<AllAppProviders>(
+                      builder: ((
+                        allAppProvidersContext,
+                        allAppProvidersProvider,
+                        allAppProvidersChild,
+                      ) {
                         return GestureDetector(
                           onTap: (allAppProvidersProvider.newTaskUploadLoading)
                               ? null
                               : (() async {
+                                  nameFocusNode!.unfocus();
+                                  desFocusNode!.unfocus();
+                                  notiFocusNode!.unfocus();
                                   if (_taskNameController.text.isNotEmpty &&
                                       _notificationController.text.isNotEmpty &&
                                       inputDateTime.isNotEmpty &&
@@ -563,6 +738,35 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         updateTaskCount: taskCount,
                                         taskType: allAppProvidersProvider
                                             .selectedType,
+                                      );
+                                      allAppProvidersProvider
+                                          .newTaskUploadLoadingFunc(false);
+                                      await rewardedAd?.show(
+                                        onUserEarnedReward: ((ad, point) async {
+                                          await updatePoints(
+                                            points: point.amount.toInt(),
+                                          );
+                                          print(
+                                              "Point type : ${point.type}\nPoint amount : ${point.amount.toInt()}");
+                                        }),
+                                      );
+                                      rewardedAd?.fullScreenContentCallback =
+                                          FullScreenContentCallback(
+                                        onAdClicked: ((ad) {}),
+                                        onAdDismissedFullScreenContent: ((ad) {
+                                          print("ad dismissed");
+                                        }),
+                                        onAdFailedToShowFullScreenContent:
+                                            ((ad, err) {
+                                          ad.dispose();
+                                          print("ad error $err");
+                                        }),
+                                        onAdImpression: ((ad) {}),
+                                        onAdShowedFullScreenContent: ((ad) {
+                                          print("ad shown ${ad.responseInfo}");
+                                        }),
+                                        onAdWillDismissFullScreenContent:
+                                            ((ad) {}),
                                       );
                                     } else if (widget.userEmail != null &&
                                         widget.taskDoc != null) {
@@ -684,21 +888,54 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         },
                                       );
 
-                                      NotificationServices()
+                                      await rewardedAd?.show(
+                                        onUserEarnedReward: ((ad, point) {}),
+                                      );
+                                      rewardedAd?.fullScreenContentCallback =
+                                          FullScreenContentCallback(
+                                        onAdClicked: ((ad) {}),
+                                        onAdDismissedFullScreenContent:
+                                            ((ad) async {
+                                          print("ad dismissed");
+                                        }),
+                                        onAdFailedToShowFullScreenContent:
+                                            ((ad, err) {
+                                          ad.dispose();
+                                          print("ad error $err");
+                                        }),
+                                        onAdImpression: ((ad) {}),
+                                        onAdShowedFullScreenContent: ((ad) {
+                                          print("ad shown ${ad.responseInfo}");
+                                        }),
+                                        onAdWillDismissFullScreenContent:
+                                            ((ad) {}),
+                                      );
+
+                                      await NotificationServices()
                                           .cancelTaskScheduledNotification(
                                         id: taskDoc[Keys.notificationID],
                                       );
 
-                                      NotificationServices()
+                                      await NotificationServices()
                                           .createScheduledTaskNotification(
-                                        id: taskDoc[Keys.notificationID],
-                                        title:
-                                            _notificationController.text.trim(),
-                                        body:
-                                            "${_taskNameController.text.trim()}\n${_descriptionController.text.trim()}",
-                                        payload: scheduleDateTIme.toString(),
-                                        dateTime: scheduleDateTIme,
-                                      );
+                                            id: taskDoc[Keys.notificationID],
+                                            title: _notificationController.text
+                                                .trim(),
+                                            body:
+                                                "${_taskNameController.text.trim()}\n${_descriptionController.text.trim()}",
+                                            payload:
+                                                scheduleDateTIme.toString(),
+                                            dateTime: scheduleDateTIme,
+                                          )
+                                          .whenComplete(
+                                            () => AwesomeDialog(
+                                              context: allAppProvidersContext,
+                                              dialogType: DialogType.success,
+                                              title: "Hurray",
+                                              desc:
+                                                  "Your goal is successfully updated",
+                                            ).show(),
+                                          );
                                     }
 
                                     allAppProvidersProvider
@@ -706,13 +943,14 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                     Navigator.pop(context);
                                   } else {
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.error,
-                                      title: "Uummm...",
-                                      desc:
-                                          "Looks like you didn't fill all the fields!",
-                                    ).show();
+                                    ScaffoldMessenger.of(allAppProvidersContext)
+                                        .showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message:
+                                            "Looks like you didn't fill all the fields!",
+                                        context: allAppProvidersContext,
+                                      ),
+                                    );
                                   }
                                 }),
                           child: Padding(
@@ -721,15 +959,13 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               horizontal: 20,
                             ),
                             child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              height: 75,
+                              width: MediaQuery.of(context).size.width / 1.7,
+                              height: 50,
                               // margin: EdgeInsets.symmetric(
                               //   vertical: 30,
                               //   horizontal: 20,
                               // ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 20,
-                              ),
+
                               decoration: BoxDecoration(
                                 boxShadow: [
                                   BoxShadow(
@@ -744,8 +980,15 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               child: Center(
                                 child: (allAppProvidersProvider
                                         .newTaskUploadLoading)
-                                    ? const CircularProgressIndicator(
-                                        color: AppColors.backgroundColour,
+                                    ? Center(
+                                        child: Lottie.asset(
+                                          "assets/loading-animation.json",
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              2,
+                                          height: 50,
+                                        ),
                                       )
                                     : const Text(
                                         "ADD YOUR TASK",
@@ -761,17 +1004,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                         );
                       }),
                     ),
-                    // UnityBannerAd(
-                    //   placementId: "Banner_Android",
-                    //   onLoad: (placementID) =>
-                    //       print("Banner loaded $placementID"),
-                    //   onClick: (placementID) =>
-                    //       print("Banner clicked $placementID"),
-                    //   onFailed: (placementID, error, message) => print(
-                    //     "Banner failed $placementID Banner loaded $message",
-                    //   ),
-                    // )
-                  ],
+                  ),
                 ),
               ],
             ),

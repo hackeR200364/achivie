@@ -36,12 +36,15 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return ZoomDrawer(
+      openCurve: Curves.fastOutSlowIn,
+      closeCurve: Curves.easeInOut,
       androidCloseOnBackTap: true,
-      angle: -17,
+      angle: 0,
       style: DrawerStyle.defaultStyle,
       drawerShadowsBackgroundColor: AppColors.white,
       mainScreen: currentScreen(),
       menuScreen: MenuScreen(
+        selectedIndex: currentPageIndex,
         setIndex: ((index) {
           setState(() {
             currentPageIndex = index;

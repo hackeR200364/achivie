@@ -4,6 +4,7 @@ class Keys {
   static const String userSignStatus = "signStatus";
   static const String isNewUser = "isNewUser";
   static const String userName = "userName";
+  static const String userPoints = "userPoints";
   static const String uid = "uid";
   static const String userPassword = "userPassword";
   static const String userEmail = "userEmail";
