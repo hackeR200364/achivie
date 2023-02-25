@@ -16,6 +16,24 @@ class UserDetailsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  int userPoints = 0;
+  void userPointsFunc() async {
+    DocumentSnapshot userDoc = await users.doc(user!.email).get();
+
+    if (!userDoc.data().toString().contains(Keys.userPoints)) {
+      await users.doc(user!.email).set(
+        {
+          Keys.userPoints: userPoints,
+        },
+        SetOptions(
+          merge: true,
+        ),
+      );
+    }
+    userPoints = await userDoc[Keys.userPoints];
+    notifyListeners();
+  }
+
   String uid = "";
   void uidFunc() async {
     DocumentSnapshot userDoc = await users.doc(user!.email).get();

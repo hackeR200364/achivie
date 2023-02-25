@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
-import 'package:task_app/Utils/auth_text_field_utils.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:task_app/Utils/custom_text_field_utils.dart';
 import 'package:task_app/Utils/snackbar_utils.dart';
 
 import '../styles.dart';
@@ -17,11 +18,27 @@ class EmailUSScreen extends StatefulWidget {
 class _EmailUSScreenState extends State<EmailUSScreen> {
   late TextEditingController _bodyController;
   late TextEditingController _subjectController;
+  BannerAd? bannerAd;
+  late FocusNode subjectFocusNode;
+  late FocusNode bodyFocusNode;
 
   @override
   void initState() {
     _bodyController = TextEditingController();
     _subjectController = TextEditingController();
+    subjectFocusNode = FocusNode();
+    bodyFocusNode = FocusNode();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      listener: BannerAdListener(
+        onAdLoaded: ((ad) {
+          print("Banner ad loaded ${ad.adUnitId}");
+        }),
+      ),
+      request: AdRequest(),
+    );
+    bannerAd!.load();
     super.initState();
   }
 
@@ -92,110 +109,122 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
                     AppColors.white.withOpacity(0.5),
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Please enter your query",
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Please enter your query",
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: size.height / 30,
-                    ),
-                    Column(
-                      children: [
-                        AuthTextField(
-                          controller: _subjectController,
-                          hintText: "Subject",
-                          keyboard: TextInputType.text,
-                          isPassField: false,
-                          isEmailField: false,
-                          isPassConfirmField: false,
-                          icon: Icons.subject,
-                        ),
-                        AuthTextField(
-                          maxLen: ((size.height / 100).toInt() < 2)
-                              ? 2
-                              : (size.height / 100).toInt(),
-                          minLen: 1,
-                          controller: _bodyController,
-                          hintText: "Body",
-                          keyboard: TextInputType.multiline,
-                          isPassField: false,
-                          isEmailField: false,
-                          isPassConfirmField: false,
-                          icon: Icons.description,
-                        ),
-                        SizedBox(
-                          height: 30,
-                        ),
-                        InkWell(
-                          onTap: (() async {
-                            if (_subjectController.text.isNotEmpty &&
-                                _bodyController.text.isNotEmpty) {
-                              Email email = Email(
-                                subject: _subjectController.text.trim(),
-                                body: _bodyController.text.trim(),
-                                recipients: [
-                                  "rupamkarmakar1238@gmail.com",
-                                ],
-                              );
+                      SizedBox(
+                        height: size.height / 30,
+                      ),
+                      Column(
+                        children: [
+                          CustomTextField(
+                            focusNode: subjectFocusNode,
+                            controller: _subjectController,
+                            hintText: "Subject",
+                            keyboard: TextInputType.text,
+                            isPassField: false,
+                            isEmailField: false,
+                            isPassConfirmField: false,
+                            icon: Icons.subject,
+                          ),
+                          CustomTextField(
+                            focusNode: bodyFocusNode,
+                            maxLen: ((size.height / 100).toInt() < 2)
+                                ? 2
+                                : (size.height / 100).toInt(),
+                            minLen: 1,
+                            controller: _bodyController,
+                            hintText: "Body",
+                            keyboard: TextInputType.multiline,
+                            isPassField: false,
+                            isEmailField: false,
+                            isPassConfirmField: false,
+                            icon: Icons.description,
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          InkWell(
+                            onTap: (() async {
+                              subjectFocusNode.unfocus();
+                              bodyFocusNode.unfocus();
+                              if (_subjectController.text.isNotEmpty &&
+                                  _bodyController.text.isNotEmpty) {
+                                Email email = Email(
+                                  subject: _subjectController.text.trim(),
+                                  body: _bodyController.text.trim(),
+                                  recipients: [
+                                    "rupamkarmakar1238@gmail.com",
+                                  ],
+                                );
 
-                              await FlutterEmailSender.send(email);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                AppSnackbar().customizedAppSnackbar(
-                                  message: "Email sent successfully",
-                                  context: context,
-                                ),
-                              );
-                            } else {
-                              print((size.height / 100).toInt());
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                AppSnackbar().customizedAppSnackbar(
-                                  message: "Please fill the fields properly",
-                                  context: context,
-                                ),
-                              );
-                            }
-                          }),
-                          child: GlassmorphicContainer(
-                            width: MediaQuery.of(context).size.width / 1.5,
-                            height: 50,
-                            borderRadius: 20,
-                            linearGradient: LinearGradient(
-                              colors: [
-                                AppColors.backgroundColour.withOpacity(0.3),
-                                AppColors.backgroundColour.withOpacity(0.5),
-                              ],
-                            ),
-                            border: 2,
-                            blur: 4,
-                            borderGradient: LinearGradient(
-                              colors: [
-                                AppColors.white.withOpacity(0.3),
-                                AppColors.white.withOpacity(0.5),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                "Send Email",
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 2,
+                                await FlutterEmailSender.send(email);
+                                _bodyController.clear();
+                                _subjectController.clear();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Email sent successfully",
+                                    context: context,
+                                  ),
+                                );
+                              } else {
+                                print((size.height / 100).toInt());
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Please fill the fields properly",
+                                    context: context,
+                                  ),
+                                );
+                              }
+                            }),
+                            child: GlassmorphicContainer(
+                              width: MediaQuery.of(context).size.width / 1.5,
+                              height: 50,
+                              borderRadius: 20,
+                              linearGradient: LinearGradient(
+                                colors: [
+                                  AppColors.backgroundColour.withOpacity(0.3),
+                                  AppColors.backgroundColour.withOpacity(0.5),
+                                ],
+                              ),
+                              border: 2,
+                              blur: 4,
+                              borderGradient: LinearGradient(
+                                colors: [
+                                  AppColors.white.withOpacity(0.3),
+                                  AppColors.white.withOpacity(0.5),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Send Email",
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -228,6 +257,18 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
                     Icons.menu,
                     color: AppColors.white,
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SizedBox(
+                height: bannerAd!.size.height.toDouble(),
+                width: MediaQuery.of(context).size.width,
+                child: AdWidget(
+                  ad: bannerAd!,
                 ),
               ),
             ),

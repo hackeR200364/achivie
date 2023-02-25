@@ -12,11 +12,10 @@ import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:material_dialogs/material_dialogs.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/Utils/custom_glass_icon.dart';
 import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/screens/new_task_screen.dart';
-import 'package:task_app/services/auth_services.dart';
 import 'package:task_app/services/notification_services.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
@@ -51,7 +50,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   BannerAd? bannerAd;
   int counter = 0;
   final assetsAudioPlayer = AssetsAudioPlayer();
-
   late ScrollController _scrollController;
 
   @override
@@ -141,33 +139,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           //     : null,
           leading: Align(
             alignment: Alignment.centerRight,
-            child: GlassmorphicContainer(
-              width: 41,
-              height: 41,
-              borderRadius: 40,
-              linearGradient: LinearGradient(
-                colors: [
-                  AppColors.white.withOpacity(0.1),
-                  AppColors.white.withOpacity(0.3),
-                ],
-              ),
-              border: 2,
-              blur: 4,
-              borderGradient: LinearGradient(
-                colors: [
-                  AppColors.white.withOpacity(0.3),
-                  AppColors.white.withOpacity(0.5),
-                ],
-              ),
-              child: IconButton(
-                onPressed: (() {
-                  ZoomDrawer.of(context)!.toggle();
-                }),
-                icon: Icon(
-                  Icons.menu,
-                  color: AppColors.white,
-                ),
-              ),
+            child: CustomGlassIconButton(
+              onPressed: (() {
+                ZoomDrawer.of(context)!.toggle();
+              }),
+              icon: Icons.menu,
             ),
           ),
           title: Consumer<UserDetailsProvider>(
@@ -229,114 +205,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
           ),
           actions: [
-            Consumer<GoogleSignInProvider>(builder:
-                (googleSignInContext, googleSignInProvider, googleSignInChild) {
-              return Consumer<AllAppProviders>(
-                  builder: (allAppProviderContext, allAppProvider, _) {
-                return Center(
-                  child: GlassmorphicContainer(
-                    width: 41,
-                    height: 41,
-                    borderRadius: 40,
-                    linearGradient: LinearGradient(
-                      colors: [
-                        AppColors.white.withOpacity(0.1),
-                        AppColors.white.withOpacity(0.3),
-                      ],
-                    ),
-                    border: 2,
-                    blur: 4,
-                    borderGradient: LinearGradient(
-                      colors: [
-                        AppColors.white.withOpacity(0.3),
-                        AppColors.white.withOpacity(0.5),
-                      ],
-                    ),
-                    child: IconButton(
-                      onPressed: (() {
-                        allAppProvider.isLoadingFunc(false);
-                        const CircularProgressIndicator(
-                          color: AppColors.backgroundColour,
-                        );
-                        Dialogs.bottomMaterialDialog(
-                          enableDrag: false,
-                          isDismissible: false,
-                          barrierDismissible: false,
-                          context: googleSignInContext,
-                          color: AppColors.backgroundColour,
-                          lottieBuilder:
-                              Lottie.asset("assets/warning-animation.json"),
-                          title: "Warning",
-                          titleStyle: TextStyle(
-                            color: AppColors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          msg:
-                              "If you logout your, all scheduled reminders will be canceled!",
-                          msgStyle: TextStyle(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          actions: [
-                            InkWell(
-                              onTap: (() {
-                                Navigator.pop(googleSignInContext);
-                              }),
-                              child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.mainColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Cancel",
-                                    style: TextStyle(
-                                      color: AppColors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            InkWell(
-                              onTap: (() async {
-                                await NotificationServices()
-                                    .cancelTasksNotification();
-                                await googleSignInProvider.logOut();
-                                SystemNavigator.pop();
-                              }),
-                              child: Container(
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.mainColor,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Logout",
-                                    style: TextStyle(
-                                      color: AppColors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                      icon: const Icon(
-                        Icons.logout,
-                        color: AppColors.white,
-                        size: 25,
-                      ),
-                    ),
-                  ),
-                );
-              });
-            }),
+            Center(
+              child: CustomGlassIconButton(
+                onPressed: (() {}),
+                icon: Icons.notifications,
+              ),
+            ),
             SizedBox(
               width: 15,
             ),
@@ -345,6 +219,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           backgroundColor: AppColors.backgroundColour,
         ),
         floatingActionButton: GlassmorphicContainer(
+          margin: EdgeInsets.only(
+            right: 10,
+          ),
           width: 50,
           height: 50,
           borderRadius: 40,
