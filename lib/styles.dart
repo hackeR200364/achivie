@@ -17,16 +17,29 @@ class AppColors {
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
   static const scrollPhysics = BouncingScrollPhysics();
-  static LinearGradient customGlassButtonGradient = LinearGradient(
+  static LinearGradient customGlassIconButtonGradient = LinearGradient(
     colors: [
       AppColors.white.withOpacity(0.1),
       AppColors.white.withOpacity(0.3),
     ],
   );
-  static LinearGradient customGlassButtonBorderGradient = LinearGradient(
+  static LinearGradient customGlassButtonGradient = LinearGradient(
+    colors: [
+      AppColors.backgroundColour.withOpacity(0.3),
+      AppColors.backgroundColour.withOpacity(0.5),
+    ],
+  );
+  static LinearGradient customGlassIconButtonBorderGradient = LinearGradient(
     colors: [
       AppColors.white.withOpacity(0.3),
       AppColors.white.withOpacity(0.5),
     ],
+  );
+  static const TextStyle headingTextStyle = TextStyle(
+    color: AppColors.white,
+    overflow: TextOverflow.fade,
+    fontSize: 17,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 3,
   );
 }

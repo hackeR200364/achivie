@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:task_app/Utils/custom_text_field_utils.dart';
-import 'package:task_app/Utils/snackbar_utils.dart';
 
 import '../styles.dart';
+import '../widgets/email_us_screen_widgets.dart';
 
 class EmailUSScreen extends StatefulWidget {
   const EmailUSScreen({Key? key}) : super(key: key);
@@ -21,6 +18,9 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
   BannerAd? bannerAd;
   late FocusNode subjectFocusNode;
   late FocusNode bodyFocusNode;
+  late NativeAd nativeAd;
+  bool isNativeAdLoaded = false;
+  bool isBannerAdLoaded = false;
 
   @override
   void initState() {
@@ -28,12 +28,31 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
     _subjectController = TextEditingController();
     subjectFocusNode = FocusNode();
     bodyFocusNode = FocusNode();
+    nativeAd = NativeAd(
+      adUnitId: "ca-app-pub-3940256099942544/2247696110",
+      factoryId: "listTile",
+      listener: NativeAdListener(
+        onAdLoaded: ((ad) {
+          setState(() {
+            isNativeAdLoaded = true;
+          });
+        }),
+        onAdFailedToLoad: ((ad, err) {
+          nativeAd.dispose();
+          print("Native ad failed : ${err.message}");
+        }),
+      ),
+      request: AdRequest(),
+    );
+    nativeAd.load();
     bannerAd = BannerAd(
       size: AdSize.banner,
       adUnitId: "ca-app-pub-3940256099942544/6300978111",
       listener: BannerAdListener(
         onAdLoaded: ((ad) {
-          print("Banner ad loaded ${ad.adUnitId}");
+          setState(() {
+            isBannerAdLoaded = true;
+          });
         }),
       ),
       request: AdRequest(),
@@ -46,6 +65,10 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
   void dispose() {
     _bodyController.dispose();
     _subjectController.dispose();
+    bannerAd?.dispose();
+    nativeAd.dispose();
+    bodyFocusNode.dispose();
+    subjectFocusNode.dispose();
     super.dispose();
   }
 
@@ -53,226 +76,32 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: AppColors.backgroundColour,
+      backgroundColor: AppColors.mainColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundColour,
+        elevation: 0,
+        leading: CustomAppBarLeading(
+          icon: Icons.menu,
+          onPressed: (() {
+            ZoomDrawer.of(context)!.toggle();
+          }),
+        ),
+        title: CustomAppBarTitle(
+          heading: "Email us",
+        ),
+      ),
+      bottomNavigationBar: CustomBottmNavBarWithBannerAd(
+        bannerAd: bannerAd,
+      ),
       body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            Positioned(
-              top: 0,
-              left: 0,
-              bottom: 0,
-              child: Image.asset(
-                "assets/motivational-pics/email-us-bg.jpg",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              child: Container(
-                width: size.width,
-                height: size.height,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.mainColor.withOpacity(0.7),
-                      AppColors.transparent,
-                      AppColors.mainColor.withOpacity(0.7),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              top: size.height / 6,
-              child: GlassmorphicContainer(
-                margin: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                ),
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 1.5,
-                borderRadius: 20,
-                linearGradient: LinearGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.1),
-                    AppColors.white.withOpacity(0.3),
-                  ],
-                ),
-                border: 2,
-                blur: 4,
-                borderGradient: LinearGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.3),
-                    AppColors.white.withOpacity(0.5),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 10,
-                    right: 10,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Please enter your query",
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        height: size.height / 30,
-                      ),
-                      Column(
-                        children: [
-                          CustomTextField(
-                            focusNode: subjectFocusNode,
-                            controller: _subjectController,
-                            hintText: "Subject",
-                            keyboard: TextInputType.text,
-                            isPassField: false,
-                            isEmailField: false,
-                            isPassConfirmField: false,
-                            icon: Icons.subject,
-                          ),
-                          CustomTextField(
-                            focusNode: bodyFocusNode,
-                            maxLen: ((size.height / 100).toInt() < 2)
-                                ? 2
-                                : (size.height / 100).toInt(),
-                            minLen: 1,
-                            controller: _bodyController,
-                            hintText: "Body",
-                            keyboard: TextInputType.multiline,
-                            isPassField: false,
-                            isEmailField: false,
-                            isPassConfirmField: false,
-                            icon: Icons.description,
-                          ),
-                          SizedBox(
-                            height: 30,
-                          ),
-                          InkWell(
-                            onTap: (() async {
-                              subjectFocusNode.unfocus();
-                              bodyFocusNode.unfocus();
-                              if (_subjectController.text.isNotEmpty &&
-                                  _bodyController.text.isNotEmpty) {
-                                Email email = Email(
-                                  subject: _subjectController.text.trim(),
-                                  body: _bodyController.text.trim(),
-                                  recipients: [
-                                    "rupamkarmakar1238@gmail.com",
-                                  ],
-                                );
-
-                                await FlutterEmailSender.send(email);
-                                _bodyController.clear();
-                                _subjectController.clear();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  AppSnackbar().customizedAppSnackbar(
-                                    message: "Email sent successfully",
-                                    context: context,
-                                  ),
-                                );
-                              } else {
-                                print((size.height / 100).toInt());
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  AppSnackbar().customizedAppSnackbar(
-                                    message: "Please fill the fields properly",
-                                    context: context,
-                                  ),
-                                );
-                              }
-                            }),
-                            child: GlassmorphicContainer(
-                              width: MediaQuery.of(context).size.width / 1.5,
-                              height: 50,
-                              borderRadius: 20,
-                              linearGradient: LinearGradient(
-                                colors: [
-                                  AppColors.backgroundColour.withOpacity(0.3),
-                                  AppColors.backgroundColour.withOpacity(0.5),
-                                ],
-                              ),
-                              border: 2,
-                              blur: 4,
-                              borderGradient: LinearGradient(
-                                colors: [
-                                  AppColors.white.withOpacity(0.3),
-                                  AppColors.white.withOpacity(0.5),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "Send Email",
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: MediaQuery.of(context).size.height / 15,
-              left: 20,
-              child: GlassmorphicContainer(
-                width: 40,
-                height: 40,
-                borderRadius: 25,
-                linearGradient: LinearGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.1),
-                    AppColors.white.withOpacity(0.3),
-                  ],
-                ),
-                border: 2,
-                blur: 4,
-                borderGradient: LinearGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.3),
-                    AppColors.white.withOpacity(0.5),
-                  ],
-                ),
-                child: IconButton(
-                  onPressed: (() {
-                    ZoomDrawer.of(context)!.toggle();
-                  }),
-                  icon: Icon(
-                    Icons.menu,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: SizedBox(
-                height: bannerAd!.size.height.toDouble(),
-                width: MediaQuery.of(context).size.width,
-                child: AdWidget(
-                  ad: bannerAd!,
-                ),
-              ),
-            ),
-          ],
+        child: EmailUsScreenColumn(
+          subjectFocusNode: subjectFocusNode,
+          subjectController: _subjectController,
+          bodyFocusNode: bodyFocusNode,
+          size: size,
+          bodyController: _bodyController,
+          isNativeAdLoaded: isNativeAdLoaded,
+          nativeAd: nativeAd,
         ),
       ),
     );

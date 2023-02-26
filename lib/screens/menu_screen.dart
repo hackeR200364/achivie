@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -29,15 +31,7 @@ class MenuScreen extends StatefulWidget {
 
 class _MenuScreenState extends State<MenuScreen> {
   String pointsSuffix(int points) {
-    String pointsString = points.toString();
-    switch (pointsString.length) {
-      case 4:
-        return "${pointsString[0]}k";
-      case 5:
-        return "${pointsString[0]}${pointsString[1]}k";
-      default:
-        return "";
-    }
+    return NumberFormat.compact().format(points);
   }
 
   @override
@@ -56,68 +50,67 @@ class _MenuScreenState extends State<MenuScreen> {
             children: [
               Column(
                 children: [
-                  if (widget.selectedIndex != 0)
-                    Consumer<UserDetailsProvider>(
-                      builder: (_, userDetailsProviderProvider,
-                          userDetailsProviderChild) {
-                        Future.delayed(
-                          Duration.zero,
-                          (() {
-                            userDetailsProviderProvider.userNameFunc();
-                            userDetailsProviderProvider.userPointsFunc();
-                          }),
-                        );
-                        return GlassmorphicContainer(
-                          margin: EdgeInsets.only(left: 10),
-                          width: double.infinity,
-                          height: MediaQuery.of(context).size.height / 15,
-                          borderRadius: 40,
-                          linearGradient: LinearGradient(
-                            colors: [
-                              AppColors.white.withOpacity(0.1),
-                              AppColors.white.withOpacity(0.3),
-                            ],
-                          ),
-                          border: 2,
-                          blur: 4,
-                          borderGradient: LinearGradient(
-                            colors: [
-                              AppColors.white.withOpacity(0.3),
-                              AppColors.white.withOpacity(0.5),
-                            ],
-                          ),
-                          child: Center(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    userDetailsProviderProvider.userName,
-                                    style: const TextStyle(
-                                      color: AppColors.white,
-                                      overflow: TextOverflow.fade,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 3,
-                                    ),
+                  Consumer<UserDetailsProvider>(
+                    builder: (_, userDetailsProviderProvider,
+                        userDetailsProviderChild) {
+                      Future.delayed(
+                        Duration.zero,
+                        (() {
+                          userDetailsProviderProvider.userNameFunc();
+                          userDetailsProviderProvider.userPointsFunc();
+                        }),
+                      );
+                      return GlassmorphicContainer(
+                        margin: EdgeInsets.only(left: 10),
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height / 15,
+                        borderRadius: 40,
+                        linearGradient: LinearGradient(
+                          colors: [
+                            AppColors.white.withOpacity(0.1),
+                            AppColors.white.withOpacity(0.3),
+                          ],
+                        ),
+                        border: 2,
+                        blur: 4,
+                        borderGradient: LinearGradient(
+                          colors: [
+                            AppColors.white.withOpacity(0.3),
+                            AppColors.white.withOpacity(0.5),
+                          ],
+                        ),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  userDetailsProviderProvider.userName,
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    overflow: TextOverflow.fade,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 3,
                                   ),
-                                  SizedBox(
-                                    height: 2,
+                                ),
+                                SizedBox(
+                                  height: 2,
+                                ),
+                                Text(
+                                  "Total points : ${pointsSuffix(userDetailsProviderProvider.userPoints)}",
+                                  style: const TextStyle(
+                                    color: AppColors.white,
+                                    overflow: TextOverflow.fade,
                                   ),
-                                  Text(
-                                    "Total points : ${userDetailsProviderProvider.userPoints.toString()}",
-                                    style: const TextStyle(
-                                      color: AppColors.white,
-                                      overflow: TextOverflow.fade,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
+                  ),
                   menuList(
                     title: "Home",
                     icon: Icons.home_filled,
@@ -292,7 +285,17 @@ class _MenuScreenState extends State<MenuScreen> {
                                 onTap: (() async {
                                   await NotificationServices()
                                       .cancelTasksNotification();
-                                  await googleSignInProvider.logOut();
+                                  if (await StorageServices
+                                          .getUserSignInType() ==
+                                      "Google") {
+                                    await googleSignInProvider.logOut();
+                                  } else if (await StorageServices
+                                          .getUserSignInType() ==
+                                      "Email") {
+                                    EmailPassAuthServices().emailPassLogout(
+                                      context: googleSignInContext,
+                                    );
+                                  }
                                   SystemNavigator.pop();
                                 }),
                                 child: Container(
@@ -335,17 +338,15 @@ class _MenuScreenState extends State<MenuScreen> {
   }) {
     return GestureDetector(
       onTap: (() {
-        setState(() {
-          widget.setIndex(index);
-          Future.delayed(
-            Duration(
-              milliseconds: 300,
-            ),
-            (() {
-              ZoomDrawer.of(context)!.close();
-            }),
-          );
-        });
+        widget.setIndex(index);
+        Future.delayed(
+          Duration(
+            milliseconds: 100,
+          ),
+          (() {
+            ZoomDrawer.of(context)!.close();
+          }),
+        );
       }),
       child: GlassmorphicContainer(
         margin: EdgeInsets.only(
@@ -429,10 +430,10 @@ class importantMenuButton extends StatelessWidget {
         width: double.infinity,
         height: 41,
         borderRadius: 40,
-        linearGradient: AppColors.customGlassButtonGradient,
+        linearGradient: AppColors.customGlassIconButtonGradient,
         border: 2,
         blur: 4,
-        borderGradient: AppColors.customGlassButtonBorderGradient,
+        borderGradient: AppColors.customGlassIconButtonBorderGradient,
         child: Center(
           child: Text(
             title,

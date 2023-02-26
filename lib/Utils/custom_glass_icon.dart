@@ -21,10 +21,10 @@ class CustomGlassIconButton extends StatelessWidget {
       width: 41,
       height: 41,
       borderRadius: 40,
-      linearGradient: AppColors.customGlassButtonGradient,
+      linearGradient: AppColors.customGlassIconButtonGradient,
       border: 2,
       blur: 4,
-      borderGradient: AppColors.customGlassButtonBorderGradient,
+      borderGradient: AppColors.customGlassIconButtonBorderGradient,
       child: Center(
         child: IconButton(
           onPressed: onPressed,
