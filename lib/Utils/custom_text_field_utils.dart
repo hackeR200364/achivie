@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../styles.dart';
 
 class CustomTextField extends StatefulWidget {
-  CustomTextField({
+  const CustomTextField({
     super.key,
     required this.controller,
     required this.hintText,
@@ -19,15 +19,15 @@ class CustomTextField extends StatefulWidget {
     this.focusNode,
     // required this.formKey,
   });
-  TextEditingController controller;
-  String hintText;
-  TextInputType keyboard;
-  bool isPassField, isPassConfirmField, isEmailField;
-  IconData icon;
-  int? pageIndex;
-  int? maxLen;
-  int? minLen;
-  FocusNode? focusNode;
+  final TextEditingController controller;
+  final String hintText;
+  final TextInputType keyboard;
+  final bool isPassField, isPassConfirmField, isEmailField;
+  final IconData icon;
+  final int? pageIndex;
+  final int? maxLen;
+  final int? minLen;
+  final FocusNode? focusNode;
   // GlobalKey<FormState> formKey;
 
   @override
@@ -61,7 +61,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 paste: true,
               ),
         decoration: InputDecoration(
-          errorStyle: TextStyle(
+          errorStyle: const TextStyle(
             overflow: TextOverflow.clip,
           ),
           prefixIcon: Icon(
@@ -144,13 +144,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
                         return "Password should contain minimum 1 special character";
                       }
                     }
+                    return null;
                   })
                 : null,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: widget.controller,
         keyboardType: widget.keyboard,
         cursorColor: AppColors.white,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColors.white,
         ),
         obscureText: (passVisibility || passConfirmVisibility) ? true : false,

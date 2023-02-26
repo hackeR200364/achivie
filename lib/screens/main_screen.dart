@@ -21,15 +21,15 @@ class _MainScreenState extends State<MainScreen> {
   Widget currentScreen() {
     switch (currentPageIndex) {
       case 0:
-        return HomeScreen();
+        return const HomeScreen();
       case 1:
-        return InfoScreen();
+        return const InfoScreen();
       case 2:
-        return EmailUSScreen();
+        return const EmailUSScreen();
       case 3:
-        return SendSMSScreen();
+        return const SendSMSScreen();
       default:
-        return HomeScreen();
+        return const HomeScreen();
     }
   }
 

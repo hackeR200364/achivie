@@ -8,8 +8,8 @@ class CustomPageRoute extends PageRouteBuilder {
   }) : super(
           opaque: false,
           pageBuilder: (context, animation, secondaryAnimation) => child,
-          transitionDuration: Duration(milliseconds: 1500),
-          reverseTransitionDuration: Duration(minutes: 1000),
+          transitionDuration: const Duration(milliseconds: 1500),
+          reverseTransitionDuration: const Duration(minutes: 1000),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             animation = CurvedAnimation(
               parent: animation,
@@ -18,7 +18,7 @@ class CustomPageRoute extends PageRouteBuilder {
             );
             return ScaleTransition(
               scale: animation,
-              alignment: Alignment(0.0, 0.87),
+              alignment: const Alignment(0.0, 0.87),
               child: child,
             );
           },

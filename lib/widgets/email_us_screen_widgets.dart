@@ -11,7 +11,7 @@ import '../Utils/snackbar_utils.dart';
 import '../styles.dart';
 
 class EmailUsScreenColumn extends StatefulWidget {
-  EmailUsScreenColumn({
+  const EmailUsScreenColumn({
     super.key,
     required this.subjectFocusNode,
     required TextEditingController subjectController,
@@ -41,7 +41,7 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        UpperIconContainer(
+        const UpperIconContainer(
           icon: CupertinoIcons.mail_solid,
         ),
         Padding(
@@ -65,9 +65,9 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
               ),
               CustomTextField(
                 focusNode: widget.bodyFocusNode,
-                maxLen: ((widget.size.height / 100).toInt() < 2)
+                maxLen: (widget.size.height ~/ 100 < 2)
                     ? 2
-                    : (widget.size.height / 100).toInt(),
+                    : widget.size.height ~/ 100,
                 minLen: 1,
                 controller: widget._bodyController,
                 hintText: "Body",
@@ -116,7 +116,7 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
                   ),
                 );
               } catch (error) {
-                print(error);
+                // print(error);
                 errorRes = error.toString();
               }
 
@@ -133,7 +133,7 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
                 isLoading = false;
               });
             } else {
-              print((widget.size.height / 100).toInt());
+              // print(widget.size.height ~/ 100);
               ScaffoldMessenger.of(context).showSnackBar(
                 AppSnackbar().customizedAppSnackbar(
                   message: "Please fill the fields properly",
@@ -155,14 +155,16 @@ class CustomBottmNavBarWithBannerAd extends StatelessWidget {
   const CustomBottmNavBarWithBannerAd({
     super.key,
     required this.bannerAd,
+    required this.color,
   });
 
   final BannerAd? bannerAd;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.backgroundColour,
+      color: color,
       height: bannerAd!.size.height.toDouble(),
       width: MediaQuery.of(context).size.width,
       child: AdWidget(
@@ -173,12 +175,12 @@ class CustomBottmNavBarWithBannerAd extends StatelessWidget {
 }
 
 class CustomAppBarTitle extends StatelessWidget {
-  CustomAppBarTitle({
+  const CustomAppBarTitle({
     super.key,
     required this.heading,
   });
 
-  String heading;
+  final String heading;
 
   @override
   Widget build(BuildContext context) {
@@ -225,14 +227,14 @@ class CustomApBarTitleChildText extends StatelessWidget {
 }
 
 class CustomAppBarLeading extends StatelessWidget {
-  CustomAppBarLeading({
+  const CustomAppBarLeading({
     super.key,
     required this.icon,
     required this.onPressed,
   });
 
-  IconData icon;
-  VoidCallback onPressed;
+  final IconData icon;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +270,7 @@ class UpperIconContainer extends StatelessWidget {
       ),
       child: Center(
         child: GlassmorphicContainer(
-          margin: EdgeInsets.only(
+          margin: const EdgeInsets.only(
             top: 20,
             bottom: 30,
           ),
@@ -369,7 +371,7 @@ class SubmitButtonChildButtonText extends StatelessWidget {
     return Center(
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColors.white,
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -393,7 +395,7 @@ class NativeAdContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         bottom: 20,
         left: 30,
         right: 30,
@@ -419,7 +421,7 @@ class HeadingContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         bottom: 10,
         top: 10,
         left: 15,
@@ -431,7 +433,7 @@ class HeadingContainer extends StatelessWidget {
         color: AppColors.backgroundColour,
         borderRadius: BorderRadius.circular(25),
       ),
-      child: Center(
+      child: const Center(
         child: Text(
           "Enter your words",
           style: AppColors.headingTextStyle,

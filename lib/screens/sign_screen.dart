@@ -85,7 +85,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarBrightness: Brightness.light,
       ),
     );
@@ -115,7 +115,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: (signPage == 0) ? size.height * 1.1 : size.height,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -254,7 +254,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         )
                                       : InkWell(
                                           onTap: (() async {
-                                            print(packageInfo!.version);
+                                            // print(packageInfo!.version);
 
                                             if (_emailController
                                                     .text.isNotEmpty &&
@@ -357,17 +357,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           child: Container(
                                             height: 50,
                                             width: size.width / 2,
-                                            child: Center(
-                                              child: Text(
-                                                "Sign Up",
-                                                style: TextStyle(
-                                                  color: AppColors
-                                                      .backgroundColour,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                ),
-                                              ),
-                                            ),
                                             decoration: BoxDecoration(
                                               color: AppColors.white,
                                               borderRadius:
@@ -379,6 +368,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   blurRadius: 10,
                                                 ),
                                               ],
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                "Sign Up",
+                                                style: TextStyle(
+                                                  color: AppColors
+                                                      .backgroundColour,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -434,7 +434,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           );
                                         }
                                       }),
-                                      child: Text(
+                                      child: const Text(
                                         "Forgot Password",
                                         style: TextStyle(
                                           color: AppColors.white,
@@ -481,7 +481,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           onTap: (() {
                                             allAppProvidersProvider
                                                 .isLoadingFunc(true);
-                                            CircularProgressIndicator(
+                                            const CircularProgressIndicator(
                                               backgroundColor:
                                                   AppColors.backgroundColour,
                                             );
@@ -516,17 +516,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           child: Container(
                                             height: 50,
                                             width: size.width / 2,
-                                            child: Center(
-                                              child: Text(
-                                                "Login",
-                                                style: TextStyle(
-                                                  color: AppColors
-                                                      .backgroundColour,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                ),
-                                              ),
-                                            ),
                                             decoration: BoxDecoration(
                                               color: AppColors.white,
                                               borderRadius:
@@ -538,6 +527,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   blurRadius: 10,
                                                 ),
                                               ],
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                "Login",
+                                                style: TextStyle(
+                                                  color: AppColors
+                                                      .backgroundColour,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -626,7 +626,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         _emailController.clear();
                                         _passController.clear();
                                       }),
-                                      child: Text(
+                                      child: const Text(
                                         "Login",
                                         style: TextStyle(
                                           color: AppColors.backgroundColour,
@@ -658,7 +658,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         _passController.clear();
                                         _passConfirmController.clear();
                                       }),
-                                      child: Text(
+                                      child: const Text(
                                         "SignUp",
                                         style: TextStyle(
                                           color: AppColors.backgroundColour,
@@ -689,7 +689,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 }
 
 class AuthTextField extends StatefulWidget {
-  AuthTextField({
+  const AuthTextField({
     super.key,
     required this.controller,
     required this.hintText,
@@ -701,12 +701,12 @@ class AuthTextField extends StatefulWidget {
     required this.pageIndex,
     // required this.formKey,
   });
-  TextEditingController controller;
-  String hintText;
-  TextInputType keyboard;
-  bool isPassField, isPassConfirmField, isEmailField;
-  IconData icon;
-  int pageIndex;
+  final TextEditingController controller;
+  final String hintText;
+  final TextInputType keyboard;
+  final bool isPassField, isPassConfirmField, isEmailField;
+  final IconData icon;
+  final int pageIndex;
   // GlobalKey<FormState> formKey;
 
   @override
@@ -736,7 +736,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                 paste: true,
               ),
         decoration: InputDecoration(
-          errorStyle: TextStyle(
+          errorStyle: const TextStyle(
             overflow: TextOverflow.clip,
           ),
           prefixIcon: Icon(
@@ -819,13 +819,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
                         return "Password should contain minimum 1 special character";
                       }
                     }
+                    return null;
                   })
                 : null,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: widget.controller,
         keyboardType: widget.keyboard,
         cursorColor: AppColors.white,
-        style: TextStyle(
+        style: const TextStyle(
           color: AppColors.white,
         ),
         obscureText: (passVisibility || passConfirmVisibility) ? true : false,
@@ -835,14 +836,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
 }
 
 class CompanyAuth extends StatelessWidget {
-  CompanyAuth({
+  const CompanyAuth({
     super.key,
     required this.logo,
     required this.onTap,
   });
 
-  String logo = "";
-  VoidCallback onTap;
+  final String logo;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

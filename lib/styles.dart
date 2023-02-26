@@ -5,31 +5,32 @@ class AppColors {
   static const white = Colors.white;
   static const grey = Colors.grey;
   static const transparent = Colors.transparent;
-  static Color blackLow = Colors.black;
-  static Color? sky = Colors.blue;
-  static Color? red = Colors.red;
-  static Color? green = Colors.green;
-  static Color? lightGreen = Colors.lightGreenAccent;
-  static Color? orange = Colors.orange;
-  static Color? yellow = Colors.yellow;
-  static Color? lime = Colors.lime;
+  static const blackLow = Colors.black;
+  static const sky = Colors.blue;
+  static const red = Colors.red;
+  static const green = Colors.green;
+  static const lightGreen = Colors.lightGreenAccent;
+  static const orange = Colors.orange;
+  static const yellow = Colors.yellow;
+  static const lime = Colors.lime;
   static const mainColor = Color(0xFF1F1F39);
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
   static const scrollPhysics = BouncingScrollPhysics();
-  static LinearGradient customGlassIconButtonGradient = LinearGradient(
+  static final LinearGradient customGlassIconButtonGradient = LinearGradient(
     colors: [
       AppColors.white.withOpacity(0.1),
       AppColors.white.withOpacity(0.3),
     ],
   );
-  static LinearGradient customGlassButtonGradient = LinearGradient(
+  static final LinearGradient customGlassButtonGradient = LinearGradient(
     colors: [
       AppColors.backgroundColour.withOpacity(0.3),
       AppColors.backgroundColour.withOpacity(0.5),
     ],
   );
-  static LinearGradient customGlassIconButtonBorderGradient = LinearGradient(
+  static final LinearGradient customGlassIconButtonBorderGradient =
+      LinearGradient(
     colors: [
       AppColors.white.withOpacity(0.3),
       AppColors.white.withOpacity(0.5),
@@ -41,5 +42,9 @@ class AppColors {
     fontSize: 17,
     fontWeight: FontWeight.bold,
     letterSpacing: 3,
+  );
+  static final TextStyle subHeadingTextStyle = TextStyle(
+    color: AppColors.white.withOpacity(0.7),
+    fontSize: 15,
   );
 }
