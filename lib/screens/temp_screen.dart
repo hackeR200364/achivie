@@ -13,7 +13,7 @@ class TempScreen extends StatefulWidget {
 }
 
 class _TempScreenState extends State<TempScreen> {
-  String TotalTaskSuffix(int task) {
+  String totalTaskSuffix(int task) {
     int count = task % 10;
     switch (count) {
       case 1:
@@ -33,13 +33,13 @@ class _TempScreenState extends State<TempScreen> {
       body: Stack(
         children: [
           Positioned(
-            child: Lottie.asset(
-              "assets/success-done-animation.json",
-            ),
             top: 0,
             bottom: 0,
             left: 0,
             right: 0,
+            child: Lottie.asset(
+              "assets/success-done-animation.json",
+            ),
           ),
           Positioned(
             left: 0,

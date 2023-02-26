@@ -15,7 +15,7 @@ class GoogleSignInProvider extends ChangeNotifier {
 
   Future googleLogin() async {
     googleSignIn.signOut();
-    print(googleSignIn.isSignedIn());
+    // print(googleSignIn.isSignedIn());
     final googleUser = await googleSignIn.signIn();
     if (googleUser == null) return;
     GoogleSignInAccount? user = googleUser;
@@ -154,17 +154,17 @@ class EmailPassAuthServices {
       );
       StorageServices.setSignInType("Email");
     } on FirebaseException catch (e) {
-      print(e.message);
+      // print(e.message);
       Dialogs.bottomMaterialDialog(
         context: context,
         color: AppColors.white,
         title: "Warning",
         msg: e.message,
-        msgStyle: TextStyle(
+        msgStyle: const TextStyle(
           color: AppColors.mainColor,
           fontWeight: FontWeight.w600,
         ),
-        titleStyle: TextStyle(
+        titleStyle: const TextStyle(
           color: AppColors.backgroundColour,
           fontSize: 17,
           fontWeight: FontWeight.bold,
@@ -184,8 +184,6 @@ class EmailPassAuthServices {
         password: pass,
       );
 
-      final user = FirebaseAuth.instance.currentUser;
-
       StorageServices.setSignStatus(true);
       StorageServices.setUserEmail(email);
       StorageServices.setUID(pass);
@@ -194,7 +192,7 @@ class EmailPassAuthServices {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (nextPageContext) => MainScreen(),
+            builder: (nextPageContext) => const MainScreen(),
           ),
         );
       } on FirebaseException catch (e) {
@@ -203,11 +201,11 @@ class EmailPassAuthServices {
           color: AppColors.white,
           title: "Warning",
           msg: e.message,
-          msgStyle: TextStyle(
+          msgStyle: const TextStyle(
             color: AppColors.mainColor,
             fontWeight: FontWeight.w600,
           ),
-          titleStyle: TextStyle(
+          titleStyle: const TextStyle(
             color: AppColors.backgroundColour,
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -215,17 +213,17 @@ class EmailPassAuthServices {
         );
       }
     } on FirebaseException catch (e) {
-      print(e.message);
+      // print(e.message);
       Dialogs.bottomMaterialDialog(
         context: context,
         color: AppColors.white,
         title: "Warning",
         msg: e.message,
-        msgStyle: TextStyle(
+        msgStyle: const TextStyle(
           color: AppColors.mainColor,
           fontWeight: FontWeight.w600,
         ),
-        titleStyle: TextStyle(
+        titleStyle: const TextStyle(
           color: AppColors.backgroundColour,
           fontSize: 17,
           fontWeight: FontWeight.bold,
@@ -245,11 +243,11 @@ class EmailPassAuthServices {
         color: AppColors.white,
         title: "Success",
         msg: "Password reset email sent. Please check your email app",
-        msgStyle: TextStyle(
+        msgStyle: const TextStyle(
           color: AppColors.mainColor,
           fontWeight: FontWeight.w600,
         ),
-        titleStyle: TextStyle(
+        titleStyle: const TextStyle(
           color: AppColors.backgroundColour,
           fontSize: 17,
           fontWeight: FontWeight.bold,
@@ -277,7 +275,7 @@ class EmailPassAuthServices {
                 borderRadius: BorderRadius.circular(15),
                 color: AppColors.mainColor,
               ),
-              child: Center(
+              child: const Center(
                 child: Text(
                   "Open",
                   style: TextStyle(
@@ -297,11 +295,11 @@ class EmailPassAuthServices {
         color: AppColors.white,
         title: "Failed",
         msg: e.message,
-        msgStyle: TextStyle(
+        msgStyle: const TextStyle(
           color: AppColors.mainColor,
           fontWeight: FontWeight.w600,
         ),
-        titleStyle: TextStyle(
+        titleStyle: const TextStyle(
           color: AppColors.backgroundColour,
           fontSize: 17,
           fontWeight: FontWeight.bold,

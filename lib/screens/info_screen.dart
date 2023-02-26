@@ -80,10 +80,19 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
     ),
   ];
   int tabIndex = 0;
+  bool pageLoading = true;
 
   @override
   void initState() {
     tabController = PageController();
+    Future.delayed(
+      const Duration(milliseconds: 500),
+      (() {
+        setState(() {
+          pageLoading = false;
+        });
+      }),
+    );
     super.initState();
   }
 
@@ -102,7 +111,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
             child: Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.backgroundColour,
                 image: DecorationImage(
                   fit: BoxFit.cover,
@@ -131,7 +140,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
           ),
           Positioned(
             child: Container(
-              margin: EdgeInsets.only(
+              margin: const EdgeInsets.only(
                 left: 25,
                 right: 25,
               ),
@@ -139,7 +148,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               height: size.height,
               child: PageView(
                 onPageChanged: ((page) {
-                  print(page);
+                  // print(page);
                   setState(() {
                     tabIndex = page;
                   });
@@ -147,7 +156,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                 controller: tabController,
                 physics: AppColors.scrollPhysics,
                 children: infoList.map<Widget>((e) {
-                  return infoWidget(
+                  return InfoWidget(
                     index: e.index,
                     infoList: infoList,
                     head: e.head,
@@ -168,53 +177,6 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               count: infoList.length,
             ),
           ),
-          // Positioned(
-          //   bottom: size.height / 11,
-          //   left: size.width / 10,
-          //   right: size.width / 10,
-          //   child: GlassmorphicContainer(
-          //     width: MediaQuery.of(context).size.width,
-          //     height: MediaQuery.of(context).size.height / 2,
-          //     borderRadius: 20,
-          //     linearGradient: LinearGradient(
-          //       colors: [
-          //         AppColors.white.withOpacity(0.1),
-          //         AppColors.white.withOpacity(0.3),
-          //       ],
-          //     ),
-          //     border: 2,
-          //     blur: 4,
-          //     borderGradient: LinearGradient(
-          //       colors: [
-          //         AppColors.white.withOpacity(0.3),
-          //         AppColors.white.withOpacity(0.5),
-          //       ],
-          //     ),
-          //     child: Column(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: [
-          //         Padding(
-          //           padding: EdgeInsets.only(
-          //             left: 25,
-          //             right: 25,
-          //           ),
-          //           child: Text(
-          //             "This tagline emphasizes the importance of focus and productivity, encouraging users to tackle their to-do list one task at a time. By prioritizing tasks and avoiding multitasking, users can achieve more and feel more accomplished.",
-          //             overflow: TextOverflow.clip,
-          //             textAlign: TextAlign.center,
-          //             style: TextStyle(
-          //               color: AppColors.mainColor,
-          //               fontSize: 16,
-          //               fontWeight: FontWeight.bold,
-          //               letterSpacing: 3,
-          //               height: 1.7,
-          //             ),
-          //           ),
-          //         )
-          //       ],
-          //     ),
-          //   ),
-          // ),
           Positioned(
             top: MediaQuery.of(context).size.height / 15,
             left: 20,
@@ -236,12 +198,12 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                         tabController: tabController,
                         onPressed: (() {
                           tabController.previousPage(
-                            duration: Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             curve: Curves.ease,
                           );
                         }),
                       ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10,
                     ),
                     if (tabIndex != infoList.length - 1)
@@ -250,7 +212,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                         tabController: tabController,
                         onPressed: (() {
                           tabController.nextPage(
-                            duration: Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             curve: Curves.bounceInOut,
                           );
                         }),
@@ -260,14 +222,30 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
+          if (pageLoading)
+            Positioned(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                decoration: const BoxDecoration(
+                  color: AppColors.mainColor,
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class infoWidget extends StatelessWidget {
-  infoWidget({
+class InfoWidget extends StatelessWidget {
+  const InfoWidget({
     super.key,
     required this.head,
     required this.des,
@@ -275,10 +253,10 @@ class infoWidget extends StatelessWidget {
     required this.infoList,
   });
 
-  String head;
-  String des;
-  int index;
-  List<InfoListModel> infoList;
+  final String head;
+  final String des;
+  final int index;
+  final List<InfoListModel> infoList;
 
   @override
   Widget build(BuildContext context) {
@@ -297,18 +275,18 @@ class infoWidget extends StatelessWidget {
             child: Text(
               '"$head',
               overflow: TextOverflow.clip,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.white,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 25,
           ),
           GlassmorphicContainer(
-            margin: EdgeInsets.only(
+            margin: const EdgeInsets.only(
               left: 10,
               right: 10,
             ),
@@ -333,7 +311,7 @@ class infoWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                     left: 25,
                     right: 25,
                   ),
@@ -341,7 +319,7 @@ class infoWidget extends StatelessWidget {
                     des,
                     overflow: TextOverflow.clip,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.mainColor,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
@@ -353,7 +331,7 @@ class infoWidget extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 25,
           ),
           if (index == infoList.length - 1)
@@ -377,7 +355,7 @@ class infoWidget extends StatelessWidget {
                     AppColors.white.withOpacity(0.5),
                   ],
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Visit Website",
                     style: TextStyle(

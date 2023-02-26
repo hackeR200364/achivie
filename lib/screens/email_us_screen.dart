@@ -21,6 +21,7 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
   late NativeAd nativeAd;
   bool isNativeAdLoaded = false;
   bool isBannerAdLoaded = false;
+  bool pageLoading = true;
 
   @override
   void initState() {
@@ -39,10 +40,10 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
         }),
         onAdFailedToLoad: ((ad, err) {
           nativeAd.dispose();
-          print("Native ad failed : ${err.message}");
+          // print("Native ad failed : ${err.message}");
         }),
       ),
-      request: AdRequest(),
+      request: const AdRequest(),
     );
     nativeAd.load();
     bannerAd = BannerAd(
@@ -52,12 +53,14 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
         onAdLoaded: ((ad) {
           setState(() {
             isBannerAdLoaded = true;
+            pageLoading = false;
           });
         }),
       ),
-      request: AdRequest(),
+      request: const AdRequest(),
     );
     bannerAd!.load();
+
     super.initState();
   }
 
@@ -86,23 +89,46 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
             ZoomDrawer.of(context)!.toggle();
           }),
         ),
-        title: CustomAppBarTitle(
+        title: const CustomAppBarTitle(
           heading: "Email us",
         ),
       ),
       bottomNavigationBar: CustomBottmNavBarWithBannerAd(
         bannerAd: bannerAd,
+        color: (isBannerAdLoaded)
+            ? AppColors.backgroundColour
+            : AppColors.mainColor,
       ),
-      body: SingleChildScrollView(
-        child: EmailUsScreenColumn(
-          subjectFocusNode: subjectFocusNode,
-          subjectController: _subjectController,
-          bodyFocusNode: bodyFocusNode,
-          size: size,
-          bodyController: _bodyController,
-          isNativeAdLoaded: isNativeAdLoaded,
-          nativeAd: nativeAd,
-        ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: EmailUsScreenColumn(
+              subjectFocusNode: subjectFocusNode,
+              subjectController: _subjectController,
+              bodyFocusNode: bodyFocusNode,
+              size: size,
+              bodyController: _bodyController,
+              isNativeAdLoaded: isNativeAdLoaded,
+              nativeAd: nativeAd,
+            ),
+          ),
+          if (pageLoading)
+            Positioned(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                decoration: const BoxDecoration(
+                  color: AppColors.mainColor,
+                ),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -18,7 +18,7 @@ import 'package:task_app/styles.dart';
 import '../providers/app_providers.dart';
 
 class NewTaskScreen extends StatefulWidget {
-  NewTaskScreen({
+  const NewTaskScreen({
     super.key,
     this.taskType,
     this.taskTime,
@@ -30,14 +30,14 @@ class NewTaskScreen extends StatefulWidget {
     this.userEmail,
   });
 
-  String? taskType;
-  String? taskName;
-  String? taskDes;
-  String? taskTime;
-  String? taskDate;
-  String? taskNoti;
-  String? taskDoc;
-  String? userEmail;
+  final String? taskType;
+  final String? taskName;
+  final String? taskDes;
+  final String? taskTime;
+  final String? taskDate;
+  final String? taskNoti;
+  final String? taskDoc;
+  final String? userEmail;
   @override
   State<NewTaskScreen> createState() => _NewTaskScreenState();
 }
@@ -136,19 +136,19 @@ class _NewTaskScreenState extends State<NewTaskScreen>
           // print("Banner ad loaded ${ad.adUnitId}");
         }),
       ),
-      request: AdRequest(),
+      request: const AdRequest(),
     );
     bannerAd!.load();
 
     RewardedAd.load(
       adUnitId: "ca-app-pub-3940256099942544/5224354917",
-      request: AdRequest(),
+      request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: ((onAdLoaded) {
           rewardedAd = onAdLoaded;
         }),
         onAdFailedToLoad: ((onAdFailedToLoad) {
-          print("Failed: ${onAdFailedToLoad.message}");
+          // print("Failed: ${onAdFailedToLoad.message}");
         }),
       ),
     );
@@ -344,10 +344,10 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+                    children: const [
                       Text(
                         "Add new task",
-                        style: const TextStyle(
+                        style: TextStyle(
                           overflow: TextOverflow.fade,
                           fontSize: 17,
                           fontWeight: FontWeight.bold,
@@ -391,7 +391,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                   ),
                   child: Center(
                     child: GlassmorphicContainer(
-                      margin: EdgeInsets.only(
+                      margin: const EdgeInsets.only(
                         top: 20,
                         bottom: 30,
                       ),
@@ -412,7 +412,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                           AppColors.white.withOpacity(0.5),
                         ],
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Icon(
                           Icons.work,
                           color: AppColors.white,
@@ -454,7 +454,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               taskTypeTextList.add(
                                 Text(
                                   type,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppColors.white,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -475,7 +475,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                   allAppProvidersProvider
                                       .selectedTypeFunc(taskType[value]);
                                   // print(AllAppProvidersProvider.selectedType);
-                                  print(taskType[value]);
+                                  // print(taskType[value]);
                                 },
                                 children: taskTypeTextList,
                               ),
@@ -632,11 +632,11 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.access_time_filled_rounded,
                                     color: AppColors.white,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 10,
                                   ),
                                   Text(
@@ -746,24 +746,24 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           await updatePoints(
                                             points: point.amount.toInt(),
                                           );
-                                          print(
-                                              "Point type : ${point.type}\nPoint amount : ${point.amount.toInt()}");
+                                          // print(
+                                          //     "Point type : ${point.type}\nPoint amount : ${point.amount.toInt()}");
                                         }),
                                       );
                                       rewardedAd?.fullScreenContentCallback =
                                           FullScreenContentCallback(
                                         onAdClicked: ((ad) {}),
                                         onAdDismissedFullScreenContent: ((ad) {
-                                          print("ad dismissed");
+                                          // print("ad dismissed");
                                         }),
                                         onAdFailedToShowFullScreenContent:
                                             ((ad, err) {
                                           ad.dispose();
-                                          print("ad error $err");
+                                          // print("ad error $err");
                                         }),
                                         onAdImpression: ((ad) {}),
                                         onAdShowedFullScreenContent: ((ad) {
-                                          print("ad shown ${ad.responseInfo}");
+                                          // print("ad shown ${ad.responseInfo}");
                                         }),
                                         onAdWillDismissFullScreenContent:
                                             ((ad) {}),
@@ -896,16 +896,16 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         onAdClicked: ((ad) {}),
                                         onAdDismissedFullScreenContent:
                                             ((ad) async {
-                                          print("ad dismissed");
+                                          // print("ad dismissed");
                                         }),
                                         onAdFailedToShowFullScreenContent:
                                             ((ad, err) {
                                           ad.dispose();
-                                          print("ad error $err");
+                                          // print("ad error $err");
                                         }),
                                         onAdImpression: ((ad) {}),
                                         onAdShowedFullScreenContent: ((ad) {
-                                          print("ad shown ${ad.responseInfo}");
+                                          // print("ad shown ${ad.responseInfo}");
                                         }),
                                         onAdWillDismissFullScreenContent:
                                             ((ad) {}),
