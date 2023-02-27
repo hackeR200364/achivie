@@ -73,6 +73,9 @@ dependencies:
   flutter_email_sender:
   telephony:
   smooth_page_indicator:
+  nowplaying:
+  flutter_local_notifications: ^13.0.0
+  marquee:
 
 dev_dependencies:
   flutter_test:

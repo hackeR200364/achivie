@@ -1052,6 +1052,7 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
     return Text(
       userDetailsProviderProvider.userName,
       style: const TextStyle(
+        color: AppColors.white,
         overflow: TextOverflow.fade,
         fontSize: 17,
         fontWeight: FontWeight.bold,
@@ -1705,7 +1706,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
               ),
               SizedBox(
                 // color: AppColors.sky,
-                height: MediaQuery.of(context).size.height / 2.3,
+                height: MediaQuery.of(context).size.height / 2.8,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.separated(
                   physics: AppColors.scrollPhysics,
@@ -2065,6 +2066,11 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Container(
+          width: double.infinity,
+          height: 100,
+          color: AppColors.backgroundColour,
+        ),
         const HomeScreenGraphContainer(),
         HomeScreenTaskTypePickerContainer(taskType: taskType),
         CustomHomeScreenTabBarHeadList(tabController: tabController),
@@ -2112,7 +2118,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 2.1,
+      height: MediaQuery.of(context).size.height / 2.7,
       width: MediaQuery.of(context).size.width,
       child: CustomHomeScreenTabBarViewWithConsumer(
           tabController: tabController,

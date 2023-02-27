@@ -34,6 +34,9 @@ class Keys {
   static const String tasksScheduledChannelName = "Tasks_Instant";
   static const String tasksScheduledChannelDes =
       "Scheduled Tasks Notifications";
+  static const String userSongStatus = "userSongStatus";
+  static const String userSongName = "userSongName";
+  static const String userSongApp = "userSongApp";
 }
 
 class StorageServices {
