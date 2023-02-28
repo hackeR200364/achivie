@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
@@ -22,8 +23,10 @@ class MenuScreenColumWithPadding extends StatelessWidget {
   const MenuScreenColumWithPadding({
     super.key,
     required this.widget,
+    required this.zoomDrawerController,
   });
 
+  final ZoomDrawerController zoomDrawerController;
   final MenuScreen widget;
 
   @override
@@ -34,6 +37,7 @@ class MenuScreenColumWithPadding extends StatelessWidget {
         bottom: MediaQuery.of(context).size.height / 17,
       ),
       child: MenuScreenMainColumn(
+        zoomDrawerController: zoomDrawerController,
         widget: widget,
       ),
     );
@@ -44,8 +48,10 @@ class MenuScreenMainColumn extends StatelessWidget {
   const MenuScreenMainColumn({
     super.key,
     required this.widget,
+    required this.zoomDrawerController,
   });
 
+  final ZoomDrawerController zoomDrawerController;
   final MenuScreen widget;
 
   @override
@@ -54,56 +60,18 @@ class MenuScreenMainColumn extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         MenuScreenListUpperColumn(
+          zoomDrawerController: zoomDrawerController,
           widget: widget,
         ),
         SizedBox(
-          height: MediaQuery.of(context).size.height / 6,
+          height: MediaQuery.of(context).size.height / 2.4,
         ),
-        const MenuScreenListLowerColumn(),
-      ],
-    );
-  }
-}
-
-class MenuScreenListLowerColumn extends StatelessWidget {
-  const MenuScreenListLowerColumn({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const MenuScreenSocialFirstRow(),
-        const SizedBox(
-          height: 10,
+        Padding(
+          padding: const EdgeInsets.only(
+            left: 10,
+          ),
+          child: const MenuScreenExtraLogoutButtonParent(),
         ),
-        const MenuScreenSocialSecondRow(),
-        const SizedBox(
-          height: 20,
-        ),
-        MenuScreenExtraButton(
-          onTap: () {},
-          title: "Visit Website",
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        MenuScreenExtraButton(
-          onTap: (() async {
-            await launchUrl(
-              Uri.parse(
-                "https://github.com/hackeR200364/task_app",
-              ),
-              mode: LaunchMode.externalNonBrowserApplication,
-            );
-          }),
-          title: "GitHub Repository",
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        const MenuScreenExtraLogoutButtonParent(),
       ],
     );
   }
@@ -266,7 +234,10 @@ class MenuScreenSocialSecondRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double spacerWidth = MediaQuery.of(context).size.width / 15;
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         MenuScreenSocialMediaButton(
           icon: "assets/social-icons/linkedIn-logo.png",
@@ -278,6 +249,9 @@ class MenuScreenSocialSecondRow extends StatelessWidget {
               mode: LaunchMode.externalNonBrowserApplication,
             );
           }),
+        ),
+        SizedBox(
+          width: spacerWidth,
         ),
         MenuScreenSocialMediaButton(
           icon: "assets/social-icons/github-logo.png",
@@ -302,7 +276,10 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double spacerWidth = MediaQuery.of(context).size.width / 20;
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         MenuScreenSocialMediaButton(
           icon: "assets/social-icons/twitter-logo.png",
@@ -315,6 +292,9 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
             );
           }),
         ),
+        SizedBox(
+          width: spacerWidth,
+        ),
         MenuScreenSocialMediaButton(
           icon: "assets/social-icons/instagram-logo.png",
           onPressed: (() async {
@@ -325,6 +305,9 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
               mode: LaunchMode.externalNonBrowserApplication,
             );
           }),
+        ),
+        SizedBox(
+          width: spacerWidth,
         ),
         MenuScreenSocialMediaButton(
           icon: "assets/social-icons/facebook-logo.png",
@@ -337,6 +320,9 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
             );
           }),
         ),
+        SizedBox(
+          width: MediaQuery.of(context).size.width / 30,
+        ),
       ],
     );
   }
@@ -346,9 +332,11 @@ class MenuScreenListUpperColumn extends StatelessWidget {
   const MenuScreenListUpperColumn({
     super.key,
     required this.widget,
+    required this.zoomDrawerController,
   });
 
   final MenuScreen widget;
+  final ZoomDrawerController zoomDrawerController;
 
   @override
   Widget build(BuildContext context) {
@@ -361,6 +349,7 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           index: 0,
           selectedIndex: widget.selectedIndex,
           setIndex: widget.setIndex,
+          zoomDrawerController: zoomDrawerController,
         ),
         MenuListItem(
           title: "Info",
@@ -368,6 +357,7 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           index: 1,
           selectedIndex: widget.selectedIndex,
           setIndex: widget.setIndex,
+          zoomDrawerController: zoomDrawerController,
         ),
         MenuListItem(
           title: "Email Us",
@@ -375,6 +365,7 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           index: 2,
           selectedIndex: widget.selectedIndex,
           setIndex: widget.setIndex,
+          zoomDrawerController: zoomDrawerController,
         ),
         if (Platform.isAndroid)
           MenuListItem(
@@ -383,6 +374,7 @@ class MenuScreenListUpperColumn extends StatelessWidget {
             index: 3,
             selectedIndex: widget.selectedIndex,
             setIndex: widget.setIndex,
+            zoomDrawerController: zoomDrawerController,
           ),
       ],
     );
@@ -397,6 +389,7 @@ class MenuListItem extends StatelessWidget {
     required this.index,
     required this.selectedIndex,
     required this.setIndex,
+    required this.zoomDrawerController,
   });
 
   final String title;
@@ -404,6 +397,7 @@ class MenuListItem extends StatelessWidget {
   final int index;
   final ValueSetter setIndex;
   final int selectedIndex;
+  final ZoomDrawerController zoomDrawerController;
 
   @override
   Widget build(BuildContext context) {
@@ -415,7 +409,7 @@ class MenuListItem extends StatelessWidget {
             milliseconds: 100,
           ),
           (() {
-            ZoomDrawer.of(context)!.close();
+            ZoomDrawer.of(context)!.toggle();
           }),
         );
       }),
@@ -428,26 +422,11 @@ class MenuListItem extends StatelessWidget {
         height: 41,
         borderRadius: 40,
         linearGradient: (selectedIndex == index)
-            ? LinearGradient(
-                colors: [
-                  AppColors.backgroundColour.withOpacity(0.3),
-                  AppColors.backgroundColour.withOpacity(0.5),
-                ],
-              )
-            : LinearGradient(
-                colors: [
-                  AppColors.white.withOpacity(0.1),
-                  AppColors.white.withOpacity(0.3),
-                ],
-              ),
+            ? AppColors.customGlassButtonGradient
+            : AppColors.customGlassButtonTransparentGradient,
         border: 2,
         blur: 4,
-        borderGradient: LinearGradient(
-          colors: [
-            AppColors.white.withOpacity(0.3),
-            AppColors.white.withOpacity(0.5),
-          ],
-        ),
+        borderGradient: AppColors.customGlassButtonTransparentGradient,
         child: Padding(
           padding: const EdgeInsets.only(left: 15),
           child: Row(
@@ -504,7 +483,7 @@ class MenuScreenProfileContainer extends StatelessWidget {
           linearGradient: AppColors.customGlassIconButtonGradient,
           border: 2,
           blur: 4,
-          borderGradient: AppColors.customGlassIconButtonBorderGradient,
+          borderGradient: AppColors.customGlassButtonTransparentGradient,
           child: MenuScreenProfileContainerChildColumn(
             name: userDetailsProviderProvider.userName,
             points: userDetailsProviderProvider.userPoints,
@@ -564,13 +543,10 @@ class MenuScreenExtraButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: GlassmorphicContainer(
-        margin: const EdgeInsets.only(
-          left: 10,
-        ),
         width: double.infinity,
-        height: 41,
+        height: 45,
         borderRadius: 40,
-        linearGradient: AppColors.customGlassIconButtonGradient,
+        linearGradient: AppColors.customGlassButtonGradient,
         border: 2,
         blur: 4,
         borderGradient: AppColors.customGlassIconButtonBorderGradient,
@@ -602,26 +578,13 @@ class MenuScreenSocialMediaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassmorphicContainer(
-      margin: const EdgeInsets.only(
-        left: 13,
-      ),
-      width: 41,
-      height: 41,
+      width: 50,
+      height: 50,
       borderRadius: 40,
-      linearGradient: LinearGradient(
-        colors: [
-          AppColors.white.withOpacity(0.1),
-          AppColors.white.withOpacity(0.3),
-        ],
-      ),
+      linearGradient: AppColors.customGlassIconButtonGradient,
       border: 2,
       blur: 4,
-      borderGradient: LinearGradient(
-        colors: [
-          AppColors.white.withOpacity(0.3),
-          AppColors.white.withOpacity(0.5),
-        ],
-      ),
+      borderGradient: AppColors.customGlassIconButtonGradient,
       child: Center(
         child: InkWell(
           onTap: onPressed,

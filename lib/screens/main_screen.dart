@@ -17,6 +17,18 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int currentPageIndex = 0;
+  late ZoomDrawerController zoomDrawerController;
+
+  @override
+  void initState() {
+    zoomDrawerController = ZoomDrawerController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   Widget currentScreen() {
     switch (currentPageIndex) {
@@ -36,6 +48,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return ZoomDrawer(
+      controller: zoomDrawerController,
       openCurve: Curves.fastOutSlowIn,
       closeCurve: Curves.easeInOut,
       androidCloseOnBackTap: true,
@@ -44,6 +57,7 @@ class _MainScreenState extends State<MainScreen> {
       drawerShadowsBackgroundColor: AppColors.white,
       mainScreen: currentScreen(),
       menuScreen: MenuScreen(
+        zoomDrawerController: zoomDrawerController,
         selectedIndex: currentPageIndex,
         setIndex: ((index) {
           setState(() {

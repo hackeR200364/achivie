@@ -4,6 +4,8 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:task_app/styles.dart';
+import 'package:task_app/widgets/menu_screen_widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../Utils/custom_glass_icon.dart';
 import '../models/info_list_model.dart';
@@ -19,61 +21,66 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
   late PageController tabController;
   List<InfoListModel> infoList = [
     InfoListModel(
-      des:
-          "Encourages users to tackle their to-do list one task at a time, emphasizing the importance of focus and productivity.",
-      head: "Get things done, one task at a time!",
+      des: "",
+      head: "",
       index: 0,
     ),
     InfoListModel(
+      des:
+          "Encourages users to tackle their to-do list one task at a time, emphasizing the importance of focus and productivity.",
+      head: "Get things done, one task at a time!",
       index: 1,
+    ),
+    InfoListModel(
+      index: 2,
       des:
           "Emphasizes the importance of maintaining consistency and daily progress towards one's goals.",
       head: "Stay on track with your day, every day.",
     ),
     InfoListModel(
-      index: 2,
+      index: 3,
       des:
           "Positions the app as a go-to tool for anyone looking to enhance their productivity and streamline their tasks.",
       head: "Your ultimate productivity companion.",
     ),
     InfoListModel(
-      index: 3,
+      index: 4,
       des:
           "Suggests that the app helps users organize their life and streamline their tasks for a more efficient and productive day.",
       head: "Organize your life, simplify your day.",
     ),
     InfoListModel(
-      index: 4,
+      index: 5,
       des:
           "Encourages users to set goals and use the app as a tool to accomplish them efficiently.",
       head: "Achieve your goals, crush your to-do list.",
     ),
     InfoListModel(
-      index: 5,
+      index: 6,
       des:
           "Emphasizes the app's simplicity and user-friendliness as key selling points.",
       head: "Productivity made simple, just for you.",
     ),
     InfoListModel(
-      index: 6,
+      index: 7,
       des:
           "Suggests that the app helps users optimize their workflow and increase their productivity.",
       head: "Streamline your workflow, boost your efficiency.",
     ),
     InfoListModel(
-      index: 7,
+      index: 8,
       des:
           "Promises users that using the app will result in getting more done while reducing stress and overwhelm.",
       head: "Get more done, stress less.",
     ),
     InfoListModel(
-      index: 8,
+      index: 9,
       des:
           "Positions the app as a personal assistant, helping users manage their tasks efficiently.",
       head: "Your personal task master at your fingertips.",
     ),
     InfoListModel(
-      index: 9,
+      index: 10,
       des:
           "Encourages users to take control of their time and be more productive with the help of the app.",
       head: "Master your day, own your time.",
@@ -156,12 +163,86 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                 controller: tabController,
                 physics: AppColors.scrollPhysics,
                 children: infoList.map<Widget>((e) {
-                  return InfoWidget(
-                    index: e.index,
-                    infoList: infoList,
-                    head: e.head,
-                    des: e.des,
-                  );
+                  return (e.index == 0)
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Socials',
+                              overflow: TextOverflow.clip,
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 25,
+                            ),
+                            GlassmorphicContainer(
+                              margin: const EdgeInsets.only(
+                                left: 13,
+                                right: 13,
+                              ),
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height / 2,
+                              borderRadius: 20,
+                              linearGradient:
+                                  AppColors.customGlassIconButtonGradient,
+                              border: 2,
+                              blur: 4,
+                              borderGradient:
+                                  AppColors.customGlassIconButtonBorderGradient,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  MenuScreenSocialFirstRow(),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  MenuScreenSocialSecondRow(),
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height / 20,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 25,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        MenuScreenExtraButton(
+                                          onTap: () {},
+                                          title: "Visit Website",
+                                        ),
+                                        const SizedBox(
+                                          height: 20,
+                                        ),
+                                        MenuScreenExtraButton(
+                                          onTap: (() async {
+                                            await launchUrl(
+                                              Uri.parse(
+                                                "https://github.com/hackeR200364/task_app",
+                                              ),
+                                              mode: LaunchMode
+                                                  .externalNonBrowserApplication,
+                                            );
+                                          }),
+                                          title: "GitHub Repository",
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : InfoWidget(
+                          head: e.head,
+                          des: e.des,
+                        );
                 }).toList(),
               ),
             ),
@@ -169,9 +250,9 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
           Positioned(
             bottom: size.height / 10,
             child: SmoothPageIndicator(
-              effect: ExpandingDotsEffect(
+              effect: ScrollingDotsEffect(
                 dotColor: AppColors.backgroundColour.withOpacity(0.2),
-                activeDotColor: AppColors.backgroundColour,
+                activeDotColor: AppColors.backgroundColour.withOpacity(0.8),
               ),
               controller: tabController,
               count: infoList.length,
@@ -249,14 +330,10 @@ class InfoWidget extends StatelessWidget {
     super.key,
     required this.head,
     required this.des,
-    required this.index,
-    required this.infoList,
   });
 
   final String head;
   final String des;
-  final int index;
-  final List<InfoListModel> infoList;
 
   @override
   Widget build(BuildContext context) {
@@ -293,20 +370,10 @@ class InfoWidget extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height / 2,
             borderRadius: 20,
-            linearGradient: LinearGradient(
-              colors: [
-                AppColors.white.withOpacity(0.1),
-                AppColors.white.withOpacity(0.3),
-              ],
-            ),
+            linearGradient: AppColors.customGlassIconButtonGradient,
             border: 2,
             blur: 4,
-            borderGradient: LinearGradient(
-              colors: [
-                AppColors.white.withOpacity(0.3),
-                AppColors.white.withOpacity(0.5),
-              ],
-            ),
+            borderGradient: AppColors.customGlassIconButtonBorderGradient,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -331,43 +398,6 @@ class InfoWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(
-            height: 25,
-          ),
-          if (index == infoList.length - 1)
-            InkWell(
-              onTap: (() {}),
-              child: GlassmorphicContainer(
-                width: MediaQuery.of(context).size.width / 1.5,
-                height: 50,
-                borderRadius: 20,
-                linearGradient: LinearGradient(
-                  colors: [
-                    AppColors.backgroundColour.withOpacity(0.3),
-                    AppColors.backgroundColour.withOpacity(0.5),
-                  ],
-                ),
-                border: 2,
-                blur: 4,
-                borderGradient: LinearGradient(
-                  colors: [
-                    AppColors.white.withOpacity(0.3),
-                    AppColors.white.withOpacity(0.5),
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    "Visit Website",
-                    style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-              ),
-            )
         ],
       ),
     );
