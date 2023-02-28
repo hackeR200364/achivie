@@ -1,8 +1,5 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
-import 'package:lottie/lottie.dart';
-import 'package:provider/provider.dart';
 
-import '../providers/task_details_provider.dart';
 import '../styles.dart';
 
 class TempScreen extends StatefulWidget {
@@ -30,54 +27,7 @@ class _TempScreenState extends State<TempScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Lottie.asset(
-              "assets/success-done-animation.json",
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: MediaQuery.of(context).size.height / 4,
-            child: const Center(
-              child: Text(
-                "Brought Back",
-                style: TextStyle(
-                  color: AppColors.backgroundColour,
-                  fontSize: 35,
-                  letterSpacing: 3,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: MediaQuery.of(context).size.height / 6,
-            left: 0,
-            right: 0,
-            child: Consumer<TaskDetailsProvider>(builder:
-                (taskDetailsContext, taskDetailsProvider, taskDetailsChild) {
-              return const Center(
-                child: Text(
-                  "Your this task is brought back as pending",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.backgroundColour,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              );
-            }),
-          ),
-        ],
-      ),
+      backgroundColor: AppColors.mainColor,
     );
   }
 }

@@ -29,6 +29,13 @@ class AppColors {
       AppColors.backgroundColour.withOpacity(0.5),
     ],
   );
+  static final LinearGradient customGlassButtonTransparentGradient =
+      LinearGradient(
+    colors: [
+      AppColors.transparent,
+      AppColors.transparent,
+    ],
+  );
   static final LinearGradient customGlassIconButtonBorderGradient =
       LinearGradient(
     colors: [

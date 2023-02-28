@@ -69,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onAdLoaded: ((ad) {
           setState(() {
             isBannerAdLoaded = true;
-            pageLoading = false;
           });
         }),
       ),
@@ -83,6 +82,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       volume: 50,
     );
     checkCallStatus();
+
+    Future.delayed(
+      Duration(
+        milliseconds: 700,
+      ),
+      (() {
+        setState(() {
+          pageLoading = false;
+        });
+      }),
+    );
     super.initState();
   }
 
@@ -104,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (callState == CallState.RINGING) {
       // Incoming call
       print('Incoming call');
-    } else if (callState == CallState.UNKNOWN) {
+    } else if (callState == CallState.OFFHOOK) {
       // Active call
       print('Active call');
     } else {
@@ -239,17 +249,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       }
 
                       if (nowPlayingTrack.isPlaying) {
-                        isPlaying = true;
-                        songName = nowPlayingTrack.title!;
-                        songArtist = nowPlayingTrack.artist!;
-                        Future.delayed(
-                          Duration.zero,
-                          (() {
-                            allAppProvider.isSongPlayingFunc(isPlaying);
-                            allAppProvider.songNameFunc(songName);
-                            allAppProvider.songArtistFunc(songArtist);
-                          }),
-                        );
+                        if (nowPlayingTrack.image != null &&
+                            nowPlayingTrack.title != null &&
+                            nowPlayingTrack.artist != null &&
+                            nowPlayingTrack.source != null) {
+                          isPlaying = true;
+                          songName = nowPlayingTrack.title!;
+                          songArtist = nowPlayingTrack.artist!;
+                          Future.delayed(
+                            Duration.zero,
+                            (() {
+                              allAppProvider.isSongPlayingFunc(isPlaying);
+                              allAppProvider.songNameFunc(songName);
+                              allAppProvider.songArtistFunc(songArtist);
+                            }),
+                          );
+                        } else {
+                          Future.delayed(
+                            Duration.zero,
+                            (() {
+                              setState(() {});
+                            }),
+                          );
+                        }
                         return Align(
                           alignment: Alignment.center,
                           child: GestureDetector(

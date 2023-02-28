@@ -591,7 +591,6 @@ class TaskUnDoneDialogChild extends StatelessWidget {
     return Consumer<TaskDetailsProvider>(
       builder: (taskDetailsContext, taskDetailsProvider, taskDetailsChild) {
         return TaskDialog(
-          context: context,
           animation: "assets/cancel-undone-animation.json",
           headMessage: "Canceled!",
           subMessage: "Your this task is canceled",
@@ -1082,14 +1081,12 @@ class CustomHomeScreenAppBarTitleSubHeading extends StatelessWidget {
 class TaskDialog extends StatelessWidget {
   TaskDialog({
     super.key,
-    required this.context,
     required this.animation,
     required this.headMessage,
     required this.subMessage,
     required this.subMessageBottomDivision,
   });
 
-  final BuildContext context;
   final String animation;
   final String headMessage;
   final String subMessage;
@@ -1097,51 +1094,71 @@ class TaskDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Lottie.asset(animation),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: MediaQuery.of(context).size.height / 4,
-          child: Center(
-            child: Text(
-              headMessage,
-              style: const TextStyle(
-                color: AppColors.white,
-                fontSize: 35,
-                letterSpacing: 3,
-                fontWeight: FontWeight.bold,
+    return GlassmorphicContainer(
+      margin: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: MediaQuery.of(context).size.height / 5,
+        bottom: MediaQuery.of(context).size.height / 5,
+      ),
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height / 1.1,
+      borderRadius: 20,
+      linearGradient: AppColors.customGlassIconButtonGradient,
+      border: 2,
+      blur: 4,
+      borderGradient: AppColors.customGlassIconButtonBorderGradient,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: MediaQuery.of(context).size.height / 3.8,
+            height: 200,
+            child: Lottie.asset(
+              animation,
+              width: 50,
+              height: 50,
+            ),
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height / 8,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    headMessage,
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 35,
+                      letterSpacing: 3,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Text(
+                    subMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: MediaQuery.of(context).size.height / subMessageBottomDivision,
-          left: 0,
-          right: 0,
-          child: Consumer<TaskDetailsProvider>(builder:
-              (taskDetailsContext, taskDetailsProvider, taskDetailsChild) {
-            return Center(
-              child: Text(
-                subMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1698,6 +1715,17 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
             );
           }
 
+          List<QueryDocumentSnapshot<Object?>> snapshotList =
+              snapshot.data!.docs;
+
+          snapshotList.sort(
+            (a, b) => DateTime.parse(
+              (b.data() as Map)[Keys.taskDate].split('/').reversed.join(),
+            ).compareTo(
+              DateTime.now(),
+            ),
+          );
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1706,14 +1734,14 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
               ),
               SizedBox(
                 // color: AppColors.sky,
-                height: MediaQuery.of(context).size.height / 2.8,
+                height: MediaQuery.of(context).size.height / 2.4,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.separated(
                   physics: AppColors.scrollPhysics,
                   itemCount: snapshot.data!.docs.length,
                   controller: widget.scrollController,
                   itemBuilder: (listContext, listIndex) {
-                    final taskDocRef = snapshot.data!.docs[listIndex];
+                    final taskDocRef = snapshotList[listIndex];
 
                     int taskSavedDay = int.parse(
                         "${taskDocRef[Keys.taskDate][0]}${taskDocRef[Keys.taskDate][1]}");
@@ -1734,29 +1762,27 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                       taskSavedMinute,
                     );
 
-                    String taskDocID =
-                        snapshot.data!.docs[listIndex].reference.id;
+                    String taskDocID = snapshotList[listIndex].reference.id;
 
                     return CustomFocusedMenuTile(
-                      name: snapshot.data!.docs[listIndex][Keys.taskName],
-                      des: snapshot.data!.docs[listIndex][Keys.taskDes],
-                      status: snapshot.data!.docs[listIndex][Keys.taskStatus],
-                      time: snapshot.data!.docs[listIndex][Keys.taskTime],
-                      date: snapshot.data!.docs[listIndex][Keys.taskDate],
-                      type: snapshot.data!.docs[listIndex][Keys.taskType],
+                      name: snapshotList[listIndex][Keys.taskName],
+                      des: snapshotList[listIndex][Keys.taskDes],
+                      status: snapshotList[listIndex][Keys.taskStatus],
+                      time: snapshotList[listIndex][Keys.taskTime],
+                      date: snapshotList[listIndex][Keys.taskDate],
+                      type: snapshotList[listIndex][Keys.taskType],
                       taskDocID: taskDocID,
                       tileOnPressed: (() {
                         HapticFeedback.heavyImpact();
                       }),
                       tileFirstOnPressed: (() async {
-                        if ((snapshot.data!.docs[listIndex][Keys.taskStatus] !=
+                        if ((snapshotList[listIndex][Keys.taskStatus] !=
                                 "Pending") &&
                             (taskSavedDate.difference(widget.date).inMinutes >
                                 0)) {
                           updateTasks(
                             taskDocID: taskDocID,
-                            status: snapshot.data!.docs[listIndex]
-                                [Keys.taskStatus],
+                            status: snapshotList[listIndex][Keys.taskStatus],
                             firestoreEmail: widget.firestoreEmail,
                             taskSavedDay: taskSavedDay,
                             taskSavedHour: taskSavedHour,
@@ -1767,17 +1793,30 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
 
                           showDialog(
                             context: streamContext,
-                            builder: (BuildContext doneContext) {
+                            builder: (BuildContext unDoneContext) {
+                              Future.delayed(
+                                Duration(
+                                  seconds: 2,
+                                ),
+                                (() {
+                                  Navigator.pop(unDoneContext);
+                                }),
+                              );
                               return const TaskUnDoneDialogChild();
                             },
                           );
-                        } else if (snapshot.data!.docs[listIndex]
-                                [Keys.taskStatus] ==
+
+                          // Navigator.push(
+                          //   streamContext,
+                          //   MaterialPageRoute(
+                          //     builder: (nextPageContext) => TempScreen(),
+                          //   ),
+                          // );
+                        } else if (snapshotList[listIndex][Keys.taskStatus] ==
                             "Pending") {
                           updateTasks(
                             taskDocID: taskDocID,
-                            status: snapshot.data!.docs[listIndex]
-                                [Keys.taskStatus],
+                            status: snapshotList[listIndex][Keys.taskStatus],
                             firestoreEmail: widget.firestoreEmail,
                             taskSavedDay: taskSavedDay,
                             taskSavedHour: taskSavedHour,
@@ -1789,11 +1828,19 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                           showDialog(
                             context: streamContext,
                             builder: (BuildContext doneContext) {
+                              Future.delayed(
+                                Duration(
+                                  seconds: 2,
+                                ),
+                                (() {
+                                  Navigator.pop(doneContext);
+                                }),
+                              );
+
                               return Consumer<TaskDetailsProvider>(
                                 builder: (taskDetailsContext,
                                     taskDetailsProvider, taskDetailsChild) {
                                   return TaskDialog(
-                                    context: context,
                                     animation:
                                         "assets/success-done-animation.json",
                                     headMessage: "Congratulations",
@@ -1814,24 +1861,24 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               streamContext: streamContext,
                               onPressed: (() {
                                 String taskDocID =
-                                    snapshot.data!.docs[listIndex].reference.id;
+                                    snapshotList[listIndex].reference.id;
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (nextPageContext) => NewTaskScreen(
-                                      taskName: snapshot.data!.docs[listIndex]
+                                      taskName: snapshotList[listIndex]
                                           [Keys.taskName],
-                                      taskDes: snapshot.data!.docs[listIndex]
+                                      taskDes: snapshotList[listIndex]
                                           [Keys.taskDes],
-                                      taskNoti: snapshot.data!.docs[listIndex]
+                                      taskNoti: snapshotList[listIndex]
                                           [Keys.taskNotification],
-                                      taskTime: snapshot.data!.docs[listIndex]
+                                      taskTime: snapshotList[listIndex]
                                           [Keys.taskTime],
-                                      taskType: snapshot.data!.docs[listIndex]
+                                      taskType: snapshotList[listIndex]
                                           [Keys.taskType],
                                       taskDoc: taskDocID,
                                       userEmail: widget.firestoreEmail,
-                                      taskDate: snapshot.data!.docs[listIndex]
+                                      taskDate: snapshotList[listIndex]
                                           [Keys.taskDate],
                                     ),
                                   ),
@@ -1842,35 +1889,28 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                         }
                       }),
                       tileSecondOnPressed: (() {
-                        String taskDocID =
-                            snapshot.data!.docs[listIndex].reference.id;
+                        String taskDocID = snapshotList[listIndex].reference.id;
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (nextPageContext) => NewTaskScreen(
-                              taskName: snapshot.data!.docs[listIndex]
-                                  [Keys.taskName],
-                              taskDes: snapshot.data!.docs[listIndex]
-                                  [Keys.taskDes],
-                              taskNoti: snapshot.data!.docs[listIndex]
+                              taskName: snapshotList[listIndex][Keys.taskName],
+                              taskDes: snapshotList[listIndex][Keys.taskDes],
+                              taskNoti: snapshotList[listIndex]
                                   [Keys.taskNotification],
-                              taskTime: snapshot.data!.docs[listIndex]
-                                  [Keys.taskTime],
-                              taskType: snapshot.data!.docs[listIndex]
-                                  [Keys.taskType],
+                              taskTime: snapshotList[listIndex][Keys.taskTime],
+                              taskType: snapshotList[listIndex][Keys.taskType],
                               taskDoc: taskDocID,
                               userEmail: widget.firestoreEmail,
-                              taskDate: snapshot.data!.docs[listIndex]
-                                  [Keys.taskDate],
+                              taskDate: snapshotList[listIndex][Keys.taskDate],
                             ),
                           ),
                         );
                       }),
                       tileThirdOnPressed: (() {
-                        String taskDocID =
-                            snapshot.data!.docs[listIndex].reference.id;
+                        String taskDocID = snapshotList[listIndex].reference.id;
 
-                        if (snapshot.data!.docs[listIndex][Keys.taskStatus] !=
+                        if (snapshotList[listIndex][Keys.taskStatus] !=
                             Keys.deleteStatus) {
                           deleteTasks(
                             taskSavedDay: taskSavedDay,
@@ -1879,16 +1919,22 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                             taskSavedMinute: taskSavedMinute,
                             taskSavedHour: taskSavedHour,
                             taskDocID: taskDocID,
-                            status: snapshot.data!.docs[listIndex]
-                                [Keys.taskStatus],
+                            status: snapshotList[listIndex][Keys.taskStatus],
                             firestoreEmail: widget.firestoreEmail,
                           );
 
                           showDialog(
                             context: streamContext,
-                            builder: (BuildContext doneContext) {
+                            builder: (BuildContext deleteContext) {
+                              Future.delayed(
+                                Duration(
+                                  seconds: 2,
+                                ),
+                                (() {
+                                  Navigator.pop(deleteContext);
+                                }),
+                              );
                               return TaskDialog(
-                                context: context,
                                 animation: "assets/deleted-animation.json",
                                 headMessage: "Deleted!",
                                 subMessage: "Your this task is deleted",
@@ -1901,7 +1947,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                         // (taskSavedDate.difference(date).inMinutes >
                         //     0)
 
-                        if ((snapshot.data!.docs[listIndex][Keys.taskStatus] ==
+                        if ((snapshotList[listIndex][Keys.taskStatus] ==
                             Keys.deleteStatus)) {
                           if (taskSavedDate.difference(widget.date).inMinutes >
                               0) {
@@ -1912,8 +1958,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               taskSavedMinute: taskSavedMinute,
                               taskSavedHour: taskSavedHour,
                               taskDocID: taskDocID,
-                              status: snapshot.data!.docs[listIndex]
-                                  [Keys.taskStatus],
+                              status: snapshotList[listIndex][Keys.taskStatus],
                               firestoreEmail: widget.firestoreEmail,
                             );
 
@@ -1927,9 +1972,16 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
 
                             showDialog(
                               context: streamContext,
-                              builder: (BuildContext doneContext) {
+                              builder: (BuildContext unDoContext) {
+                                Future.delayed(
+                                  Duration(
+                                    seconds: 2,
+                                  ),
+                                  (() {
+                                    Navigator.pop(unDoContext);
+                                  }),
+                                );
                                 return TaskDialog(
-                                  context: context,
                                   animation:
                                       "assets/success-done-animation.json",
                                   headMessage: "Woohooo...!",
@@ -1947,26 +1999,26 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                 firestoreEmail: widget.firestoreEmail,
                                 streamContext: streamContext,
                                 onPressed: (() {
-                                  String taskDocID = snapshot
-                                      .data!.docs[listIndex].reference.id;
+                                  String taskDocID =
+                                      snapshotList[listIndex].reference.id;
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (nextPageContext) =>
                                           NewTaskScreen(
-                                        taskName: snapshot.data!.docs[listIndex]
+                                        taskName: snapshotList[listIndex]
                                             [Keys.taskName],
-                                        taskDes: snapshot.data!.docs[listIndex]
+                                        taskDes: snapshotList[listIndex]
                                             [Keys.taskDes],
-                                        taskNoti: snapshot.data!.docs[listIndex]
+                                        taskNoti: snapshotList[listIndex]
                                             [Keys.taskNotification],
-                                        taskTime: snapshot.data!.docs[listIndex]
+                                        taskTime: snapshotList[listIndex]
                                             [Keys.taskTime],
-                                        taskType: snapshot.data!.docs[listIndex]
+                                        taskType: snapshotList[listIndex]
                                             [Keys.taskType],
                                         taskDoc: taskDocID,
                                         userEmail: widget.firestoreEmail,
-                                        taskDate: snapshot.data!.docs[listIndex]
+                                        taskDate: snapshotList[listIndex]
                                             [Keys.taskDate],
                                       ),
                                     ),
@@ -2118,7 +2170,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height / 2.7,
+      height: MediaQuery.of(context).size.height / 2.3,
       width: MediaQuery.of(context).size.width,
       child: CustomHomeScreenTabBarViewWithConsumer(
           tabController: tabController,
