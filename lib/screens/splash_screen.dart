@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:task_app/screens/main_screen.dart';
+import 'package:task_app/screens/permission_denied_screen.dart';
 import 'package:task_app/screens/sign_screen.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
@@ -21,16 +23,44 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     getUserSignStatus();
     super.initState();
+
     Timer(
       const Duration(seconds: 5),
-      () => Navigator.pushReplacement(
+      () => checkAllPermissions(),
+    );
+  }
+
+  Future<void> checkAllPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.accessNotificationPolicy,
+      Permission.notification,
+      Permission.phone,
+      Permission.sms,
+    ].request();
+
+    // Check if any of the permissions are denied
+    bool isAnyPermissionDenied =
+        statuses.values.any((status) => status.isDenied);
+
+    // Do something based on the permissions status
+
+    if (isAnyPermissionDenied) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (nextPageContext) => PermissionDeniedScreen(),
+        ),
+      );
+    } else {
+      // All permissions are granted
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) =>
               (signStatus!) ? const MainScreen() : const SignUpScreen(),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void getUserSignStatus() async {

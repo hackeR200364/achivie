@@ -422,47 +422,49 @@ class HomeAppBarSongTittleAndArtist extends StatelessWidget {
     return SizedBox(
       width: size.width / 2.5,
       height: 41,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 3,
-          ),
-          if (title.trim().split(" ").length < 3)
-            Text(
-              title,
-              style: AppColors.headingTextStyle,
-            ),
-          if (title.trim().split(" ").length > 2)
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             SizedBox(
-              height: 41 / 2.2,
-              child: Marquee(
-                fadingEdgeStartFraction: 0.3,
-                fadingEdgeEndFraction: 0.3,
-                velocity: 50,
-                blankSpace: 1,
-                text: title.padLeft(30),
+              height: 3,
+            ),
+            if (title.trim().split(" ").length < 2)
+              Text(
+                title,
                 style: AppColors.headingTextStyle,
               ),
-            ),
-          if (artist.trim().split(" ").length < 3)
-            Text(
-              artist,
-              style: AppColors.subHeadingTextStyle,
-            ),
-          if (artist.trim().split(" ").length > 2)
-            SizedBox(
-              height: 41 / 2.2,
-              child: Marquee(
-                fadingEdgeStartFraction: 0.3,
-                fadingEdgeEndFraction: 0.3,
-                blankSpace: 10,
-                velocity: 30,
-                text: artist.padLeft(10),
+            if (title.trim().split(" ").length > 1)
+              SizedBox(
+                height: 41 / 2.2,
+                child: Marquee(
+                  fadingEdgeStartFraction: 0.3,
+                  fadingEdgeEndFraction: 0.3,
+                  velocity: 50,
+                  blankSpace: 1,
+                  text: title.padLeft(30),
+                  style: AppColors.headingTextStyle,
+                ),
+              ),
+            if (artist.trim().split(" ").length < 3)
+              Text(
+                artist,
                 style: AppColors.subHeadingTextStyle,
               ),
-            ),
-        ],
+            if (artist.trim().split(" ").length > 2)
+              SizedBox(
+                height: 41 / 2.2,
+                child: Marquee(
+                  fadingEdgeStartFraction: 0.3,
+                  fadingEdgeEndFraction: 0.3,
+                  blankSpace: 10,
+                  velocity: 30,
+                  text: artist.padLeft(10),
+                  style: AppColors.subHeadingTextStyle,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

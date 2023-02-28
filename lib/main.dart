@@ -50,6 +50,7 @@ Future main() async {
   NowPlaying.instance.start();
   final bool isEnabled = await NowPlaying.instance.isEnabled();
   final phonePermission = await Permission.phone.status;
+
   if (!isEnabled) {
     final bool hasShownPermissions =
         await NowPlaying.instance.requestPermissions();

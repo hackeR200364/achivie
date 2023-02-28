@@ -76,6 +76,7 @@ dependencies:
   nowplaying:
   flutter_local_notifications: ^13.0.0
   marquee:
+  app_settings:
 
 dev_dependencies:
   flutter_test:
