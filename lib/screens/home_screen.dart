@@ -9,6 +9,7 @@ import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/Utils/custom_glass_icon.dart';
 import 'package:task_app/providers/song_playing_provider.dart';
+import 'package:task_app/screens/notification_screen.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 import 'package:task_app/widgets/email_us_screen_widgets.dart';
@@ -17,7 +18,7 @@ import 'package:telephony/telephony.dart';
 import '../widgets/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({
+  const HomeScreen({
     super.key,
   });
 
@@ -53,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final animationDuration = const Duration(milliseconds: 300);
   bool isShowingIsland = false;
   final telephony = Telephony.instance;
+  String message = "";
 
   @override
   void initState() {
@@ -113,13 +115,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (callState == CallState.RINGING) {
       // Incoming call
-      // print('Incoming call');
+
     } else if (callState == CallState.OFFHOOK) {
       // Active call
-      // print('Active call');
     } else {
       // No call
-      // print('No call');
+
     }
   }
 
@@ -152,8 +153,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: 45,
               right: 15,
               child: CustomGlassIconButton(
-                onPressed: (() {
-                  // print("Notification clicked");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (notificationContext) =>
+                          const NotificationScreen(),
+                    ),
+                  );
                 }),
                 icon: Icons.notifications,
               ),
@@ -358,7 +364,7 @@ class HomeAppBarTitleRow extends StatelessWidget {
   });
 
   final Size size;
-  final hasImage;
+  final bool hasImage;
   final image;
   final String title;
   final String artist;

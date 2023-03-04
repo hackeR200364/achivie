@@ -151,7 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           width: size.width,
                           height: (signPage == 0)
                               ? size.height / 1.4
-                              : size.height / 1.8,
+                              : size.height / 1.7,
                           borderRadius: 15,
                           linearGradient: LinearGradient(
                             colors: [
@@ -255,6 +255,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       : InkWell(
                                           onTap: (() async {
                                             // print(packageInfo!.version);
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(true);
 
                                             if (_emailController
                                                     .text.isNotEmpty &&
@@ -296,6 +298,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
                                               } else {
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
                                                 ScaffoldMessenger.of(
                                                         allAppProvidersContext)
                                                     .showSnackBar(
@@ -325,6 +329,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 );
                                               }
                                             } else {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
                                               ScaffoldMessenger.of(
                                                       allAppProvidersContext)
                                                   .showSnackBar(
@@ -416,6 +422,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
                                       onPressed: (() {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(true);
                                         if (_emailController.text.isNotEmpty) {
                                           EmailPassAuthServices()
                                               .forgotPassword(
@@ -423,6 +431,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             context: allAppProvidersContext,
                                           );
                                         } else {
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
                                           ScaffoldMessenger.of(
                                                   allAppProvidersContext)
                                               .showSnackBar(
@@ -433,6 +443,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             ),
                                           );
                                         }
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
                                       }),
                                       child: const Text(
                                         "Forgot Password",
@@ -498,6 +510,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 context: allAppProvidersContext,
                                               );
                                             } else {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
                                               ScaffoldMessenger.of(
                                                       allAppProvidersContext)
                                                   .showSnackBar(
@@ -795,7 +809,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
             right: 15,
           ),
         ),
-        validator: (widget.isEmailField)
+        validator: (widget.isEmailField == true)
             ? (email) => (email != null && !EmailValidator.validate(email))
                 ? "Enter a valid email"
                 : null

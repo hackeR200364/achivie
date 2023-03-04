@@ -16,23 +16,39 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   bool? signStatus = false;
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     getUserSignStatus();
     super.initState();
 
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+    _controller.forward();
+
     Timer(
-      const Duration(seconds: 5),
+      const Duration(seconds: 3),
       () => checkAllPermissions(),
     );
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> checkAllPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
-      Permission.accessNotificationPolicy,
+      // Permission.accessNotificationPolicy,
       Permission.notification,
       Permission.phone,
       Permission.sms,
@@ -47,17 +63,45 @@ class _SplashScreenState extends State<SplashScreen> {
     if (isAnyPermissionDenied) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (nextPageContext) => const PermissionDeniedScreen(),
-        ),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PermissionDeniedScreen(),
+          transitionDuration: Duration(seconds: 2),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            var begin = 0.0;
+            var end = 1.0;
+            var curve = Curves.ease;
+
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return ScaleTransition(
+              scale: animation.drive(tween),
+              child: child,
+            );
+          },
       );
     } else {
       // All permissions are granted
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
               (signStatus!) ? const MainScreen() : const SignUpScreen(),
+          transitionDuration: Duration(seconds: 2),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            var begin = 0.0;
+            var end = 1.0;
+            var curve = Curves.ease;
+
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+            return ScaleTransition(
+              scale: animation.drive(tween),
+              child: child,
+            );
+          },
         ),
       );
     }
@@ -72,22 +116,33 @@ class _SplashScreenState extends State<SplashScreen> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: AppColors.backgroundColour,
-        body: Center(
-          child: TextLiquidFill(
-            loadDuration: const Duration(seconds: 4),
-            waveDuration: const Duration(seconds: 4),
-            boxHeight: MediaQuery.of(context).size.height,
-            boxWidth: MediaQuery.of(context).size.width,
-            waveColor: Colors.white,
-            boxBackgroundColor: AppColors.backgroundColour,
-            text: 'TASKAPP',
-            textStyle: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 40,
+        backgroundColor: AppColors.mainColor,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              "assets/logo.png",
+              scale: 1,
+              height: MediaQuery.of(context).size.height / 3,
+              opacity: _animation,
             ),
-          ),
+            TextLiquidFill(
+              loadDuration: const Duration(seconds: 3),
+              waveDuration: const Duration(seconds: 2),
+              boxHeight: MediaQuery.of(context).size.height / 12,
+              boxWidth: MediaQuery.of(context).size.width,
+              waveColor: Colors.white,
+              boxBackgroundColor: AppColors.mainColor,
+              text: 'Achivie',
+              textStyle: const TextStyle(
+                letterSpacing: 7,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 40,
+              ),
+            ),
+          ],
         ),
       ),
     );

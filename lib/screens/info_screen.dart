@@ -111,40 +111,8 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              decoration: const BoxDecoration(
-                color: AppColors.backgroundColour,
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: AssetImage(
-                    "assets/motivational-pics/motivational-pic-1.jpg",
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            child: Container(
-              width: size.width,
-              height: size.height,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppColors.mainColor.withOpacity(0.7),
-                    AppColors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
+          const InfoScreenBGWidget(),
+          InfoScreenShadeWidget(size: size),
           Positioned(
             child: Container(
               margin: const EdgeInsets.only(
@@ -164,81 +132,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                 physics: AppColors.scrollPhysics,
                 children: infoList.map<Widget>((e) {
                   return (e.index == 0)
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Socials',
-                              overflow: TextOverflow.clip,
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 25,
-                            ),
-                            GlassmorphicContainer(
-                              margin: const EdgeInsets.only(
-                                left: 13,
-                                right: 13,
-                              ),
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height / 2,
-                              borderRadius: 20,
-                              linearGradient:
-                                  AppColors.customGlassIconButtonGradient,
-                              border: 2,
-                              blur: 4,
-                              borderGradient:
-                                  AppColors.customGlassIconButtonBorderGradient,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const MenuScreenSocialFirstRow(),
-                                  const SizedBox(
-                                    height: 15,
-                                  ),
-                                  const MenuScreenSocialSecondRow(),
-                                  SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height / 20,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 25,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        MenuScreenExtraButton(
-                                          onTap: () {},
-                                          title: "Visit Website",
-                                        ),
-                                        const SizedBox(
-                                          height: 20,
-                                        ),
-                                        MenuScreenExtraButton(
-                                          onTap: (() async {
-                                            await launchUrl(
-                                              Uri.parse(
-                                                "https://github.com/hackeR200364/task_app",
-                                              ),
-                                              mode: LaunchMode
-                                                  .externalNonBrowserApplication,
-                                            );
-                                          }),
-                                          title: "GitHub Repository",
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
+                      ? const InfoScreenMainSocialsWidget()
                       : InfoWidget(
                           head: e.head,
                           des: e.des,
@@ -247,79 +141,333 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          Positioned(
-            bottom: size.height / 10,
-            child: SmoothPageIndicator(
-              effect: ScrollingDotsEffect(
-                dotColor: AppColors.backgroundColour.withOpacity(0.2),
-                activeDotColor: AppColors.backgroundColour.withOpacity(0.8),
-              ),
-              controller: tabController,
-              count: infoList.length,
-            ),
-          ),
+          InfoScreenPageIndexDot(
+              size: size, tabController: tabController, infoList: infoList),
           Positioned(
             top: MediaQuery.of(context).size.height / 15,
             left: 20,
             right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CustomGlassIconButton(
-                  onPressed: (() {
-                    ZoomDrawer.of(context)!.toggle();
-                  }),
-                  icon: Icons.menu,
-                ),
-                Row(
-                  children: [
-                    if (tabIndex != 0)
-                      CustomGlassIconButton(
-                        icon: CupertinoIcons.chevron_left,
-                        tabController: tabController,
-                        onPressed: (() {
-                          tabController.previousPage(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.ease,
-                          );
-                        }),
-                      ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    if (tabIndex != infoList.length - 1)
-                      CustomGlassIconButton(
-                        icon: CupertinoIcons.chevron_right,
-                        tabController: tabController,
-                        onPressed: (() {
-                          tabController.nextPage(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.bounceInOut,
-                          );
-                        }),
-                      ),
-                  ],
-                ),
-              ],
+            child: InfoScreenAppBarWidgets(
+                tabIndex: tabIndex,
+                tabController: tabController,
+                infoList: infoList),
+          ),
+          if (pageLoading) const LoadingWidget(),
+        ],
+      ),
+    );
+  }
+}
+
+class InfoScreenBGWidget extends StatelessWidget {
+  const InfoScreenBGWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundColour,
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage(
+              "assets/motivational-pics/motivational-pic-1.jpg",
             ),
           ),
-          if (pageLoading)
-            Positioned(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  color: AppColors.mainColor,
+        ),
+      ),
+    );
+  }
+}
+
+class InfoScreenShadeWidget extends StatelessWidget {
+  const InfoScreenShadeWidget({
+    super.key,
+    required this.size,
+  });
+
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      child: Container(
+        width: size.width,
+        height: size.height,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.mainColor.withOpacity(0.7),
+              AppColors.transparent,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class InfoScreenMainSocialsWidget extends StatelessWidget {
+  const InfoScreenMainSocialsWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        InfoScreenSocialsHeading(),
+        SizedBox(
+          height: 25,
+        ),
+        InfoScreenGlassSocialsContainer(),
+      ],
+    );
+  }
+}
+
+class InfoScreenSocialsHeading extends StatelessWidget {
+  const InfoScreenSocialsHeading({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      'Socials',
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+        color: AppColors.white,
+        fontSize: 30,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+}
+
+class InfoScreenGlassSocialsContainer extends StatelessWidget {
+  const InfoScreenGlassSocialsContainer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassmorphicContainer(
+      margin: const EdgeInsets.only(
+        left: 13,
+        right: 13,
+      ),
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height / 2,
+      borderRadius: 20,
+      linearGradient: AppColors.customGlassIconButtonGradient,
+      border: 2,
+      blur: 4,
+      borderGradient: AppColors.customGlassIconButtonBorderGradient,
+      child: const InfoScreenMainGlassContainerChild(),
+    );
+  }
+}
+
+class InfoScreenMainGlassContainerChild extends StatelessWidget {
+  const InfoScreenMainGlassContainerChild({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const MenuScreenSocialFirstRow(),
+        const SizedBox(
+          height: 15,
+        ),
+        const MenuScreenSocialSecondRow(),
+        SizedBox(
+          height: MediaQuery.of(context).size.height / 20,
+        ),
+        const InfoPageSocialsWidget()
+      ],
+    );
+  }
+}
+
+class InfoPageSocialsWidget extends StatelessWidget {
+  const InfoPageSocialsWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 25,
+      ),
+      child: Column(
+        children: [
+          MenuScreenExtraButton(
+            onTap: () {},
+            title: "Visit Website",
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          MenuScreenExtraButton(
+            onTap: (() async {
+              await launchUrl(
+                Uri.parse(
+                  "https://github.com/hackeR200364/task_app",
                 ),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ),
+                mode: LaunchMode.externalNonBrowserApplication,
+              );
+            }),
+            title: "GitHub Repository",
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class InfoScreenPageIndexDot extends StatelessWidget {
+  const InfoScreenPageIndexDot({
+    super.key,
+    required this.size,
+    required this.tabController,
+    required this.infoList,
+  });
+
+  final Size size;
+  final PageController tabController;
+  final List<InfoListModel> infoList;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: size.height / 10,
+      child: SmoothPageIndicator(
+        effect: ScrollingDotsEffect(
+          dotColor: AppColors.backgroundColour.withOpacity(0.2),
+          activeDotColor: AppColors.backgroundColour.withOpacity(0.8),
+        ),
+        controller: tabController,
+        count: infoList.length,
+      ),
+    );
+  }
+}
+
+class InfoScreenAppBarWidgets extends StatelessWidget {
+  const InfoScreenAppBarWidgets({
+    super.key,
+    required this.tabIndex,
+    required this.tabController,
+    required this.infoList,
+  });
+
+  final int tabIndex;
+  final PageController tabController;
+  final List<InfoListModel> infoList;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CustomGlassIconButton(
+          onPressed: (() {
+            ZoomDrawer.of(context)!.toggle();
+          }),
+          icon: Icons.menu,
+        ),
+        InfoScreenWidgetToggleButtons(
+          tabIndex: tabIndex,
+          tabController: tabController,
+          infoList: infoList,
+        ),
+      ],
+    );
+  }
+}
+
+class InfoScreenWidgetToggleButtons extends StatelessWidget {
+  const InfoScreenWidgetToggleButtons({
+    super.key,
+    required this.tabIndex,
+    required this.tabController,
+    required this.infoList,
+  });
+
+  final int tabIndex;
+  final PageController tabController;
+  final List<InfoListModel> infoList;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (tabIndex != 0)
+          CustomGlassIconButton(
+            icon: CupertinoIcons.chevron_left,
+            tabController: tabController,
+            onPressed: (() {
+              tabController.previousPage(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+              );
+            }),
+          ),
+        const SizedBox(
+          width: 10,
+        ),
+        if (tabIndex != infoList.length - 1)
+          CustomGlassIconButton(
+            icon: CupertinoIcons.chevron_right,
+            tabController: tabController,
+            onPressed: (() {
+              tabController.nextPage(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+              );
+            }),
+          ),
+      ],
+    );
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: const BoxDecoration(
+          color: AppColors.mainColor,
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.white,
+          ),
+        ),
       ),
     );
   }

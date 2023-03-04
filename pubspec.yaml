@@ -71,6 +71,7 @@ dependencies:
   flutter_local_notifications: ^13.0.0
   marquee:
   app_settings:
+  flutter_native_splash:
 
 dev_dependencies:
   flutter_test:
@@ -86,9 +87,20 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+  color: "#1F1F39"
+  image: assets/logo-first-splash.png
+  android_12:
+    color: "#1F1F39"
+    image: assets/logo-first-splash.png
+
 flutter_icons:
   android: true
   ios: true
+  remove_alpha_ios: true
   image_path: "assets/logo.png"
 
 
@@ -106,7 +118,6 @@ flutter:
     - assets/
     - assets/motivational-pics/
     - assets/social-icons/
-    - assets/task_sounds/confirm.mp3
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

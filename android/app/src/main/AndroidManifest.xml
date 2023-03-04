@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 <!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 <!--    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -14,7 +15,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.CALL_PHONE"/>
-    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
+<!--    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>-->
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
 
@@ -26,7 +27,7 @@
         </intent>
     </queries>
     <application
-        android:label="TASKAPP"
+        android:label="Achivie"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -73,5 +74,13 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <receiver android:name="com.shounakmulay.telephony.sms.IncomingSmsReceiver"
+            android:permission="android.permission.BROADCAST_SMS" android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>
