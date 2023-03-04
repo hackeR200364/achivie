@@ -52,7 +52,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   String taskTime = "", taskDate = "", taskID = "taskID", inputDateTime = "";
   bool taskNameTapped = false, desTapped = false, loading = false;
   String selected = "Personal";
-  List<String> taskType = ["Business", "Personal"];
+  List<String> taskType = ["Personal", "Business"];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   bool editOrNew = false, backPressed = false;
