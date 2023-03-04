@@ -115,16 +115,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (callState == CallState.RINGING) {
       // Incoming call
+
     } else if (callState == CallState.OFFHOOK) {
       // Active call
     } else {
       // No call
-    }
-  }
 
-  void getIncomingSMS() async {
-    if (await Telephony.instance.isSmsCapable ?? false) {
-      Telephony.instance.listenIncomingSms(onNewMessage: (message) {});
     }
   }
 
@@ -157,7 +153,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               top: 45,
               right: 15,
               child: CustomGlassIconButton(
-                onPressed: (() {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
