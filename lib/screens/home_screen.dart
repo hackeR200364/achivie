@@ -115,12 +115,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (callState == CallState.RINGING) {
       // Incoming call
-
     } else if (callState == CallState.OFFHOOK) {
       // Active call
     } else {
       // No call
-
     }
   }
 
@@ -128,137 +126,66 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        bottomNavigationBar: (isBannerAdLoaded)
-            ? CustomHomeScreenBottomNavBarWithBannerAd(bannerAd: bannerAd)
-            : null,
-        floatingActionButton: const CustomFloatingActionButton(),
-        backgroundColor: AppColors.mainColor,
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: CustomHomeScreenContainerWithConnectivityWidget(
-                  taskType: taskType,
-                  tabController: tabController,
-                  pendingStatus: pendingStatus,
-                  email: email,
-                  widget: widget,
-                  scrollController: _scrollController,
-                  date: date,
-                  completedStatus: completedStatus,
-                  inboxStatus: inboxStatus),
-            ),
-            Positioned(
-              top: 45,
-              right: 15,
-              child: CustomGlassIconButton(
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (notificationContext) =>
-                          const NotificationScreen(),
-                    ),
-                  );
-                }),
-                icon: Icons.notifications,
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          bottomNavigationBar: (isBannerAdLoaded)
+              ? CustomHomeScreenBottomNavBarWithBannerAd(bannerAd: bannerAd)
+              : null,
+          floatingActionButton: const CustomFloatingActionButton(),
+          backgroundColor: AppColors.mainColor,
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                child: CustomHomeScreenContainerWithConnectivityWidget(
+                    taskType: taskType,
+                    tabController: tabController,
+                    pendingStatus: pendingStatus,
+                    email: email,
+                    widget: widget,
+                    scrollController: _scrollController,
+                    date: date,
+                    completedStatus: completedStatus,
+                    inboxStatus: inboxStatus),
               ),
-            ),
-            Positioned(
-              top: 45,
-              left: 15,
-              height: 41,
-              width: 41,
-              child: CustomAppBarLeading(
-                onPressed: (() {
-                  ZoomDrawer.of(context)!.toggle();
-                  // print(isPlaying);
-                }),
-                icon: Icons.menu,
+              Positioned(
+                top: 45,
+                right: 15,
+                child: CustomGlassIconButton(
+                  onPressed: (() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (notificationContext) =>
+                            const NotificationScreen(),
+                      ),
+                    );
+                  }),
+                  icon: Icons.notifications,
+                ),
               ),
-            ),
-            Positioned(
-              top: 45,
-              left: 66,
-              right: 66,
-              // width: size.width,
-              child: Consumer<SongPlayingProvider>(
-                builder: (allAppContext, allAppProvider, allAppChild) {
-                  return Consumer<NowPlayingTrack>(
-                    builder: (nowPlayingContext, nowPlayingTrack, _) {
-                      if (nowPlayingTrack.isPaused) {
-                        isPlaying = true;
-                        songName = nowPlayingTrack.title!;
-                        songArtist = nowPlayingTrack.artist!;
-                        Future.delayed(
-                          Duration.zero,
-                          (() {
-                            allAppProvider.isSongPlayingFunc(isPlaying);
-                            allAppProvider.songNameFunc(songName);
-                            allAppProvider.songArtistFunc(songArtist);
-                          }),
-                        );
-                        return Align(
-                          alignment: Alignment.center,
-                          child: GestureDetector(
-                            onTap: (() {}),
-                            child: GlassmorphicContainer(
-                              width: double.infinity,
-                              height: 41,
-                              borderRadius: 40,
-                              linearGradient:
-                                  AppColors.customGlassIconButtonGradient,
-                              border: 2,
-                              blur: 4,
-                              borderGradient:
-                                  AppColors.customGlassIconButtonBorderGradient,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 5,
-                                ),
-                                child: (nowPlayingTrack.image != null &&
-                                        nowPlayingTrack.title != null &&
-                                        nowPlayingTrack.artist != null &&
-                                        nowPlayingTrack.source != null)
-                                    ? HomeAppBarTitleRow(
-                                        isPaused: nowPlayingTrack.isPaused,
-                                        size: size,
-                                        hasImage: nowPlayingTrack.hasImage,
-                                        image: nowPlayingTrack.image!,
-                                        title: nowPlayingTrack.title!,
-                                        artist: nowPlayingTrack.artist!,
-                                        source: nowPlayingTrack.source!,
-                                      )
-                                    : const Center(
-                                        child: Text(
-                                          "Loading...",
-                                          style: AppColors.headingTextStyle,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (nowPlayingTrack.isStopped) {
-                        isPlaying = false;
-                        Future.delayed(
-                          Duration.zero,
-                          (() {
-                            allAppProvider.isSongPlayingFunc(isPlaying);
-                          }),
-                        );
-                        return CustomHomeScreenAppBarTitle(
-                          date: date,
-                        );
-                      }
-
-                      if (nowPlayingTrack.isPlaying) {
-                        if (nowPlayingTrack.image != null &&
-                            nowPlayingTrack.title != null &&
-                            nowPlayingTrack.artist != null &&
-                            nowPlayingTrack.source != null) {
+              Positioned(
+                top: 45,
+                left: 15,
+                height: 41,
+                width: 41,
+                child: CustomAppBarLeading(
+                  onPressed: (() {
+                    ZoomDrawer.of(context)!.toggle();
+                    // print(isPlaying);
+                  }),
+                  icon: Icons.menu,
+                ),
+              ),
+              Positioned(
+                top: 45,
+                left: 66,
+                right: 66,
+                // width: size.width,
+                child: Consumer<SongPlayingProvider>(
+                  builder: (allAppContext, allAppProvider, allAppChild) {
+                    return Consumer<NowPlayingTrack>(
+                      builder: (nowPlayingContext, nowPlayingTrack, _) {
+                        if (nowPlayingTrack.isPaused) {
                           isPlaying = true;
                           songName = nowPlayingTrack.title!;
                           songArtist = nowPlayingTrack.artist!;
@@ -270,84 +197,155 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               allAppProvider.songArtistFunc(songArtist);
                             }),
                           );
-                        } else {
+                          return Align(
+                            alignment: Alignment.center,
+                            child: GestureDetector(
+                              onTap: (() {}),
+                              child: GlassmorphicContainer(
+                                width: double.infinity,
+                                height: 41,
+                                borderRadius: 40,
+                                linearGradient:
+                                    AppColors.customGlassIconButtonGradient,
+                                border: 2,
+                                blur: 4,
+                                borderGradient: AppColors
+                                    .customGlassIconButtonBorderGradient,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 5,
+                                  ),
+                                  child: (nowPlayingTrack.image != null &&
+                                          nowPlayingTrack.title != null &&
+                                          nowPlayingTrack.artist != null &&
+                                          nowPlayingTrack.source != null)
+                                      ? HomeAppBarTitleRow(
+                                          isPaused: nowPlayingTrack.isPaused,
+                                          size: size,
+                                          hasImage: nowPlayingTrack.hasImage,
+                                          image: nowPlayingTrack.image!,
+                                          title: nowPlayingTrack.title!,
+                                          artist: nowPlayingTrack.artist!,
+                                          source: nowPlayingTrack.source!,
+                                        )
+                                      : const Center(
+                                          child: Text(
+                                            "Loading...",
+                                            style: AppColors.headingTextStyle,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (nowPlayingTrack.isStopped) {
+                          isPlaying = false;
                           Future.delayed(
                             Duration.zero,
                             (() {
-                              setState(() {});
+                              allAppProvider.isSongPlayingFunc(isPlaying);
                             }),
                           );
+                          return CustomHomeScreenAppBarTitle(
+                            date: date,
+                          );
                         }
-                        return Align(
-                          alignment: Alignment.center,
-                          child: GestureDetector(
-                            onTap: (() {}),
-                            child: GlassmorphicContainer(
-                              width: double.infinity,
-                              height: 41,
-                              borderRadius: 40,
-                              linearGradient:
-                                  AppColors.customGlassIconButtonGradient,
-                              border: 2,
-                              blur: 4,
-                              borderGradient:
-                                  AppColors.customGlassIconButtonBorderGradient,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 5,
-                                ),
-                                child: (nowPlayingTrack.image != null &&
-                                        nowPlayingTrack.title != null &&
-                                        nowPlayingTrack.artist != null &&
-                                        nowPlayingTrack.source != null)
-                                    ? HomeAppBarTitleRow(
-                                        isPaused: nowPlayingTrack.isPaused,
-                                        size: size,
-                                        hasImage: nowPlayingTrack.hasImage,
-                                        image: nowPlayingTrack.image!,
-                                        title: nowPlayingTrack.title!,
-                                        artist: nowPlayingTrack.artist!,
-                                        source: nowPlayingTrack.source!,
-                                      )
-                                    : const Center(
-                                        child: Text(
-                                          "Loading...",
-                                          style: AppColors.headingTextStyle,
+
+                        if (nowPlayingTrack.isPlaying) {
+                          if (nowPlayingTrack.image != null &&
+                              nowPlayingTrack.title != null &&
+                              nowPlayingTrack.artist != null &&
+                              nowPlayingTrack.source != null) {
+                            isPlaying = true;
+                            songName = nowPlayingTrack.title!;
+                            songArtist = nowPlayingTrack.artist!;
+                            Future.delayed(
+                              Duration.zero,
+                              (() {
+                                allAppProvider.isSongPlayingFunc(isPlaying);
+                                allAppProvider.songNameFunc(songName);
+                                allAppProvider.songArtistFunc(songArtist);
+                              }),
+                            );
+                          } else {
+                            Future.delayed(
+                              Duration.zero,
+                              (() {
+                                setState(() {});
+                              }),
+                            );
+                          }
+                          return Align(
+                            alignment: Alignment.center,
+                            child: GestureDetector(
+                              onTap: (() {}),
+                              child: GlassmorphicContainer(
+                                width: double.infinity,
+                                height: 41,
+                                borderRadius: 40,
+                                linearGradient:
+                                    AppColors.customGlassIconButtonGradient,
+                                border: 2,
+                                blur: 4,
+                                borderGradient: AppColors
+                                    .customGlassIconButtonBorderGradient,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 5,
+                                  ),
+                                  child: (nowPlayingTrack.image != null &&
+                                          nowPlayingTrack.title != null &&
+                                          nowPlayingTrack.artist != null &&
+                                          nowPlayingTrack.source != null)
+                                      ? HomeAppBarTitleRow(
+                                          isPaused: nowPlayingTrack.isPaused,
+                                          size: size,
+                                          hasImage: nowPlayingTrack.hasImage,
+                                          image: nowPlayingTrack.image!,
+                                          title: nowPlayingTrack.title!,
+                                          artist: nowPlayingTrack.artist!,
+                                          source: nowPlayingTrack.source!,
+                                        )
+                                      : const Center(
+                                          child: Text(
+                                            "Loading...",
+                                            style: AppColors.headingTextStyle,
+                                          ),
                                         ),
-                                      ),
+                                ),
                               ),
                             ),
-                          ),
+                          );
+                        }
+                        return CustomHomeScreenAppBarTitle(
+                          date: date,
                         );
-                      }
-                      return CustomHomeScreenAppBarTitle(
-                        date: date,
-                      );
-                    },
-                  );
-                },
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-            if (pageLoading)
-              Positioned(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  decoration: const BoxDecoration(
-                    color: AppColors.mainColor,
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.white,
+              if (pageLoading)
+                Positioned(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    decoration: const BoxDecoration(
+                      color: AppColors.mainColor,
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ),
-    );
+            ],
+          ),
+        ));
   }
 }
 

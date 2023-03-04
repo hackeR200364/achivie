@@ -80,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: child,
             );
           },
+        ),
       );
     } else {
       // All permissions are granted
