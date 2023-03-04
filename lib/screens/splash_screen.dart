@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               PermissionDeniedScreen(),
-          transitionDuration: Duration(seconds: 2),
+          transitionDuration: Duration(milliseconds: 500),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var begin = 0.0;
             var end = 1.0;

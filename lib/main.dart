@@ -24,13 +24,25 @@ Future main() async {
   // await isMusicPlaying();
   // await NotificationServices().init();
 
-  await [
+  final bool isEnabled = await NowPlaying.instance.isEnabled();
+
+  // final phonePermission = await Permission.phone.status;
+
+  if (!isEnabled) {
+    final bool hasShownPermissions =
+        await NowPlaying.instance.requestPermissions();
+    if (!hasShownPermissions) {
+      NowPlaying.instance.requestPermissions(force: true);
+    }
+  }
+
+  var permissionRequests = await [
     Permission.sms,
     Permission.phone,
     Permission.audio,
-    // Permission.accessNotificationPolicy,
     Permission.notification,
     Permission.storage,
+    Permission.accessNotificationPolicy,
   ].request();
 
   await AwesomeNotifications().initialize(
@@ -59,17 +71,6 @@ Future main() async {
   await Firebase.initializeApp();
   MobileAds.instance.initialize();
   NowPlaying.instance.start();
-  final bool isEnabled = await NowPlaying.instance.isEnabled();
-
-  // final phonePermission = await Permission.phone.status;
-
-  if (!isEnabled) {
-    final bool hasShownPermissions =
-        await NowPlaying.instance.requestPermissions();
-    if (!hasShownPermissions) {
-      NowPlaying.instance.requestPermissions(force: true);
-    }
-  }
 
   // if (phonePermission.isRestricted || phonePermission.isDenied) {
   //   Permission.phone.request();
