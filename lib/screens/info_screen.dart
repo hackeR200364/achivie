@@ -167,7 +167,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               'Socials',
                               overflow: TextOverflow.clip,
                               style: TextStyle(
@@ -197,11 +197,11 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  MenuScreenSocialFirstRow(),
-                                  SizedBox(
+                                  const MenuScreenSocialFirstRow(),
+                                  const SizedBox(
                                     height: 15,
                                   ),
-                                  MenuScreenSocialSecondRow(),
+                                  const MenuScreenSocialSecondRow(),
                                   SizedBox(
                                     height:
                                         MediaQuery.of(context).size.height / 20,

@@ -66,11 +66,11 @@ class MenuScreenMainColumn extends StatelessWidget {
         SizedBox(
           height: MediaQuery.of(context).size.height / 2.4,
         ),
-        Padding(
-          padding: const EdgeInsets.only(
+        const Padding(
+          padding: EdgeInsets.only(
             left: 10,
           ),
-          child: const MenuScreenExtraLogoutButtonParent(),
+          child: MenuScreenExtraLogoutButtonParent(),
         ),
       ],
     );
