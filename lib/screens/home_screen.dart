@@ -9,6 +9,7 @@ import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/Utils/custom_glass_icon.dart';
 import 'package:task_app/providers/song_playing_provider.dart';
+import 'package:task_app/screens/notification_screen.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 import 'package:task_app/widgets/email_us_screen_widgets.dart';
@@ -17,7 +18,7 @@ import 'package:telephony/telephony.dart';
 import '../widgets/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({
+  const HomeScreen({
     super.key,
   });
 
@@ -50,9 +51,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String songName = "";
   String songArtist = "";
   bool isPlaying = false;
-  final animationDuration = Duration(milliseconds: 300);
+  final animationDuration = const Duration(milliseconds: 300);
   bool isShowingIsland = false;
   final telephony = Telephony.instance;
+  String message = "";
 
   @override
   void initState() {
@@ -84,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     checkCallStatus();
 
     Future.delayed(
-      Duration(
+      const Duration(
         milliseconds: 700,
       ),
       (() {
@@ -113,13 +115,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (callState == CallState.RINGING) {
       // Incoming call
-      print('Incoming call');
     } else if (callState == CallState.OFFHOOK) {
       // Active call
-      print('Active call');
     } else {
       // No call
-      print('No call');
+    }
+  }
+
+  void getIncomingSMS() async {
+    if (await Telephony.instance.isSmsCapable ?? false) {
+      Telephony.instance.listenIncomingSms(onNewMessage: (message) {});
     }
   }
 
@@ -132,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         bottomNavigationBar: (isBannerAdLoaded)
             ? CustomHomeScreenBottomNavBarWithBannerAd(bannerAd: bannerAd)
             : null,
-        floatingActionButton: CustomFloatingActionButton(),
+        floatingActionButton: const CustomFloatingActionButton(),
         backgroundColor: AppColors.mainColor,
         body: Stack(
           children: [
@@ -153,7 +158,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               right: 15,
               child: CustomGlassIconButton(
                 onPressed: (() {
-                  print("Notification clicked");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (notificationContext) =>
+                          const NotificationScreen(),
+                    ),
+                  );
                 }),
                 icon: Icons.notifications,
               ),
@@ -223,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         artist: nowPlayingTrack.artist!,
                                         source: nowPlayingTrack.source!,
                                       )
-                                    : Center(
+                                    : const Center(
                                         child: Text(
                                           "Loading...",
                                           style: AppColors.headingTextStyle,
@@ -303,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         artist: nowPlayingTrack.artist!,
                                         source: nowPlayingTrack.source!,
                                       )
-                                    : Center(
+                                    : const Center(
                                         child: Text(
                                           "Loading...",
                                           style: AppColors.headingTextStyle,
@@ -358,7 +369,7 @@ class HomeAppBarTitleRow extends StatelessWidget {
   });
 
   final Size size;
-  final hasImage;
+  final bool hasImage;
   final image;
   final String title;
   final String artist;
@@ -386,8 +397,8 @@ class HomeAppBarTitleRow extends StatelessWidget {
           ),
         if (isPaused)
           Container(
-            margin: EdgeInsets.only(right: 5),
-            decoration: BoxDecoration(
+            margin: const EdgeInsets.only(right: 5),
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
             ),
             height: 33,
@@ -448,7 +459,7 @@ class HomeAppBarSongTittleAndArtist extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
               height: 3,
             ),
             if (title.trim().split(" ").length < 2)
@@ -500,8 +511,8 @@ class HomeAppBarTitleSongLastAnimation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(right: 5),
-      decoration: BoxDecoration(
+      margin: const EdgeInsets.only(right: 5),
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
       ),
       height: (source == "com.spotify.music") ? 33 : 40,

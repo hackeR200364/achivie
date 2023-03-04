@@ -69,10 +69,10 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   FocusNode? notiFocusNode;
   CollectionReference users = FirebaseFirestore.instance.collection("users");
 
-  late AnimationController controllerToIncreaseCurve;
-  late AnimationController controllerToDecreaseCurve;
-  late Animation<double> animationToIncreasingCurve;
-  late Animation<double> animationToDecreasingCurve;
+  // late AnimationController controllerToIncreaseCurve;
+  // late AnimationController controllerToDecreaseCurve;
+  // late Animation<double> animationToIncreasingCurve;
+  // late Animation<double> animationToDecreasingCurve;
 
   @override
   void initState() {
@@ -372,7 +372,6 @@ class _NewTaskScreenState extends State<NewTaskScreen>
           ),
         ),
         body: SingleChildScrollView(
-          physics: AppColors.scrollPhysics,
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Column(
@@ -398,20 +397,11 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                       width: 100,
                       height: 100,
                       borderRadius: 50,
-                      linearGradient: LinearGradient(
-                        colors: [
-                          AppColors.white.withOpacity(0.1),
-                          AppColors.white.withOpacity(0.3),
-                        ],
-                      ),
+                      linearGradient: AppColors.customGlassIconButtonGradient,
                       border: 2,
                       blur: 4,
-                      borderGradient: LinearGradient(
-                        colors: [
-                          AppColors.white.withOpacity(0.3),
-                          AppColors.white.withOpacity(0.5),
-                        ],
-                      ),
+                      borderGradient:
+                          AppColors.customGlassIconButtonBorderGradient,
                       child: const Center(
                         child: Icon(
                           Icons.work,
@@ -464,6 +454,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                             }
 
                             return Container(
+                              padding: EdgeInsets.only(top: 5),
                               decoration: BoxDecoration(
                                 color: AppColors.backgroundColour,
                                 borderRadius: BorderRadius.circular(20),

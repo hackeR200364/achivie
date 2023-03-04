@@ -2,6 +2,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,15 +14,25 @@ import 'package:task_app/providers/task_details_provider.dart';
 import 'package:task_app/providers/user_details_providers.dart';
 import 'package:task_app/screens/splash_screen.dart';
 import 'package:task_app/services/auth_services.dart';
-import 'package:task_app/services/notification_services.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
 Future main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(
+      widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
 
   // await isMusicPlaying();
-  await NotificationServices().init();
+  // await NotificationServices().init();
+
+  await [
+    Permission.sms,
+    Permission.phone,
+    Permission.audio,
+    // Permission.accessNotificationPolicy,
+    Permission.notification,
+    Permission.storage,
+  ].request();
+
   await AwesomeNotifications().initialize(
     null,
     [
@@ -33,15 +44,15 @@ Future main() async {
         importance: NotificationImportance.High,
         channelShowBadge: true,
       ),
-      NotificationChannel(
-        channelKey: Keys.tasksScheduledChannelKey,
-        channelName: Keys.tasksScheduledChannelName,
-        channelDescription: Keys.tasksScheduledChannelDes,
-        defaultColor: AppColors.backgroundColour,
-        importance: NotificationImportance.High,
-        locked: true,
-        channelShowBadge: true,
-      ),
+      // NotificationChannel(
+      //   channelKey: Keys.tasksScheduledChannelKey,
+      //   channelName: Keys.tasksScheduledChannelName,
+      //   channelDescription: Keys.tasksScheduledChannelDes,
+      //   defaultColor: AppColors.backgroundColour,
+      //   importance: NotificationImportance.High,
+      //   locked: true,
+      //   channelShowBadge: true,
+      // ),
     ],
     debug: true,
   );
@@ -49,7 +60,8 @@ Future main() async {
   MobileAds.instance.initialize();
   NowPlaying.instance.start();
   final bool isEnabled = await NowPlaying.instance.isEnabled();
-  final phonePermission = await Permission.phone.status;
+
+  // final phonePermission = await Permission.phone.status;
 
   if (!isEnabled) {
     final bool hasShownPermissions =
@@ -59,11 +71,11 @@ Future main() async {
     }
   }
 
-  if (phonePermission.isRestricted || phonePermission.isDenied) {
-    Permission.phone.request();
-  } else if (phonePermission.isPermanentlyDenied) {
-    openAppSettings();
-  }
+  // if (phonePermission.isRestricted || phonePermission.isDenied) {
+  //   Permission.phone.request();
+  // } else if (phonePermission.isPermanentlyDenied) {
+  //   openAppSettings();
+  // }
 
   SystemChrome.setPreferredOrientations(
     [
@@ -71,6 +83,8 @@ Future main() async {
       DeviceOrientation.portraitDown,
     ],
   );
+
+  FlutterNativeSplash.remove();
 
   runApp(
     MultiProvider(
@@ -113,11 +127,11 @@ class TaskApp extends StatefulWidget {
 class _TaskAppState extends State<TaskApp> {
   @override
   void initState() {
-    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-      if (!isAllowed) {
-        AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-    });
+    // AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
+    //   if (!isAllowed) {
+    //     AwesomeNotifications().requestPermissionToSendNotifications();
+    //   }
+    // });
     super.initState();
   }
 

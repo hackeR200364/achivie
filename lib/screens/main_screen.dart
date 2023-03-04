@@ -33,7 +33,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget currentScreen() {
     switch (currentPageIndex) {
       case 0:
-        return HomeScreen();
+        return const HomeScreen();
       case 1:
         return const InfoScreen();
       case 2:
@@ -41,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
       case 3:
         return const SendSMSScreen();
       default:
-        return HomeScreen();
+        return const HomeScreen();
     }
   }
 
@@ -49,8 +49,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return ZoomDrawer(
       controller: zoomDrawerController,
-      openCurve: Curves.fastOutSlowIn,
-      closeCurve: Curves.easeInOut,
+      openCurve: Curves.easeOut,
       androidCloseOnBackTap: true,
       angle: 0,
       style: DrawerStyle.defaultStyle,
