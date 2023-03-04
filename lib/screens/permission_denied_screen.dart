@@ -42,7 +42,7 @@ class _PermissionDeniedScreenState extends State<PermissionDeniedScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
+              const Text(
                 "We need all the permissions to run the app properly",
                 textAlign: TextAlign.center,
                 style: AppColors.headingTextStyle,

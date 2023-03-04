@@ -26,7 +26,7 @@ class _TempScreenState extends State<TempScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColors.mainColor,
     );
   }

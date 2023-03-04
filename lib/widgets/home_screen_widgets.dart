@@ -1134,20 +1134,20 @@ class TaskDialog extends StatelessWidget {
                 children: [
                   Text(
                     headMessage,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.white,
                       fontSize: 35,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 15,
                   ),
                   Text(
                     subMessage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -1795,7 +1795,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                             context: streamContext,
                             builder: (BuildContext unDoneContext) {
                               Future.delayed(
-                                Duration(
+                                const Duration(
                                   seconds: 2,
                                 ),
                                 (() {
@@ -1829,7 +1829,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                             context: streamContext,
                             builder: (BuildContext doneContext) {
                               Future.delayed(
-                                Duration(
+                                const Duration(
                                   seconds: 2,
                                 ),
                                 (() {
@@ -1927,7 +1927,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                             context: streamContext,
                             builder: (BuildContext deleteContext) {
                               Future.delayed(
-                                Duration(
+                                const Duration(
                                   seconds: 2,
                                 ),
                                 (() {
@@ -1974,7 +1974,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               context: streamContext,
                               builder: (BuildContext unDoContext) {
                                 Future.delayed(
-                                  Duration(
+                                  const Duration(
                                     seconds: 2,
                                   ),
                                   (() {
