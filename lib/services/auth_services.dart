@@ -1,13 +1,18 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:open_mail_app/open_mail_app.dart';
+import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/screens/main_screen.dart';
 
 import '../styles.dart';
+import 'keys.dart';
 import 'shared_preferences.dart';
 
 class GoogleSignInProvider extends ChangeNotifier {
@@ -121,52 +126,63 @@ class GoogleSignInProvider extends ChangeNotifier {
 
 class EmailPassAuthServices {
   Future emailPassSignUp({
-    required String name,
+    required String firstName,
+    required String lastName,
     required String email,
     required String pass,
+    required String uid,
     required BuildContext context,
   }) async {
-    try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: pass,
-      );
+    // await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    //   email: email,
+    //   password: pass,
+    // );
+    //
+    // final user = FirebaseAuth.instance.currentUser;
+    //
+    // await user!.sendEmailVerification();
+    //
+    // FirebaseFirestore.instance.collection("users").doc(user.email).set(
+    //   {
+    //     Keys.userName: name,
+    //     Keys.userEmail: email,
+    //     Keys.userPassword: pass,
+    //     Keys.uid: user.uid,
+    //     Keys.taskDone: 0,
+    //     Keys.taskPending: 0,
+    //     Keys.taskPersonal: 0,
+    //     Keys.taskBusiness: 0,
+    //     Keys.taskCount: 0,
+    //     Keys.taskDelete: 0,
+    //   },
+    // );
 
-      final user = FirebaseAuth.instance.currentUser;
+    http.Response response =
+        await http.post(Uri.parse("${Keys.apiUserBaseUrl}/create"), body: {
+      "usrFirstName": firstName,
+      "usrLastName": lastName,
+      "usrPassword": pass,
+      "uid": uid,
+    });
 
-      await user!.sendEmailVerification();
-
-      FirebaseFirestore.instance.collection("users").doc(user.email).set(
-        {
-          Keys.userName: name,
-          Keys.userEmail: email,
-          Keys.userPassword: pass,
-          Keys.uid: user.uid,
-          Keys.taskDone: 0,
-          Keys.taskPending: 0,
-          Keys.taskPersonal: 0,
-          Keys.taskBusiness: 0,
-          Keys.taskCount: 0,
-          Keys.taskDelete: 0,
-        },
-      );
+    if (response.statusCode == 200) {
       StorageServices.setSignInType("Email");
-    } on FirebaseException catch (e) {
-      print(e.message);
-      Dialogs.bottomMaterialDialog(
+
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+
+      StorageServices.setUserName(
+          "${responseJson["data"]["usrFirstName"]}${responseJson["data"]["usrFirstName"]}");
+      StorageServices.setUID(responseJson["data"]["uid"]);
+      StorageServices.setUserEmail(responseJson["data"]["usrEmail"]);
+
+      AppSnackbar().customizedAppSnackbar(
+        message: responseJson["message"],
         context: context,
-        color: AppColors.white,
-        title: "Warning",
-        msg: e.message,
-        msgStyle: TextStyle(
-          color: AppColors.mainColor,
-          fontWeight: FontWeight.w600,
-        ),
-        titleStyle: TextStyle(
-          color: AppColors.backgroundColour,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-        ),
+      );
+    } else {
+      AppSnackbar().customizedAppSnackbar(
+        message: "Something went wrong",
+        context: context,
       );
     }
   }

@@ -10,7 +10,7 @@ import 'package:task_app/providers/task_details_provider.dart';
 import 'package:task_app/providers/user_details_providers.dart';
 import 'package:task_app/screens/splash_screen.dart';
 import 'package:task_app/services/auth_services.dart';
-import 'package:task_app/services/shared_preferences.dart';
+import 'package:task_app/services/keys.dart';
 import 'package:task_app/styles.dart';
 
 Future main() async {

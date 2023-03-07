@@ -29,7 +29,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool isLoading = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late TextEditingController _emailController;
-  late TextEditingController _nameController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
   bool visibility = true;
@@ -65,7 +66,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     _emailController = TextEditingController();
-    _nameController = TextEditingController();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
     getAppDetails();
@@ -76,7 +78,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passConfirmController.dispose();
     _passController.dispose();
     super.dispose();
@@ -114,7 +117,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Positioned(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height * 1.1 : size.height,
+                  height: (signPage == 0) ? size.height * 1.2 : size.height,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -150,7 +153,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GlassmorphicContainer(
                           width: size.width,
                           height: (signPage == 0)
-                              ? size.height / 1.4
+                              ? size.height / 1.2
                               : size.height / 1.8,
                           borderRadius: 15,
                           linearGradient: LinearGradient(
@@ -173,8 +176,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               if (signPage == 0)
                                 AuthTextField(
                                     icon: Icons.badge_outlined,
-                                    controller: _nameController,
-                                    hintText: "Your name",
+                                    controller: _firstNameController,
+                                    hintText: "Your First Name",
+                                    keyboard: TextInputType.name,
+                                    isPassField: false,
+                                    isPassConfirmField: false,
+                                    isEmailField: false,
+                                    pageIndex: signPage
+                                    // formKey: signUpFormKey,
+                                    ),
+                              if (signPage == 0)
+                                AuthTextField(
+                                    icon: Icons.badge_outlined,
+                                    controller: _lastNameController,
+                                    hintText: "Your Last Name",
                                     keyboard: TextInputType.name,
                                     isPassField: false,
                                     isPassConfirmField: false,
@@ -262,21 +277,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     .text.isNotEmpty &&
                                                 _passConfirmController
                                                     .text.isNotEmpty &&
-                                                _nameController
-                                                    .text.isNotEmpty) {
+                                                _firstNameController
+                                                    .text.isNotEmpty &&
+                                                _lastNameController
+                                                    .text.isNotEmpty &&
+                                                _firstNameController.text
+                                                        .trim() !=
+                                                    _lastNameController.text
+                                                        .trim()) {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(true);
                                                 EmailPassAuthServices()
                                                     .emailPassSignUp(
-                                                  name: _nameController.text
+                                                  firstName:
+                                                      _firstNameController.text
+                                                          .trim(),
+                                                  lastName: _firstNameController
+                                                      .text
                                                       .trim(),
                                                   email: _emailController.text
                                                       .trim(),
                                                   pass: _passController.text
                                                       .trim(),
                                                   context: context,
+                                                  uid: _emailController.text
+                                                      .trim()
+                                                      .split('@')[0],
                                                 );
 
                                                 String signInType =
@@ -286,7 +314,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 if (signInType == "Email") {
                                                   _emailController.clear();
                                                   _passController.clear();
-                                                  _nameController.clear();
+                                                  _firstNameController.clear();
+                                                  _lastNameController.clear();
                                                   _passConfirmController
                                                       .clear();
                                                   setState(() {

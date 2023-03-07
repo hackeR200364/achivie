@@ -73,6 +73,7 @@ dependencies:
   flutter_email_sender:
   telephony:
   smooth_page_indicator:
+  http:
 
 dev_dependencies:
   flutter_test:
