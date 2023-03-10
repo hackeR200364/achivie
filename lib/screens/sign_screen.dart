@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +15,7 @@ import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/providers/app_providers.dart';
 import 'package:task_app/screens/main_screen.dart';
 import 'package:task_app/services/auth_services.dart';
+import 'package:task_app/services/keys.dart';
 import 'package:task_app/styles.dart';
 
 import '../services/shared_preferences.dart';
@@ -29,7 +32,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool isLoading = false;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late TextEditingController _emailController;
-  late TextEditingController _nameController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
   bool visibility = true;
@@ -65,7 +69,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     _emailController = TextEditingController();
-    _nameController = TextEditingController();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
     getAppDetails();
@@ -76,7 +81,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _emailController.dispose();
-    _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _passConfirmController.dispose();
     _passController.dispose();
     super.dispose();
@@ -140,7 +146,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: size.height / 15,
+                          height: size.height / 20,
                         ),
                         Lottie.asset(
                           "assets/login-animation.json",
@@ -150,50 +156,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GlassmorphicContainer(
                           width: size.width,
                           height: (signPage == 0)
-                              ? size.height / 1.4
-                              : size.height / 1.7,
+                              ? size.height / 1.35
+                              : size.height / 2,
                           borderRadius: 15,
-                          linearGradient: LinearGradient(
-                            colors: [
-                              AppColors.white.withOpacity(0.1),
-                              AppColors.white.withOpacity(0.3),
-                            ],
-                          ),
+                          linearGradient:
+                              AppColors.customGlassIconButtonGradient,
                           border: 2,
                           blur: 4,
-                          borderGradient: LinearGradient(
-                            colors: [
-                              AppColors.white.withOpacity(0.3),
-                              AppColors.white.withOpacity(0.5),
-                            ],
-                          ),
+                          borderGradient:
+                              AppColors.customGlassIconButtonBorderGradient,
                           child: Column(
                             children: [
                               //SIGN UP
                               if (signPage == 0)
-                                AuthTextField(
-                                    icon: Icons.badge_outlined,
-                                    controller: _nameController,
-                                    hintText: "Your name",
-                                    keyboard: TextInputType.name,
-                                    isPassField: false,
-                                    isPassConfirmField: false,
-                                    isEmailField: false,
-                                    pageIndex: signPage
-                                    // formKey: signUpFormKey,
-                                    ),
+                                AuthNameTextField(
+                                  icon: Icons.person,
+                                  controller: _firstNameController,
+                                  hintText: "Your First Name",
+                                ),
+                              if (signPage == 0)
+                                AuthNameTextField(
+                                  icon: Icons.badge_outlined,
+                                  controller: _lastNameController,
+                                  hintText: "Your Last Name",
+                                ),
                               if (signPage == 0)
                                 AuthTextField(
                                     icon: Icons.email_outlined,
                                     controller: _emailController,
-                                    hintText: "example@gmail.com",
+                                    hintText: "Email",
                                     keyboard: TextInputType.emailAddress,
                                     isPassField: false,
                                     isPassConfirmField: false,
                                     isEmailField: true,
-                                    pageIndex: signPage
-                                    // formKey: signUpFormKey,
-                                    ),
+                                    pageIndex: signPage),
                               if (signPage == 0)
                                 AuthTextField(
                                   icon: Icons.security_outlined,
@@ -204,8 +200,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   isPassConfirmField: false,
                                   isEmailField: false,
                                   pageIndex: signPage,
-
-                                  // formKey: signUpFormKey,
                                 ),
                               if (signPage == 0)
                                 AuthTextField(
@@ -217,8 +211,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   isPassConfirmField: true,
                                   isEmailField: false,
                                   pageIndex: signPage,
-
-                                  // formKey: signUpFormKey,
                                 ),
                               if (signPage == 0)
                                 Padding(
@@ -264,67 +256,145 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     .text.isNotEmpty &&
                                                 _passConfirmController
                                                     .text.isNotEmpty &&
-                                                _nameController
-                                                    .text.isNotEmpty) {
+                                                _firstNameController
+                                                    .text.isNotEmpty &&
+                                                _lastNameController
+                                                    .text.isNotEmpty &&
+                                                _firstNameController.text
+                                                        .trim() !=
+                                                    _lastNameController.text
+                                                        .trim() &&
+                                                EmailValidator.validate(
+                                                    _emailController.text
+                                                        .trim())) {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(true);
-                                                EmailPassAuthServices()
-                                                    .emailPassSignUp(
-                                                  name: _nameController.text
-                                                      .trim(),
-                                                  email: _emailController.text
-                                                      .trim(),
-                                                  pass: _passController.text
-                                                      .trim(),
-                                                  context: context,
+                                                // allAppProvidersProvider
+                                                //     .isLoadingFunc(true);
+                                                http.Response response =
+                                                    await http.post(
+                                                  Uri.parse(
+                                                      "${Keys.apiUsersBaseUrl}/create"),
+                                                  headers: {
+                                                    "content-type":
+                                                        "application/json",
+                                                  },
+                                                  body: jsonEncode({
+                                                    "usrFirstName":
+                                                        _firstNameController
+                                                            .text
+                                                            .trim(),
+                                                    "usrLastName":
+                                                        _lastNameController.text
+                                                            .trim(),
+                                                    "usrPassword":
+                                                        _passController.text
+                                                            .trim(),
+                                                    "usrEmail": _emailController
+                                                        .text
+                                                        .trim(),
+                                                    "uid": _emailController.text
+                                                        .trim()
+                                                        .split('@')[0],
+                                                  }),
                                                 );
 
-                                                String signInType =
-                                                    await StorageServices
-                                                        .getUserSignInType();
+                                                if (response.statusCode ==
+                                                    200) {
+                                                  log(response.body.toString());
+                                                  StorageServices.setSignInType(
+                                                      Keys.email);
 
-                                                if (signInType == "Email") {
-                                                  _emailController.clear();
-                                                  _passController.clear();
-                                                  _nameController.clear();
-                                                  _passConfirmController
-                                                      .clear();
-                                                  setState(() {
-                                                    signPage = 1;
-                                                  });
+                                                  Map<String, dynamic>
+                                                      responseJson =
+                                                      jsonDecode(response.body);
+
+                                                  if (responseJson["success"]) {
+                                                    StorageServices.setUserName(
+                                                        "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+                                                    StorageServices.setUID(
+                                                        responseJson[Keys.data]
+                                                            [Keys.uid]);
+                                                    StorageServices
+                                                        .setUserEmail(
+                                                            responseJson[
+                                                                    Keys.data][
+                                                                Keys.usrEmail]);
+                                                    StorageServices.setUsrToken(
+                                                        responseJson[
+                                                            Keys.token]);
+
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            Keys.message],
+                                                        context: context,
+                                                      ),
+                                                    );
+                                                    String signInType =
+                                                        await StorageServices
+                                                            .getUserSignInType();
+
+                                                    if (signInType ==
+                                                        Keys.email) {
+                                                      _emailController.clear();
+                                                      _passController.clear();
+                                                      _firstNameController
+                                                          .clear();
+                                                      _lastNameController
+                                                          .clear();
+                                                      _passConfirmController
+                                                          .clear();
+                                                      setState(() {
+                                                        signPage = 1;
+                                                      });
+                                                    }
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            Keys.message],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                  }
+                                                } else {
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message:
+                                                          "Something went wrong",
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
                                                 }
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(false);
                                               } else {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
                                                 ScaffoldMessenger.of(
                                                         allAppProvidersContext)
                                                     .showSnackBar(
-                                                  SnackBar(
-                                                    margin: EdgeInsets.only(
-                                                      bottom: 30,
-                                                      left: size.width / 10,
-                                                      right: size.width / 10,
-                                                    ),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                    dismissDirection:
-                                                        DismissDirection
-                                                            .horizontal,
-                                                    backgroundColor: AppColors
-                                                        .backgroundColour,
-                                                    content: const Text(
-                                                      "Please check the password fields",
-                                                      style: TextStyle(
-                                                        color: AppColors.white,
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message:
+                                                        "Please check the password fields",
+                                                    context: context,
                                                   ),
                                                 );
                                               }
@@ -334,28 +404,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               ScaffoldMessenger.of(
                                                       allAppProvidersContext)
                                                   .showSnackBar(
-                                                const SnackBar(
-                                                  margin: EdgeInsets.only(
-                                                    bottom: 30,
-                                                    left: 30,
-                                                    right: 30,
-                                                  ),
-                                                  behavior:
-                                                      SnackBarBehavior.floating,
-                                                  dismissDirection:
-                                                      DismissDirection
-                                                          .horizontal,
-                                                  backgroundColor: AppColors
-                                                      .backgroundColour,
-                                                  content: Text(
-                                                    "Please fill the fields properly",
-                                                    style: TextStyle(
-                                                      color: AppColors.white,
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Please fill the fields properly",
+                                                  context: context,
                                                 ),
                                               );
                                             }
@@ -421,15 +474,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
-                                      onPressed: (() {
-                                        allAppProvidersProvider
-                                            .isLoadingFunc(true);
+                                      onPressed: (() async {
                                         if (_emailController.text.isNotEmpty) {
-                                          EmailPassAuthServices()
-                                              .forgotPassword(
-                                            email: _emailController.text.trim(),
-                                            context: allAppProvidersContext,
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(true);
+                                          // EmailPassAuthServices()
+                                          //     .forgotPassword(
+                                          //   email: _emailController.text.trim(),
+                                          //   context: allAppProvidersContext,
+                                          // );
+
+                                          http.Response response =
+                                              await http.get(
+                                            Uri.parse(
+                                              "${Keys.apiUsersBaseUrl}/forgotPass/${_emailController.text.trim()}",
+                                            ),
+                                            headers: {
+                                              "content-type":
+                                                  "application/json",
+                                            },
                                           );
+
+                                          if (response.statusCode == 200) {
+                                            Map<String, dynamic> responseJson =
+                                                jsonDecode(response.body);
+                                            log(responseJson.toString());
+                                            // if (responseJson["success"]) {
+                                            //   String decryptedPass = "";
+                                            //   final key =
+                                            //       encrypt_package.Key.fromUtf8(
+                                            //           'qwe1234');
+                                            //   final iv = encrypt_package.IV
+                                            //       .fromLength(10);
+                                            //   final encryptor =
+                                            //       encrypt_package.Encrypter(
+                                            //           encrypt_package.AES(key));
+                                            //
+                                            //   final encrypted =
+                                            //       encryptor.encrypt(
+                                            //     responseJson[Keys.data]
+                                            //         ["usrPassword"],
+                                            //     iv: iv,
+                                            //   );
+                                            //
+                                            //   // Convert the decrypted password from bytes to a string
+                                            //   final decrypted = encryptor
+                                            //       .decrypt(encrypted, iv: iv);
+                                            //   log("Decoded pass : $decrypted");
+                                            // }
+                                          }
+
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
                                         } else {
                                           allAppProvidersProvider
                                               .isLoadingFunc(false);
@@ -443,8 +539,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             ),
                                           );
                                         }
-                                        allAppProvidersProvider
-                                            .isLoadingFunc(false);
                                       }),
                                       child: const Text(
                                         "Forgot Password",
@@ -490,7 +584,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ),
                                         )
                                       : InkWell(
-                                          onTap: (() {
+                                          onTap: (() async {
                                             allAppProvidersProvider
                                                 .isLoadingFunc(true);
                                             const CircularProgressIndicator(
@@ -501,14 +595,93 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     .text.isNotEmpty &&
                                                 _passController
                                                     .text.isNotEmpty) {
-                                              EmailPassAuthServices()
-                                                  .emailPassSignIn(
-                                                email: _emailController.text
-                                                    .trim(),
-                                                pass:
-                                                    _passController.text.trim(),
-                                                context: allAppProvidersContext,
+                                              // EmailPassAuthServices()
+                                              //     .emailPassSignIn(
+                                              //   email: _emailController.text
+                                              //       .trim(),
+                                              //   pass:
+                                              //       _passController.text.trim(),
+                                              //   context: allAppProvidersContext,
+                                              // );
+
+                                              String token =
+                                                  await StorageServices
+                                                      .getToken();
+
+                                              http.Response response =
+                                                  await http.post(
+                                                Uri.parse(
+                                                    "${Keys.apiUsersBaseUrl}/login"),
+                                                headers: {
+                                                  "content-type":
+                                                      "application/json",
+                                                  'Authorization':
+                                                      'Bearer $token',
+                                                },
+                                                body: jsonEncode({
+                                                  "usrPassword": _passController
+                                                      .text
+                                                      .trim(),
+                                                  "usrEmail": _emailController
+                                                      .text
+                                                      .trim(),
+                                                }),
                                               );
+
+                                              if (response.statusCode == 200) {
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
+                                                log(responseJson.toString());
+
+                                                if (responseJson["success"]) {
+                                                  StorageServices.setSignStatus(
+                                                      true);
+                                                  StorageServices.setUserEmail(
+                                                      responseJson[Keys.data]
+                                                          [Keys.usrEmail]);
+                                                  StorageServices.setUserName(
+                                                      "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+                                                  StorageServices.setUID(
+                                                      responseJson[Keys.data]
+                                                          [Keys.uid]);
+                                                  StorageServices.setSignInType(
+                                                      "Email");
+
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: responseJson[
+                                                          Keys.message],
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+
+                                                  Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (nextPageContext) =>
+                                                              const MainScreen(),
+                                                    ),
+                                                  );
+                                                } else {
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: responseJson[
+                                                          "message"],
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                }
+                                              }
                                             } else {
                                               allAppProvidersProvider
                                                   .isLoadingFunc(false);
@@ -556,70 +729,70 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ),
                                         ),
                                 ),
-                              const Center(
-                                child: Text(
-                                  "or",
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 10,
-                                  bottom: 10,
-                                  left: 20,
-                                  right: 20,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CompanyAuth(
-                                          logo: "assets/google-logo.png",
-                                          onTap: (() async {
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(true);
-                                            const CircularProgressIndicator(
-                                              color: AppColors.backgroundColour,
-                                            );
-                                            await googleSignIn(context);
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
-                                          }),
-                                        ),
-                                        SizedBox(
-                                          width: size.width / 10,
-                                        ),
-                                        CompanyAuth(
-                                          logo: "assets/apple-logo.png",
-                                          onTap: (() {
-                                            if (!Platform.isIOS ||
-                                                !Platform.isMacOS) {
-                                              ScaffoldMessenger.of(
-                                                      allAppProvidersContext)
-                                                  .showSnackBar(
-                                                AppSnackbar()
-                                                    .customizedAppSnackbar(
-                                                  message:
-                                                      "Your device is not a iOS or macOS device",
-                                                  context:
-                                                      allAppProvidersContext,
-                                                ),
-                                              );
-                                            }
-                                          }),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // const Center(
+                              //   child: Text(
+                              //     "or",
+                              //     style: TextStyle(
+                              //       color: AppColors.white,
+                              //       fontSize: 15,
+                              //     ),
+                              //   ),
+                              // ),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(
+                              //     top: 10,
+                              //     bottom: 10,
+                              //     left: 20,
+                              //     right: 20,
+                              //   ),
+                              //   child: Column(
+                              //     crossAxisAlignment:
+                              //         CrossAxisAlignment.stretch,
+                              //     children: [
+                              //       Row(
+                              //         mainAxisAlignment:
+                              //             MainAxisAlignment.center,
+                              //         children: [
+                              //           CompanyAuth(
+                              //             logo: "assets/google-logo.png",
+                              //             onTap: (() async {
+                              //               allAppProvidersProvider
+                              //                   .isLoadingFunc(true);
+                              //               const CircularProgressIndicator(
+                              //                 color: AppColors.backgroundColour,
+                              //               );
+                              //               await googleSignIn(context);
+                              //               allAppProvidersProvider
+                              //                   .isLoadingFunc(false);
+                              //             }),
+                              //           ),
+                              //           SizedBox(
+                              //             width: size.width / 10,
+                              //           ),
+                              //           CompanyAuth(
+                              //             logo: "assets/apple-logo.png",
+                              //             onTap: (() {
+                              //               if (!Platform.isIOS ||
+                              //                   !Platform.isMacOS) {
+                              //                 ScaffoldMessenger.of(
+                              //                         allAppProvidersContext)
+                              //                     .showSnackBar(
+                              //                   AppSnackbar()
+                              //                       .customizedAppSnackbar(
+                              //                     message:
+                              //                         "Your device is not a iOS or macOS device",
+                              //                     context:
+                              //                         allAppProvidersContext,
+                              //                   ),
+                              //                 );
+                              //               }
+                              //             }),
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
                               if (signPage == 0)
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -637,8 +810,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         setState(() {
                                           signPage = 1;
                                         });
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
                                         _emailController.clear();
                                         _passController.clear();
+                                        _firstNameController.clear();
+                                        _lastNameController.clear();
+                                        _passConfirmController.clear();
                                       }),
                                       child: const Text(
                                         "Login",
@@ -658,9 +836,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     Text(
                                       "Don't have any account?",
                                       style: TextStyle(
-                                        color:
-                                            AppColors.blackLow.withOpacity(0.5),
-                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.white,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     TextButton(
@@ -668,9 +845,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         setState(() {
                                           signPage = 0;
                                         });
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
                                         _emailController.clear();
                                         _passController.clear();
-                                        _passConfirmController.clear();
                                       }),
                                       child: const Text(
                                         "SignUp",
@@ -728,8 +906,39 @@ class AuthTextField extends StatefulWidget {
 }
 
 class _AuthTextFieldState extends State<AuthTextField> {
-  bool passVisibility = false;
-  bool passConfirmVisibility = false;
+  bool passVisibility = true;
+  bool passConfirmVisibility = true;
+
+  String? _validate(String? input) {
+    if (input != null && input.isNotEmpty) {
+      if (widget.isEmailField) {
+        if (!EmailValidator.validate(input)) {
+          return "Enter a valid email";
+        } else {
+          return null;
+        }
+      }
+      if (widget.isPassField) {
+        if (input.length < 8) {
+          return "Password should contain minimum 8 characters";
+        }
+        if (!RegExp(r'^(?=.*[A-Z])\w+').hasMatch(input)) {
+          return "Password should contain minimum 1 Uppercase character";
+        }
+        if (!RegExp(r'^(?=.*[a-z])\w+').hasMatch(input)) {
+          return "Password should contain minimum 1 Lowercase character";
+        }
+        if (!RegExp(r'^(?=.*[0-9])\w+').hasMatch(input)) {
+          return "Password should contain minimum 1 numeric";
+        }
+        if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])\w+').hasMatch(input)) {
+          return "Password should contain minimum 1 special character";
+        }
+      }
+      return null;
+    }
+    return "This is a required field";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -767,19 +976,36 @@ class _AuthTextFieldState extends State<AuthTextField> {
           ),
           suffixIcon: (widget.isPassField || widget.isPassConfirmField)
               ? IconButton(
-                  icon: passVisibility
-                      ? const Icon(
-                          Icons.visibility,
-                          color: AppColors.white,
-                        )
-                      : const Icon(
-                          Icons.visibility_off,
-                          color: AppColors.white,
-                        ),
+                  icon: (widget.isPassField)
+                      ? passVisibility
+                          ? const Icon(
+                              Icons.visibility,
+                              color: AppColors.white,
+                            )
+                          : const Icon(
+                              Icons.visibility_off,
+                              color: AppColors.white,
+                            )
+                      : passConfirmVisibility
+                          ? const Icon(
+                              Icons.visibility,
+                              color: AppColors.white,
+                            )
+                          : const Icon(
+                              Icons.visibility_off,
+                              color: AppColors.white,
+                            ),
                   onPressed: (() {
-                    setState(() {
-                      passVisibility = !passVisibility;
-                    });
+                    if (widget.isPassField) {
+                      setState(() {
+                        passVisibility = !passVisibility;
+                      });
+                    }
+                    if (widget.isPassConfirmField) {
+                      setState(() {
+                        passConfirmVisibility = !passConfirmVisibility;
+                      });
+                    }
                   }),
                 )
               : null,
@@ -809,41 +1035,126 @@ class _AuthTextFieldState extends State<AuthTextField> {
             right: 15,
           ),
         ),
-        validator: (widget.isEmailField == true)
-            ? (email) => (email != null && !EmailValidator.validate(email))
-                ? "Enter a valid email"
-                : null
-            : (widget.isPassField)
-                ? ((password) {
-                    if (password != null) {
-                      if (password.length < 8) {
-                        return "Password should contain minimum 8 characters";
-                      }
-                      if (!RegExp(r'^(?=.*[A-Z])\w+').hasMatch(password)) {
-                        return "Password should contain minimum 1 Uppercase character";
-                      }
-                      if (!RegExp(r'^(?=.*[a-z])\w+').hasMatch(password)) {
-                        return "Password should contain minimum 1 Lowercase character";
-                      }
-                      if (!RegExp(r'^(?=.*[0-9])\w+').hasMatch(password)) {
-                        return "Password should contain minimum 1 numeric";
-                      }
-                      if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])\w+')
-                          .hasMatch(password)) {
-                        return "Password should contain minimum 1 special character";
-                      }
-                    }
-                    return null;
-                  })
-                : null,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        validator: _validate,
+        // (widget.isEmailField && widget.controller.text.isNotEmpty)
+        //     ? (email) => (email != null && !EmailValidator.validate(email))
+        //         ? "Enter a valid email"
+        //         : null
+        //     : (widget.isPassField && widget.controller.text.isNotEmpty)
+        //         ? ((password) {
+        //             if (password != null) {
+        //               if (password.length < 8) {
+        //                 return "Password should contain minimum 8 characters";
+        //               }
+        //               if (!RegExp(r'^(?=.*[A-Z])\w+').hasMatch(password)) {
+        //                 return "Password should contain minimum 1 Uppercase character";
+        //               }
+        //               if (!RegExp(r'^(?=.*[a-z])\w+').hasMatch(password)) {
+        //                 return "Password should contain minimum 1 Lowercase character";
+        //               }
+        //               if (!RegExp(r'^(?=.*[0-9])\w+').hasMatch(password)) {
+        //                 return "Password should contain minimum 1 numeric";
+        //               }
+        //               if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])\w+')
+        //                   .hasMatch(password)) {
+        //                 return "Password should contain minimum 1 special character";
+        //               }
+        //             }
+        //             return null;
+        //           })
+        //         : null
+
+        autovalidateMode: (widget.isEmailField || widget.isPassField)
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
         controller: widget.controller,
         keyboardType: widget.keyboard,
         cursorColor: AppColors.white,
         style: const TextStyle(
           color: AppColors.white,
         ),
-        obscureText: (passVisibility || passConfirmVisibility) ? true : false,
+        obscureText: (widget.isPassField)
+            ? passVisibility
+            : (widget.isPassConfirmField)
+                ? passConfirmVisibility
+                : false,
+      ),
+    );
+  }
+}
+
+class AuthNameTextField extends StatefulWidget {
+  const AuthNameTextField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    required this.icon,
+    // required this.formKey,
+  });
+  final TextEditingController controller;
+  final String hintText;
+  final IconData icon;
+
+  @override
+  State<AuthNameTextField> createState() => _AuthNameTextFieldState();
+}
+
+class _AuthNameTextFieldState extends State<AuthNameTextField> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: 20,
+        left: 15,
+        right: 15,
+        bottom: 10,
+      ),
+      child: TextFormField(
+        decoration: InputDecoration(
+          prefixIcon: Icon(
+            widget.icon,
+            color: AppColors.white,
+          ),
+          prefixStyle: const TextStyle(
+            color: AppColors.white,
+            fontSize: 16,
+          ),
+          hintText: widget.hintText,
+          hintStyle: TextStyle(
+            color: AppColors.white.withOpacity(0.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: Colors.white,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              width: 1,
+              color: AppColors.white,
+            ),
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          border: OutlineInputBorder(
+            borderSide: const BorderSide(
+              width: 1,
+              color: AppColors.white,
+            ),
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          contentPadding: const EdgeInsets.only(
+            left: 15,
+            right: 15,
+          ),
+        ),
+        controller: widget.controller,
+        keyboardType: TextInputType.name,
+        cursorColor: AppColors.white,
+        style: const TextStyle(
+          color: AppColors.white,
+        ),
       ),
     );
   }

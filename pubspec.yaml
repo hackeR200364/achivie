@@ -72,6 +72,8 @@ dependencies:
   marquee:
   app_settings:
   flutter_native_splash:
+  http:
+  encrypt:
 
 dev_dependencies:
   flutter_test:
