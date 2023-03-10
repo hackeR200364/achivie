@@ -1,43 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Keys {
-  static const String userSignStatus = "signStatus";
-  static const String isNewUser = "isNewUser";
-  static const String userName = "userName";
-  static const String userPoints = "userPoints";
-  static const String uid = "uid";
-  static const String userPassword = "userPassword";
-  static const String userEmail = "userEmail";
-  static const String userPhoto = "userPhoto";
-  static const String userSignInType = "userSignInType";
-  static const String taskName = "taskName";
-  static const String taskDes = "taskDes";
-  static const String taskNotification = "taskNotification";
-  static const String taskID = "taskID";
-  static const String taskType = "taskType";
-  static const String taskDate = "taskDate";
-  static const String taskTime = "taskTime";
-  static const String taskCount = "taskCount";
-  static const String taskDone = "taskDone";
-  static const String taskPending = "taskPending";
-  static const String taskPersonal = "taskPersonal";
-  static const String taskBusiness = "taskBusiness";
-  static const String taskStatus = "taskStatus";
-  static const String taskDelete = "taskDelete";
-  static const String deleteStatus = "Deleted";
-  static const String notDeleteStatus = "Deleted";
-  static const String notificationID = "notificationID";
-  static const String tasksInstantChannelKey = "tasks_instant_channel";
-  static const String tasksInstantChannelName = "Tasks_Instant";
-  static const String tasksInstantChannelDes = "Instant Tasks Notifications";
-  static const String tasksScheduledChannelKey = "Tasks_Scheduled";
-  static const String tasksScheduledChannelName = "Tasks_Instant";
-  static const String tasksScheduledChannelDes =
-      "Scheduled Tasks Notifications";
-  static const String userSongStatus = "userSongStatus";
-  static const String userSongName = "userSongName";
-  static const String userSongApp = "userSongApp";
-}
+import 'keys.dart';
 
 class StorageServices {
   static void setSignStatus(bool signStatus) async {
@@ -73,6 +36,17 @@ class StorageServices {
   static void setSignInType(String type) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Keys.userSignInType, type);
+  }
+
+  static void setUsrToken(String token) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.token, token);
+  }
+
+  static Future<String> getToken() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? token = pref.getString(Keys.token) ?? "";
+    return token;
   }
 
   static Future<String> getUserSignInType() async {
