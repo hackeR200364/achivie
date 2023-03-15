@@ -33,6 +33,7 @@ class NewTaskScreen extends StatefulWidget {
     this.taskNoti,
     this.taskDoc,
     this.userEmail,
+    this.notificationID,
   });
 
   final String? taskType;
@@ -43,6 +44,7 @@ class NewTaskScreen extends StatefulWidget {
   final String? taskNoti;
   final String? taskDoc;
   final String? userEmail;
+  final int? notificationID;
   @override
   State<NewTaskScreen> createState() => _NewTaskScreenState();
 }
@@ -432,7 +434,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                             }
 
                             return Container(
-                              padding: EdgeInsets.only(top: 5),
+                              padding: const EdgeInsets.only(top: 5),
                               decoration: BoxDecoration(
                                 color: AppColors.backgroundColour,
                                 borderRadius: BorderRadius.circular(20),
@@ -697,8 +699,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         Uri.parse(
                                             "${Keys.apiTasksBaseUrl}/createTask"),
                                         headers: {
-                                          'Content-Type': 'application/json',
-                                          'Authorization': 'Bearer $token',
+                                          "content-type": "application/json",
+                                          'authorization': 'Bearer $token',
                                         },
                                         body: jsonEncode({
                                           "uid": uid,
@@ -766,7 +768,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                           AppSnackbar().customizedAppSnackbar(
                                             message: responseJson["message"],
-                                            context: context,
+                                            context: allAppProvidersContext,
                                           );
                                           allAppProvidersProvider
                                               .newTaskUploadLoadingFunc(false);
@@ -775,7 +777,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                               .newTaskUploadLoadingFunc(false);
                                           AppSnackbar().customizedAppSnackbar(
                                             message: responseJson["message"],
-                                            context: context,
+                                            context: allAppProvidersContext,
                                           );
                                         }
                                       } else {
@@ -784,7 +786,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         AppSnackbar().customizedAppSnackbar(
                                           message:
                                               response.statusCode.toString(),
-                                          context: context,
+                                          context: allAppProvidersContext,
                                         );
                                       }
 
@@ -792,155 +794,191 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           .newTaskUploadLoadingFunc(false);
                                     } else if (widget.userEmail != null &&
                                         widget.taskDoc != null) {
-                                      DocumentSnapshot taskDoc =
-                                          await FirebaseFirestore.instance
-                                              .collection("users")
-                                              .doc(widget.userEmail)
-                                              .collection("tasks")
-                                              .doc(widget.taskDoc)
-                                              .get();
-                                      final taskDocRefUpdate = FirebaseFirestore
-                                          .instance
-                                          .collection("users")
-                                          .doc(widget.userEmail)
-                                          .collection("tasks")
-                                          .doc(widget.taskDoc);
+                                      // DocumentSnapshot taskDoc =
+                                      //     await FirebaseFirestore.instance
+                                      //         .collection("users")
+                                      //         .doc(widget.userEmail)
+                                      //         .collection("tasks")
+                                      //         .doc(widget.taskDoc)
+                                      //         .get();
+                                      // final taskDocRefUpdate = FirebaseFirestore
+                                      //     .instance
+                                      //     .collection("users")
+                                      //     .doc(widget.userEmail)
+                                      //     .collection("tasks")
+                                      //     .doc(widget.taskDoc);
+                                      //
+                                      // DocumentSnapshot userDoc =
+                                      //     await FirebaseFirestore.instance
+                                      //         .collection("users")
+                                      //         .doc(widget.userEmail)
+                                      //         .get();
+                                      //
+                                      // final userDocRefUpdate = FirebaseFirestore
+                                      //     .instance
+                                      //     .collection("users")
+                                      //     .doc(widget.userEmail);
+                                      //
+                                      // if (taskDoc[Keys.taskStatus] !=
+                                      //     "Pending") {
+                                      //   if (taskDoc[Keys.taskStatus] ==
+                                      //       "Deleted") {
+                                      //     userDocRefUpdate.update(
+                                      //       {
+                                      //         Keys.taskDelete:
+                                      //             userDoc[Keys.taskDelete] - 1,
+                                      //       },
+                                      //     );
+                                      //
+                                      //     if (taskDoc[Keys.taskType] ==
+                                      //         "Business") {
+                                      //       userDocRefUpdate.update(
+                                      //         {
+                                      //           Keys.taskBusiness:
+                                      //               userDoc[Keys.taskBusiness] +
+                                      //                   1,
+                                      //         },
+                                      //       );
+                                      //     }
+                                      //     if (taskDoc[Keys.taskType] ==
+                                      //         "Personal") {
+                                      //       userDocRefUpdate.update(
+                                      //         {
+                                      //           Keys.taskPersonal:
+                                      //               userDoc[Keys.taskPersonal] +
+                                      //                   1,
+                                      //         },
+                                      //       );
+                                      //     }
+                                      //   }
+                                      //   if (taskDoc[Keys.taskStatus] ==
+                                      //       "Completed") {
+                                      //     userDocRefUpdate.update({
+                                      //       Keys.taskDone:
+                                      //           userDoc[Keys.taskDone] - 1,
+                                      //     });
+                                      //   }
+                                      //   userDocRefUpdate.update({
+                                      //     Keys.taskPending:
+                                      //         userDoc[Keys.taskPending] + 1,
+                                      //   });
+                                      // }
+                                      //
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskDate:
+                                      //         allAppProvidersProvider.dateText,
+                                      //   },
+                                      // );
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskTime:
+                                      //         allAppProvidersProvider.timeText,
+                                      //   },
+                                      // );
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskDes: _descriptionController
+                                      //         .text
+                                      //         .trim(),
+                                      //   },
+                                      // );
+                                      //
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskName:
+                                      //         _taskNameController.text.trim(),
+                                      //   },
+                                      // );
+                                      //
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskNotification:
+                                      //         _notificationController.text
+                                      //             .trim(),
+                                      //   },
+                                      // );
+                                      //
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskType: allAppProvidersProvider
+                                      //         .selectedType,
+                                      //   },
+                                      // );
+                                      //
+                                      // taskDocRefUpdate.update(
+                                      //   {
+                                      //     Keys.taskStatus: "Pending",
+                                      //   },
+                                      // );
 
-                                      DocumentSnapshot userDoc =
-                                          await FirebaseFirestore.instance
-                                              .collection("users")
-                                              .doc(widget.userEmail)
-                                              .get();
-
-                                      final userDocRefUpdate = FirebaseFirestore
-                                          .instance
-                                          .collection("users")
-                                          .doc(widget.userEmail);
-
-                                      if (taskDoc[Keys.taskStatus] !=
-                                          "Pending") {
-                                        if (taskDoc[Keys.taskStatus] ==
-                                            "Deleted") {
-                                          userDocRefUpdate.update(
-                                            {
-                                              Keys.taskDelete:
-                                                  userDoc[Keys.taskDelete] - 1,
-                                            },
-                                          );
-
-                                          if (taskDoc[Keys.taskType] ==
-                                              "Business") {
-                                            userDocRefUpdate.update(
-                                              {
-                                                Keys.taskBusiness:
-                                                    userDoc[Keys.taskBusiness] +
-                                                        1,
-                                              },
-                                            );
-                                          }
-                                          if (taskDoc[Keys.taskType] ==
-                                              "Personal") {
-                                            userDocRefUpdate.update(
-                                              {
-                                                Keys.taskPersonal:
-                                                    userDoc[Keys.taskPersonal] +
-                                                        1,
-                                              },
-                                            );
-                                          }
-                                        }
-                                        if (taskDoc[Keys.taskStatus] ==
-                                            "Completed") {
-                                          userDocRefUpdate.update({
-                                            Keys.taskDone:
-                                                userDoc[Keys.taskDone] - 1,
-                                          });
-                                        }
-                                        userDocRefUpdate.update({
-                                          Keys.taskPending:
-                                              userDoc[Keys.taskPending] + 1,
-                                        });
-                                      }
-
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskDate:
-                                              allAppProvidersProvider.dateText,
+                                      http.Response response = await http.post(
+                                        Uri.parse(
+                                            "${Keys.apiTasksBaseUrl}/updateTask"),
+                                        headers: {
+                                          "content-type": "application/json",
+                                          'authorization': 'Bearer $token',
                                         },
-                                      );
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskTime:
-                                              allAppProvidersProvider.timeText,
-                                        },
-                                      );
-                                      taskDocRefUpdate.update(
-                                        {
+                                        body: jsonEncode({
+                                          Keys.taskName:
+                                              _taskNameController.text.trim(),
                                           Keys.taskDes: _descriptionController
                                               .text
                                               .trim(),
-                                        },
-                                      );
-
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskName:
-                                              _taskNameController.text.trim(),
-                                        },
-                                      );
-
-                                      taskDocRefUpdate.update(
-                                        {
+                                          Keys.taskDate: allAppProvidersProvider
+                                              .dateText
+                                              .trim(),
+                                          Keys.taskTime: allAppProvidersProvider
+                                              .timeText
+                                              .trim(),
                                           Keys.taskNotification:
                                               _notificationController.text
                                                   .trim(),
-                                        },
-                                      );
-
-                                      taskDocRefUpdate.update(
-                                        {
                                           Keys.taskType: allAppProvidersProvider
-                                              .selectedType,
-                                        },
-                                      );
-
-                                      taskDocRefUpdate.update(
-                                        {
-                                          Keys.taskStatus: "Pending",
-                                        },
-                                      );
-
-                                      await rewardedAd?.show(
-                                        onUserEarnedReward: ((ad, point) {}),
-                                      );
-                                      rewardedAd?.fullScreenContentCallback =
-                                          FullScreenContentCallback(
-                                        onAdClicked: ((ad) {}),
-                                        onAdDismissedFullScreenContent:
-                                            ((ad) async {
-                                          // print("ad dismissed");
+                                              .selectedType
+                                              .trim(),
+                                          Keys.notificationID:
+                                              widget.notificationID,
                                         }),
-                                        onAdFailedToShowFullScreenContent:
-                                            ((ad, err) {
-                                          ad.dispose();
-                                          // print("ad error $err");
-                                        }),
-                                        onAdImpression: ((ad) {}),
-                                        onAdShowedFullScreenContent: ((ad) {
-                                          // print("ad shown ${ad.responseInfo}");
-                                        }),
-                                        onAdWillDismissFullScreenContent:
-                                            ((ad) {}),
                                       );
 
-                                      await NotificationServices()
-                                          .cancelTaskScheduledNotification(
-                                        id: taskDoc[Keys.notificationID],
-                                      );
+                                      Map<String, dynamic> responseJson =
+                                          jsonDecode(response.body);
 
-                                      await NotificationServices()
-                                          .createScheduledTaskNotification(
-                                            id: taskDoc[Keys.notificationID],
+                                      if (response.statusCode == 200) {
+                                        if (responseJson["success"]) {
+                                          await rewardedAd?.show(
+                                            onUserEarnedReward:
+                                                ((ad, point) {}),
+                                          );
+                                          rewardedAd
+                                                  ?.fullScreenContentCallback =
+                                              FullScreenContentCallback(
+                                            onAdClicked: ((ad) {}),
+                                            onAdDismissedFullScreenContent:
+                                                ((ad) async {
+                                              // print("ad dismissed");
+                                            }),
+                                            onAdFailedToShowFullScreenContent:
+                                                ((ad, err) {
+                                              ad.dispose();
+                                              // print("ad error $err");
+                                            }),
+                                            onAdImpression: ((ad) {}),
+                                            onAdShowedFullScreenContent: ((ad) {
+                                              // print("ad shown ${ad.responseInfo}");
+                                            }),
+                                            onAdWillDismissFullScreenContent:
+                                                ((ad) {}),
+                                          );
+
+                                          await NotificationServices()
+                                              .cancelTaskScheduledNotification(
+                                                  id: widget.notificationID!);
+
+                                          await NotificationServices()
+                                              .createScheduledTaskNotification(
+                                            id: widget.notificationID!,
                                             title: _notificationController.text
                                                 .trim(),
                                             body:
@@ -948,22 +986,49 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                             payload:
                                                 scheduleDateTIme.toString(),
                                             dateTime: scheduleDateTIme,
-                                          )
-                                          .whenComplete(
-                                            () => AwesomeDialog(
-                                              context: allAppProvidersContext,
-                                              dialogType: DialogType.success,
-                                              title: "Hurray",
-                                              desc:
-                                                  "Your goal is successfully updated",
-                                            ).show(),
                                           );
+
+                                          ScaffoldMessenger.of(
+                                                  allAppProvidersContext)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: responseJson["message"],
+                                              context: allAppProvidersContext,
+                                            ),
+                                          );
+                                          allAppProvidersProvider
+                                              .newTaskUploadLoadingFunc(false);
+
+                                          Navigator.pop(context);
+                                        } else {
+                                          allAppProvidersProvider
+                                              .newTaskUploadLoadingFunc(false);
+                                          ScaffoldMessenger.of(
+                                                  allAppProvidersContext)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: responseJson["message"],
+                                              context: allAppProvidersContext,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        allAppProvidersProvider
+                                            .newTaskUploadLoadingFunc(false);
+                                        ScaffoldMessenger.of(
+                                                allAppProvidersContext)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                response.statusCode.toString(),
+                                            context: allAppProvidersContext,
+                                          ),
+                                        );
+                                      }
                                     }
 
                                     allAppProvidersProvider
                                         .newTaskUploadLoadingFunc(false);
-
-                                    Navigator.pop(context);
                                   } else {
                                     allAppProvidersProvider
                                         .newTaskUploadLoadingFunc(false);

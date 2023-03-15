@@ -1694,16 +1694,16 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                 Uri.parse(
                     "${Keys.apiTasksBaseUrl}/getTasksOfTypeStatus/${widget.uid}/${widget.type}/${widget.status}"),
                 headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ${widget.token}',
+                  'content-Type': 'application/json',
+                  'authorization': 'Bearer ${widget.token}',
                 },
               ).asStream()
             : http.get(
                 Uri.parse(
                     "${Keys.apiTasksBaseUrl}/getAllTasksSpecificType/${widget.uid}/${widget.type}"),
                 headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ${widget.token}',
+                  "content-Type": "application/json",
+                  "authorization": "Bearer ${widget.token}",
                 },
               ).asStream(),
         builder: (streamContext, AsyncSnapshot<http.Response> snapshot) {
@@ -1800,31 +1800,96 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                 "Pending") &&
                             (taskSavedDate.difference(widget.date).inMinutes >
                                 0)) {
-                          updateTasks(
-                            taskDocID: "taskDocID",
-                            status: snapshotList[listIndex][Keys.taskStatus],
-                            firestoreEmail: widget.firestoreEmail,
-                            taskSavedDay: taskSavedDay,
-                            taskSavedHour: taskSavedHour,
-                            taskSavedMinute: taskSavedMinute,
-                            taskSavedMonth: taskSavedMonth,
-                            taskSavedYear: taskSavedYear,
+                          http.Response unDoneResponse = await http.post(
+                            Uri.parse("${Keys.apiTasksBaseUrl}/unDoneTask"),
+                            headers: {
+                              "content-Type": "application/json",
+                              "authorization": "Bearer ${widget.token}",
+                            },
+                            body: jsonEncode(
+                              {
+                                Keys.uid: widget.uid,
+                                Keys.notificationID: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              },
+                            ),
                           );
 
-                          showDialog(
-                            context: streamContext,
-                            builder: (BuildContext unDoneContext) {
-                              Future.delayed(
-                                const Duration(
-                                  seconds: 2,
-                                ),
-                                (() {
-                                  Navigator.pop(unDoneContext);
-                                }),
+                          Map<String, dynamic> unDoneResponseJson =
+                              jsonDecode(unDoneResponse.body);
+
+                          if (unDoneResponse.statusCode == 200) {
+                            if (unDoneResponseJson["success"]) {
+                              DateTime date = DateTime.now();
+
+                              if (taskSavedDate.difference(date).inMinutes >
+                                  0) {
+                                log("unDoneResponseJson=${unDoneResponseJson[Keys.data].toString()}");
+                                NotificationServices()
+                                    .cancelTaskScheduledNotification(
+                                  id: snapshotList[listIndex]
+                                      [Keys.notificationID],
+                                );
+                                NotificationServices()
+                                    .createScheduledTaskNotification(
+                                  title: snapshotList[listIndex][Keys.taskName],
+                                  body:
+                                      "${snapshotList[listIndex][Keys.taskName]}\n${snapshotList[listIndex][Keys.taskDes]}",
+                                  id: snapshotList[listIndex]
+                                      [Keys.notificationID],
+                                  payload: "",
+                                  dateTime: taskSavedDate,
+                                );
+                              }
+
+                              showDialog(
+                                context: streamContext,
+                                builder: (BuildContext unDoneContext) {
+                                  Future.delayed(
+                                    const Duration(
+                                      seconds: 2,
+                                    ),
+                                    (() {
+                                      Navigator.pop(unDoneContext);
+                                    }),
+                                  );
+                                  return TaskUnDoneDialogChild();
+                                },
                               );
-                              return const TaskUnDoneDialogChild();
-                            },
-                          );
+
+                              NotificationServices()
+                                  .createScheduledTaskNotification(
+                                title: snapshotList[listIndex][Keys.taskName],
+                                body:
+                                    "${snapshotList[listIndex][Keys.taskName]}\n${snapshotList[listIndex][Keys.taskDes]}",
+                                id: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                                payload: snapshotList[listIndex][Keys.taskName],
+                                dateTime: taskSavedDate,
+                              );
+                            } else {
+                              AppSnackbar().customizedAppSnackbar(
+                                message: unDoneResponseJson["message"],
+                                context: streamContext,
+                              );
+                            }
+                          } else {
+                            AppSnackbar().customizedAppSnackbar(
+                              message: unDoneResponse.statusCode.toString(),
+                              context: streamContext,
+                            );
+                          }
+
+                          // updateTasks(
+                          //   taskDocID: "taskDocID",
+                          //   status: snapshotList[listIndex][Keys.taskStatus],
+                          //   firestoreEmail: widget.firestoreEmail,
+                          //   taskSavedDay: taskSavedDay,
+                          //   taskSavedHour: taskSavedHour,
+                          //   taskSavedMinute: taskSavedMinute,
+                          //   taskSavedMonth: taskSavedMonth,
+                          //   taskSavedYear: taskSavedYear,
+                          // );
 
                           // Navigator.push(
                           //   streamContext,
@@ -1834,32 +1899,48 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                           // );
                         } else if (snapshotList[listIndex][Keys.taskStatus] ==
                             "Pending") {
-                          updateTasks(
-                            taskDocID: "taskDocID",
-                            status: snapshotList[listIndex][Keys.taskStatus],
-                            firestoreEmail: widget.firestoreEmail,
-                            taskSavedDay: taskSavedDay,
-                            taskSavedHour: taskSavedHour,
-                            taskSavedMinute: taskSavedMinute,
-                            taskSavedMonth: taskSavedMonth,
-                            taskSavedYear: taskSavedYear,
+                          http.Response doneResponse = await http.post(
+                            Uri.parse("${Keys.apiTasksBaseUrl}/doneTask"),
+                            headers: {
+                              "content-Type": "application/json",
+                              "authorization": "Bearer ${widget.token}",
+                            },
+                            body: jsonEncode(
+                              {
+                                Keys.uid: widget.uid,
+                                Keys.notificationID: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              },
+                            ),
                           );
 
-                          showDialog(
-                            context: streamContext,
-                            builder: (BuildContext doneContext) {
-                              Future.delayed(
-                                const Duration(
-                                  seconds: 2,
-                                ),
-                                (() {
-                                  Navigator.pop(doneContext);
-                                }),
-                              );
+                          Map<String, dynamic> doneResponseJson =
+                              jsonDecode(doneResponse.body);
 
-                              return Consumer<TaskDetailsProvider>(
-                                builder: (taskDetailsContext,
-                                    taskDetailsProvider, taskDetailsChild) {
+                          if (doneResponse.statusCode == 200) {
+                            if (doneResponseJson["success"]) {
+                              DateTime date = DateTime.now();
+
+                              if (taskSavedDate.difference(date).inMinutes >
+                                  0) {
+                                NotificationServices()
+                                    .cancelTaskScheduledNotification(
+                                  id: snapshotList[listIndex]
+                                      [Keys.notificationID],
+                                );
+                              }
+
+                              showDialog(
+                                context: streamContext,
+                                builder: (BuildContext doneContext) {
+                                  Future.delayed(
+                                    const Duration(
+                                      seconds: 2,
+                                    ),
+                                    (() {
+                                      Navigator.pop(doneContext);
+                                    }),
+                                  );
                                   return TaskDialog(
                                     animation:
                                         "assets/success-done-animation.json",
@@ -1867,10 +1948,39 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     subMessage: "You completed your task",
                                     subMessageBottomDivision: 5,
                                   );
+                                  ;
                                 },
                               );
-                            },
-                          );
+                            } else {
+                              AppSnackbar().customizedAppSnackbar(
+                                message: doneResponseJson["message"],
+                                context: streamContext,
+                              );
+                            }
+                          } else {
+                            AppSnackbar().customizedAppSnackbar(
+                              message: doneResponse.statusCode.toString(),
+                              context: streamContext,
+                            );
+                          }
+
+                          // updateTasks(
+                          //   taskDocID: "taskDocID",
+                          //   status: snapshotList[listIndex][Keys.taskStatus],
+                          //   firestoreEmail: widget.firestoreEmail,
+                          //   taskSavedDay: taskSavedDay,
+                          //   taskSavedHour: taskSavedHour,
+                          //   taskSavedMinute: taskSavedMinute,
+                          //   taskSavedMonth: taskSavedMonth,
+                          //   taskSavedYear: taskSavedYear,
+                          // );
+
+                          // Navigator.push(
+                          //   streamContext,
+                          //   MaterialPageRoute(
+                          //     builder: (nextPageContext) => TempScreen(),
+                          //   ),
+                          // );
                         } else {
                           ScaffoldMessenger.of(streamContext).showSnackBar(
                             AppTaskSnackBar().customizedSnackbarForTasks(
@@ -1878,8 +1988,8 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               firestoreEmail: widget.firestoreEmail,
                               streamContext: streamContext,
                               onPressed: (() {
-                                String taskDocID =
-                                    snapshotList[listIndex].reference.id;
+                                // String taskDocID =
+                                //     snapshotList[listIndex].reference.id;
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -1894,7 +2004,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           [Keys.taskTime],
                                       taskType: snapshotList[listIndex]
                                           [Keys.taskType],
-                                      taskDoc: taskDocID,
+                                      taskDoc: "taskDocID",
                                       userEmail: widget.firestoreEmail,
                                       taskDate: snapshotList[listIndex]
                                           [Keys.taskDate],
@@ -1907,7 +2017,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                         }
                       }),
                       tileSecondOnPressed: (() {
-                        String taskDocID = snapshotList[listIndex].reference.id;
+                        // String taskDocID = snapshotList[listIndex].reference.id;
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1918,97 +2028,158 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                   [Keys.taskNotification],
                               taskTime: snapshotList[listIndex][Keys.taskTime],
                               taskType: snapshotList[listIndex][Keys.taskType],
-                              taskDoc: taskDocID,
+                              taskDoc: "taskDocID",
+                              notificationID: snapshotList[listIndex]
+                                  [Keys.notificationID],
                               userEmail: widget.firestoreEmail,
                               taskDate: snapshotList[listIndex][Keys.taskDate],
                             ),
                           ),
                         );
                       }),
-                      tileThirdOnPressed: (() {
-                        String taskDocID = snapshotList[listIndex].reference.id;
+                      tileThirdOnPressed: (() async {
+                        // String taskDocID = snapshotList[listIndex].reference.id;
 
                         if (snapshotList[listIndex][Keys.taskStatus] !=
                             Keys.deleteStatus) {
-                          deleteTasks(
-                            taskSavedDay: taskSavedDay,
-                            taskSavedYear: taskSavedYear,
-                            taskSavedMonth: taskSavedMonth,
-                            taskSavedMinute: taskSavedMinute,
-                            taskSavedHour: taskSavedHour,
-                            taskDocID: taskDocID,
-                            status: snapshotList[listIndex][Keys.taskStatus],
-                            firestoreEmail: widget.firestoreEmail,
-                          );
+                          // deleteTasks(
+                          //   taskSavedDay: taskSavedDay,
+                          //   taskSavedYear: taskSavedYear,
+                          //   taskSavedMonth: taskSavedMonth,
+                          //   taskSavedMinute: taskSavedMinute,
+                          //   taskSavedHour: taskSavedHour,
+                          //   taskDocID: taskDocID,
+                          //   status: snapshotList[listIndex][Keys.taskStatus],
+                          //   firestoreEmail: widget.firestoreEmail,
+                          // );
 
-                          showDialog(
-                            context: streamContext,
-                            builder: (BuildContext deleteContext) {
-                              Future.delayed(
-                                const Duration(
-                                  seconds: 2,
-                                ),
-                                (() {
-                                  Navigator.pop(deleteContext);
-                                }),
-                              );
-                              return TaskDialog(
-                                animation: "assets/deleted-animation.json",
-                                headMessage: "Deleted!",
-                                subMessage: "Your this task is deleted",
-                                subMessageBottomDivision: 5,
-                              );
+                          http.Response deleteTaskResponse = await http.post(
+                            Uri.parse("${Keys.apiTasksBaseUrl}/deleteTask"),
+                            headers: {
+                              "content-Type": "application/json",
+                              "authorization": "Bearer ${widget.token}",
                             },
+                            body: jsonEncode(
+                              {
+                                Keys.uid: widget.uid,
+                                Keys.notificationID: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              },
+                            ),
                           );
-                        }
 
-                        // (taskSavedDate.difference(date).inMinutes >
-                        //     0)
+                          Map<String, dynamic> deleteTaskResponseJson =
+                              jsonDecode(deleteTaskResponse.body);
+
+                          if (deleteTaskResponse.statusCode == 200) {
+                            if (deleteTaskResponseJson["success"]) {
+                              NotificationServices()
+                                  .cancelTaskScheduledNotification(
+                                id: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              );
+
+                              showDialog(
+                                context: streamContext,
+                                builder: (BuildContext deleteContext) {
+                                  Future.delayed(
+                                    const Duration(
+                                      seconds: 2,
+                                    ),
+                                    (() {
+                                      Navigator.pop(deleteContext);
+                                    }),
+                                  );
+                                  return TaskDialog(
+                                    animation: "assets/deleted-animation.json",
+                                    headMessage: "Deleted!",
+                                    subMessage: "Your this task is deleted",
+                                    subMessageBottomDivision: 5,
+                                  );
+                                },
+                              );
+                            } else {
+                              AppSnackbar().customizedAppSnackbar(
+                                message: deleteTaskResponseJson["message"],
+                                context: streamContext,
+                              );
+                            }
+                          } else {
+                            AppSnackbar().customizedAppSnackbar(
+                              message: deleteTaskResponse.statusCode.toString(),
+                              context: streamContext,
+                            );
+                          }
+                        }
 
                         if ((snapshotList[listIndex][Keys.taskStatus] ==
                             Keys.deleteStatus)) {
                           if (taskSavedDate.difference(widget.date).inMinutes >
                               0) {
-                            undoTasks(
-                              taskSavedDay: taskSavedDay,
-                              taskSavedYear: taskSavedYear,
-                              taskSavedMonth: taskSavedMonth,
-                              taskSavedMinute: taskSavedMinute,
-                              taskSavedHour: taskSavedHour,
-                              taskDocID: taskDocID,
-                              status: snapshotList[listIndex][Keys.taskStatus],
-                              firestoreEmail: widget.firestoreEmail,
-                            );
-
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (nextPageContext) =>
-                            //         TempScreen(),
-                            //   ),
-                            // );
-
-                            showDialog(
-                              context: streamContext,
-                              builder: (BuildContext unDoContext) {
-                                Future.delayed(
-                                  const Duration(
-                                    seconds: 2,
-                                  ),
-                                  (() {
-                                    Navigator.pop(unDoContext);
-                                  }),
-                                );
-                                return TaskDialog(
-                                  animation:
-                                      "assets/success-done-animation.json",
-                                  headMessage: "Woohooo...!",
-                                  subMessage:
-                                      "Your this message is brought back as pending",
-                                  subMessageBottomDivision: 6,
-                                );
+                            http.Response undoResponse = await http.post(
+                              Uri.parse("${Keys.apiTasksBaseUrl}/undoTask"),
+                              headers: {
+                                "content-Type": "application/json",
+                                "authorization": "Bearer ${widget.token}",
                               },
+                              body: jsonEncode(
+                                {
+                                  Keys.uid: widget.uid,
+                                  Keys.notificationID: snapshotList[listIndex]
+                                      [Keys.notificationID],
+                                },
+                              ),
                             );
+
+                            Map<String, dynamic> undoResponseJson =
+                                jsonDecode(undoResponse.body);
+
+                            if (undoResponse.statusCode == 200) {
+                              if (undoResponseJson["success"]) {
+                                NotificationServices()
+                                    .createScheduledTaskNotification(
+                                  id: undoResponseJson[Keys.notificationID],
+                                  title:
+                                      undoResponseJson[Keys.taskNotification],
+                                  body:
+                                      "${undoResponseJson[Keys.taskName]}\n${undoResponseJson[Keys.taskDes]}",
+                                  payload: undoResponseJson[Keys.taskDes],
+                                  dateTime: taskSavedDate,
+                                );
+
+                                showDialog(
+                                  context: streamContext,
+                                  builder: (BuildContext unDoContext) {
+                                    Future.delayed(
+                                      const Duration(
+                                        seconds: 2,
+                                      ),
+                                      (() {
+                                        Navigator.pop(unDoContext);
+                                      }),
+                                    );
+                                    return TaskDialog(
+                                      animation:
+                                          "assets/success-done-animation.json",
+                                      headMessage: "Woohooo...!",
+                                      subMessage:
+                                          "Your this message is brought back as pending",
+                                      subMessageBottomDivision: 6,
+                                    );
+                                  },
+                                );
+                              } else {
+                                AppSnackbar().customizedAppSnackbar(
+                                  message: undoResponseJson["message"],
+                                  context: streamContext,
+                                );
+                              }
+                            } else {
+                              AppSnackbar().customizedAppSnackbar(
+                                message: undoResponse.statusCode.toString(),
+                                context: streamContext,
+                              );
+                            }
                           } else {
                             ScaffoldMessenger.of(streamContext).showSnackBar(
                               AppTaskSnackBar().customizedSnackbarForTasks(
@@ -2056,7 +2227,6 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
               ),
             ],
           );
-          return Container();
         },
       ),
     );

@@ -143,8 +143,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> refresh() async {
     http.Response responsePoints = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
@@ -157,8 +157,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responseTaskDone = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseTaskDoneJson =
@@ -172,8 +172,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responseTaskCount = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseTaskCountJson =
@@ -187,8 +187,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responseTaskDelete = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseJsonDelete =
@@ -202,8 +202,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responsetaskPending = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseJsonTaskPending =
@@ -217,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responseTaskBusiness = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseJsonTaskBusiness =
@@ -232,8 +232,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     http.Response responseTaskPersonal = await http
         .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
+      'content-Type': 'application/json',
+      'authorization': 'Bearer $token',
     });
 
     Map<String, dynamic> responseJsonTaskPersonal =
