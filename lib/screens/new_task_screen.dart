@@ -1,9 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
 import 'package:interval_time_picker/interval_time_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -69,6 +73,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   FocusNode? desFocusNode;
   FocusNode? notiFocusNode;
   CollectionReference users = FirebaseFirestore.instance.collection("users");
+  String token = "", uid = "";
 
   // late AnimationController controllerToIncreaseCurve;
   // late AnimationController controllerToDecreaseCurve;
@@ -166,6 +171,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     super.dispose();
   }
 
+  // Future<String> usrToken() async => ;
+
   Future<void> updatePoints({required int points}) async {
     String email = await StorageServices.getUserEmail();
 
@@ -188,45 +195,15 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     );
   }
 
-  Future<void> addTask({
-    required String type,
-    required String name,
-    required String date,
-    required String des,
-    required String notify,
-    required String time,
-  }) async {
-    CollectionReference users = firestore.collection("users");
-    String email = await StorageServices.getUserEmail();
-    // bool isNewUser = await StorageServices.getIsNewUser();
-
-    DocumentSnapshot userDoc = await users.doc(email).get();
-
-    taskCount = userDoc[Keys.taskCount];
-    taskPending = userDoc[Keys.taskPending];
-    taskBusiness = userDoc[Keys.taskBusiness];
-    taskPersonal = userDoc[Keys.taskPersonal];
-    taskID = "TID${(taskCount + 1).toString()}";
-
-    await NotificationServices().createScheduledTaskNotification(
-      id: taskCount + 1,
-      title: _notificationController.text,
-      body: "${_taskNameController.text}\n${_descriptionController.text}",
-      dateTime: scheduleDateTIme,
-      payload: scheduleDateTIme.toString(),
-    );
-
-    users.doc(email).collection("tasks").doc(taskID).set({
-      Keys.taskType: type,
-      Keys.taskDate: date,
-      Keys.taskDes: _descriptionController.text,
-      Keys.taskName: _taskNameController.text,
-      Keys.taskNotification: _notificationController.text,
-      Keys.taskTime: time,
-      Keys.taskStatus: "Pending",
-      Keys.notificationID: taskCount + 1,
-    });
-  }
+  // Future<void> addTask({
+  //   required String type,
+  //   required String name,
+  //   required String date,
+  //   required String des,
+  //   required String notify,
+  //   required String time,
+  //   required BuildContext context,
+  // }) async
 
   Future<void> updateUserDetails({
     required AllAppProviders loadingProvider,
@@ -712,54 +689,107 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                       _descriptionController.text.isNotEmpty) {
                                     allAppProvidersProvider
                                         .newTaskUploadLoadingFunc(true);
+                                    token = await StorageServices.getUsrToken();
+                                    uid = await StorageServices.getUID();
 
                                     if (!editOrNew) {
-                                      await addTask(
-                                        type: allAppProvidersProvider
-                                            .selectedType,
-                                        name: _taskNameController.text.trim(),
-                                        date: allAppProvidersProvider.dateText,
-                                        des: _descriptionController.text.trim(),
-                                        notify:
-                                            _notificationController.text.trim(),
-                                        time: allAppProvidersProvider.timeText,
+                                      http.Response response = await http.post(
+                                        Uri.parse(
+                                            "${Keys.apiTasksBaseUrl}/createTask"),
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'Authorization': 'Bearer $token',
+                                        },
+                                        body: jsonEncode({
+                                          "uid": uid,
+                                          "taskDes": _descriptionController.text
+                                              .trim(),
+                                          "taskDate":
+                                              allAppProvidersProvider.dateText,
+                                          "taskName":
+                                              _taskNameController.text.trim(),
+                                          "taskNotification":
+                                              _notificationController.text
+                                                  .trim(),
+                                          "taskTime":
+                                              allAppProvidersProvider.timeText,
+                                          "taskType": allAppProvidersProvider
+                                              .selectedType,
+                                          "taskPoints": 10,
+                                        }),
                                       );
-                                      await updateUserDetails(
-                                        loadingProvider:
-                                            allAppProvidersProvider,
-                                        updateTaskCount: taskCount,
-                                        taskType: allAppProvidersProvider
-                                            .selectedType,
-                                      );
+
+                                      Map<String, dynamic> responseJson =
+                                          jsonDecode(response.body);
+                                      log(responseJson.toString());
+
+                                      if (response.statusCode == 200) {
+                                        if (responseJson["success"]) {
+                                          await NotificationServices()
+                                              .createScheduledTaskNotification(
+                                            id: responseJson[
+                                                Keys.notificationID],
+                                            title: _notificationController.text
+                                                .trim(),
+                                            body:
+                                                "${_taskNameController.text.trim()}\n${_descriptionController.text.trim()}",
+                                            dateTime: scheduleDateTIme,
+                                            payload:
+                                                scheduleDateTIme.toString(),
+                                          );
+
+                                          await rewardedAd?.show(
+                                            onUserEarnedReward:
+                                                ((ad, point) {}),
+                                          );
+
+                                          rewardedAd
+                                                  ?.fullScreenContentCallback =
+                                              FullScreenContentCallback(
+                                            onAdClicked: ((ad) {}),
+                                            onAdDismissedFullScreenContent:
+                                                ((ad) {
+                                              // print("ad dismissed");
+                                            }),
+                                            onAdFailedToShowFullScreenContent:
+                                                ((ad, err) {
+                                              ad.dispose();
+                                              // print("ad error $err");
+                                            }),
+                                            onAdImpression: ((ad) {}),
+                                            onAdShowedFullScreenContent: ((ad) {
+                                              // print("ad shown ${ad.responseInfo}");
+                                            }),
+                                            onAdWillDismissFullScreenContent:
+                                                ((ad) {}),
+                                          );
+
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: responseJson["message"],
+                                            context: context,
+                                          );
+                                          allAppProvidersProvider
+                                              .newTaskUploadLoadingFunc(false);
+                                        } else {
+                                          allAppProvidersProvider
+                                              .newTaskUploadLoadingFunc(false);
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: responseJson["message"],
+                                            context: context,
+                                          );
+                                        }
+                                      } else {
+                                        allAppProvidersProvider
+                                            .newTaskUploadLoadingFunc(false);
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message:
+                                              response.statusCode.toString(),
+                                          context: context,
+                                        );
+                                      }
+
                                       allAppProvidersProvider
                                           .newTaskUploadLoadingFunc(false);
-                                      await rewardedAd?.show(
-                                        onUserEarnedReward: ((ad, point) async {
-                                          await updatePoints(
-                                            points: point.amount.toInt(),
-                                          );
-                                          // print(
-                                          //     "Point type : ${point.type}\nPoint amount : ${point.amount.toInt()}");
-                                        }),
-                                      );
-                                      rewardedAd?.fullScreenContentCallback =
-                                          FullScreenContentCallback(
-                                        onAdClicked: ((ad) {}),
-                                        onAdDismissedFullScreenContent: ((ad) {
-                                          // print("ad dismissed");
-                                        }),
-                                        onAdFailedToShowFullScreenContent:
-                                            ((ad, err) {
-                                          ad.dispose();
-                                          // print("ad error $err");
-                                        }),
-                                        onAdImpression: ((ad) {}),
-                                        onAdShowedFullScreenContent: ((ad) {
-                                          // print("ad shown ${ad.responseInfo}");
-                                        }),
-                                        onAdWillDismissFullScreenContent:
-                                            ((ad) {}),
-                                      );
                                     } else if (widget.userEmail != null &&
                                         widget.taskDoc != null) {
                                       DocumentSnapshot taskDoc =
@@ -935,6 +965,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                     Navigator.pop(context);
                                   } else {
+                                    allAppProvidersProvider
+                                        .newTaskUploadLoadingFunc(false);
                                     ScaffoldMessenger.of(allAppProvidersContext)
                                         .showSnackBar(
                                       AppSnackbar().customizedAppSnackbar(

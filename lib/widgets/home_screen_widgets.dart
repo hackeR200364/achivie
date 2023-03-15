@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -8,6 +11,7 @@ import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -875,7 +879,20 @@ class HomeScreenTaskTypePickerContainerConsumerDesign extends StatelessWidget {
 class HomeScreenGraphContainer extends StatelessWidget {
   const HomeScreenGraphContainer({
     super.key,
+    required this.taskDone,
+    required this.taskDelete,
+    required this.taskPersonal,
+    required this.taskPending,
+    required this.taskCount,
+    required this.taskBusiness,
   });
+
+  final int taskDone;
+  final int taskDelete;
+  final int taskPersonal;
+  final int taskPending;
+  final int taskCount;
+  final int taskBusiness;
 
   @override
   Widget build(BuildContext context) {
@@ -895,26 +912,17 @@ class HomeScreenGraphContainer extends StatelessWidget {
           bottomRight: Radius.circular(50),
         ),
       ),
-      child: Consumer<TaskDetailsProvider>(
-          builder: (taskDetailsContext, taskDetailsProvider, taskDetailChild) {
-        taskDetailsProvider.taskCountFunc();
-        taskDetailsProvider.taskDoneFunc();
-        taskDetailsProvider.taskDeleteFunc();
-        taskDetailsProvider.taskPendingFunc();
-        taskDetailsProvider.taskBusinessFunc();
-        taskDetailsProvider.taskPersonalFunc();
-        return AspectRatio(
-          aspectRatio: 2,
-          child: _BarChart(
-            done: taskDetailsProvider.taskDone,
-            deleted: taskDetailsProvider.taskDelete,
-            personal: taskDetailsProvider.taskPersonal,
-            pending: taskDetailsProvider.taskPending,
-            business: taskDetailsProvider.taskBusiness,
-            count: taskDetailsProvider.taskCount,
-          ),
-        );
-      }),
+      child: AspectRatio(
+        aspectRatio: 2,
+        child: _BarChart(
+          done: taskDone,
+          deleted: taskDelete,
+          personal: taskPersonal,
+          pending: taskPending,
+          business: taskBusiness,
+          count: taskCount,
+        ),
+      ),
     );
   }
 }
@@ -1359,6 +1367,8 @@ class CustomHomeScreenTabs extends StatefulWidget {
     required this.widget,
     required this.scrollController,
     required this.date,
+    required this.token,
+    required this.uid,
   });
 
   final String type;
@@ -1367,6 +1377,7 @@ class CustomHomeScreenTabs extends StatefulWidget {
   final HomeScreen widget;
   final ScrollController scrollController;
   final DateTime date;
+  final String token, uid;
 
   @override
   State<CustomHomeScreenTabs> createState() => _CustomHomeScreenTabsState();
@@ -1677,22 +1688,25 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
         right: 10,
         left: 10,
       ),
-      child: StreamBuilder<QuerySnapshot>(
+      child: StreamBuilder<http.Response>(
         stream: (widget.status != "INBOX")
-            ? FirebaseFirestore.instance
-                .collection("users")
-                .doc(widget.firestoreEmail)
-                .collection("tasks")
-                .where(Keys.taskType, isEqualTo: widget.type)
-                .where(Keys.taskStatus, isEqualTo: widget.status)
-                .snapshots()
-            : FirebaseFirestore.instance
-                .collection("users")
-                .doc(widget.firestoreEmail)
-                .collection("tasks")
-                .where(Keys.taskType, isEqualTo: widget.type)
-                .snapshots(),
-        builder: (streamContext, snapshot) {
+            ? http.get(
+                Uri.parse(
+                    "${Keys.apiTasksBaseUrl}/getTasksOfTypeStatus/${widget.uid}/${widget.type}/${widget.status}"),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ${widget.token}',
+                },
+              ).asStream()
+            : http.get(
+                Uri.parse(
+                    "${Keys.apiTasksBaseUrl}/getAllTasksSpecificType/${widget.uid}/${widget.type}"),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ${widget.token}',
+                },
+              ).asStream(),
+        builder: (streamContext, AsyncSnapshot<http.Response> snapshot) {
           // print(snapshot.data!.docs.length);
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1705,26 +1719,32 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
 
           if (snapshot.hasError) {
             return const Center(
-              child: Text("error"),
+              child: Text(
+                "error",
+                style: AppColors.headingTextStyle,
+              ),
             );
           }
 
-          if (snapshot.data!.docs.isEmpty) {
+          log(snapshot.data!.body.toString());
+
+          Map<String, dynamic> tasksJson = jsonDecode(snapshot.data!.body);
+
+          if (tasksJson[Keys.data].isEmpty) {
             return Center(
               child: Lottie.asset("assets/empty_animation.json"),
             );
           }
 
-          List<QueryDocumentSnapshot<Object?>> snapshotList =
-              snapshot.data!.docs;
+          List snapshotList = tasksJson[Keys.data];
 
-          snapshotList.sort(
-            (a, b) => DateTime.parse(
-              (b.data() as Map)[Keys.taskDate].split('/').reversed.join(),
-            ).compareTo(
-              DateTime.now(),
-            ),
-          );
+          // snapshotList.sort(
+          //   (a, b) => DateTime.parse(
+          //     (b as Map)[Keys.taskDate].split('/').reversed.join(),
+          //   ).compareTo(
+          //     DateTime.now(),
+          //   ),
+          // );
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1738,21 +1758,21 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                 width: MediaQuery.of(context).size.width,
                 child: ListView.separated(
                   physics: AppColors.scrollPhysics,
-                  itemCount: snapshot.data!.docs.length,
+                  itemCount: tasksJson[Keys.data].length,
                   controller: widget.scrollController,
                   itemBuilder: (listContext, listIndex) {
-                    final taskDocRef = snapshotList[listIndex];
+                    final individualTask = snapshotList[listIndex];
 
                     int taskSavedDay = int.parse(
-                        "${taskDocRef[Keys.taskDate][0]}${taskDocRef[Keys.taskDate][1]}");
+                        "${individualTask[Keys.taskDate][0]}${individualTask[Keys.taskDate][1]}");
                     int taskSavedMonth = int.parse(
-                        "${taskDocRef[Keys.taskDate][3]}${taskDocRef[Keys.taskDate][4]}");
+                        "${individualTask[Keys.taskDate][3]}${individualTask[Keys.taskDate][4]}");
                     int taskSavedYear = int.parse(
-                        "${taskDocRef[Keys.taskDate][6]}${taskDocRef[Keys.taskDate][7]}${taskDocRef[Keys.taskDate][8]}${taskDocRef[Keys.taskDate][9]}");
+                        "${individualTask[Keys.taskDate][6]}${individualTask[Keys.taskDate][7]}${individualTask[Keys.taskDate][8]}${individualTask[Keys.taskDate][9]}");
                     int taskSavedHour = int.parse(
-                        "${taskDocRef[Keys.taskTime][0]}${taskDocRef[Keys.taskTime][1]}");
+                        "${individualTask[Keys.taskTime][0]}${individualTask[Keys.taskTime][1]}");
                     int taskSavedMinute = int.parse(
-                        "${taskDocRef[Keys.taskTime][3]}${taskDocRef[Keys.taskTime][4]}");
+                        "${individualTask[Keys.taskTime][3]}${individualTask[Keys.taskTime][4]}");
 
                     DateTime taskSavedDate = DateTime(
                       taskSavedYear,
@@ -1762,7 +1782,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                       taskSavedMinute,
                     );
 
-                    String taskDocID = snapshotList[listIndex].reference.id;
+                    // String taskDocID = snapshotList[listIndex].reference.id;
 
                     return CustomFocusedMenuTile(
                       name: snapshotList[listIndex][Keys.taskName],
@@ -1771,7 +1791,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                       time: snapshotList[listIndex][Keys.taskTime],
                       date: snapshotList[listIndex][Keys.taskDate],
                       type: snapshotList[listIndex][Keys.taskType],
-                      taskDocID: taskDocID,
+                      taskDocID: "taskDocID",
                       tileOnPressed: (() {
                         HapticFeedback.heavyImpact();
                       }),
@@ -1781,7 +1801,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                             (taskSavedDate.difference(widget.date).inMinutes >
                                 0)) {
                           updateTasks(
-                            taskDocID: taskDocID,
+                            taskDocID: "taskDocID",
                             status: snapshotList[listIndex][Keys.taskStatus],
                             firestoreEmail: widget.firestoreEmail,
                             taskSavedDay: taskSavedDay,
@@ -1815,7 +1835,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                         } else if (snapshotList[listIndex][Keys.taskStatus] ==
                             "Pending") {
                           updateTasks(
-                            taskDocID: taskDocID,
+                            taskDocID: "taskDocID",
                             status: snapshotList[listIndex][Keys.taskStatus],
                             firestoreEmail: widget.firestoreEmail,
                             taskSavedDay: taskSavedDay,
@@ -1844,8 +1864,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     animation:
                                         "assets/success-done-animation.json",
                                     headMessage: "Congratulations",
-                                    subMessage:
-                                        "You completed your ${taskDetailsProvider.taskCount - taskDetailsProvider.taskDelete}${totalTaskSuffix(taskDetailsProvider.taskCount - taskDetailsProvider.taskDelete)} task",
+                                    subMessage: "You completed your task",
                                     subMessageBottomDivision: 5,
                                   );
                                 },
@@ -1855,7 +1874,6 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                         } else {
                           ScaffoldMessenger.of(streamContext).showSnackBar(
                             AppTaskSnackBar().customizedSnackbarForTasks(
-                              snapshot: snapshot,
                               listIndex: listIndex,
                               firestoreEmail: widget.firestoreEmail,
                               streamContext: streamContext,
@@ -1994,7 +2012,6 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                           } else {
                             ScaffoldMessenger.of(streamContext).showSnackBar(
                               AppTaskSnackBar().customizedSnackbarForTasks(
-                                snapshot: snapshot,
                                 listIndex: listIndex,
                                 firestoreEmail: widget.firestoreEmail,
                                 streamContext: streamContext,
@@ -2039,6 +2056,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
               ),
             ],
           );
+          return Container();
         },
       ),
     );
@@ -2057,6 +2075,15 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
     required this.date,
     required this.completedStatus,
     required this.inboxStatus,
+    required this.userPoints,
+    required this.taskDone,
+    required this.taskCount,
+    required this.taskDelete,
+    required this.taskPending,
+    required this.taskBusiness,
+    required this.taskPersonal,
+    required this.token,
+    required this.uid,
   }) : _scrollController = scrollController;
 
   final List<String> taskType;
@@ -2068,6 +2095,14 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
   final DateTime date;
   final String completedStatus;
   final String inboxStatus;
+  final int userPoints,
+      taskDone,
+      taskCount,
+      taskDelete,
+      taskPending,
+      taskBusiness,
+      taskPersonal;
+  final String token, uid;
 
   @override
   Widget build(BuildContext context) {
@@ -2075,15 +2110,25 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
       offlineBanner: const ConnectivityErrorContainer(),
       builder: (connectivityContext, isConnect) {
         return CustomHomeScreenMainColumn(
-            taskType: taskType,
-            tabController: tabController,
-            pendingStatus: pendingStatus,
-            email: email,
-            widget: widget,
-            scrollController: _scrollController,
-            date: date,
-            completedStatus: completedStatus,
-            inboxStatus: inboxStatus);
+          taskType: taskType,
+          tabController: tabController,
+          pendingStatus: pendingStatus,
+          email: email,
+          widget: widget,
+          scrollController: _scrollController,
+          date: date,
+          completedStatus: completedStatus,
+          inboxStatus: inboxStatus,
+          userPoints: userPoints,
+          taskDone: taskDone,
+          taskCount: taskCount,
+          taskDelete: taskDelete,
+          taskPending: taskPending,
+          taskBusiness: taskBusiness,
+          taskPersonal: taskPersonal,
+          token: token,
+          uid: uid,
+        );
       },
     );
   }
@@ -2101,6 +2146,15 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
     required this.date,
     required this.completedStatus,
     required this.inboxStatus,
+    required this.userPoints,
+    required this.taskDone,
+    required this.taskCount,
+    required this.taskDelete,
+    required this.taskPending,
+    required this.taskBusiness,
+    required this.taskPersonal,
+    required this.token,
+    required this.uid,
   }) : _scrollController = scrollController;
 
   final List<String> taskType;
@@ -2112,6 +2166,14 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
   final DateTime date;
   final String completedStatus;
   final String inboxStatus;
+  final int userPoints,
+      taskDone,
+      taskCount,
+      taskDelete,
+      taskPending,
+      taskBusiness,
+      taskPersonal;
+  final String token, uid;
 
   @override
   Widget build(BuildContext context) {
@@ -2123,21 +2185,31 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
           height: 100,
           color: AppColors.backgroundColour,
         ),
-        const HomeScreenGraphContainer(),
+        HomeScreenGraphContainer(
+          taskDone: taskDone,
+          taskDelete: taskDelete,
+          taskPersonal: taskPersonal,
+          taskPending: taskPending,
+          taskCount: taskCount,
+          taskBusiness: taskBusiness,
+        ),
         HomeScreenTaskTypePickerContainer(taskType: taskType),
         CustomHomeScreenTabBarHeadList(tabController: tabController),
         const SizedBox(
           height: 10,
         ),
         CustomHomeScreenTabBarViewParentContainer(
-            tabController: tabController,
-            pendingStatus: pendingStatus,
-            email: email,
-            widget: widget,
-            scrollController: _scrollController,
-            date: date,
-            completedStatus: completedStatus,
-            inboxStatus: inboxStatus),
+          tabController: tabController,
+          pendingStatus: pendingStatus,
+          email: email,
+          widget: widget,
+          scrollController: _scrollController,
+          date: date,
+          completedStatus: completedStatus,
+          inboxStatus: inboxStatus,
+          token: token,
+          uid: uid,
+        ),
 
         // bottomTiles(heading: "COMPLETED", value: "10"),
       ],
@@ -2156,6 +2228,8 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
     required this.date,
     required this.completedStatus,
     required this.inboxStatus,
+    required this.token,
+    required this.uid,
   }) : _scrollController = scrollController;
 
   final TabController tabController;
@@ -2166,6 +2240,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
   final DateTime date;
   final String completedStatus;
   final String inboxStatus;
+  final String token, uid;
 
   @override
   Widget build(BuildContext context) {
@@ -2173,14 +2248,17 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
       height: MediaQuery.of(context).size.height / 2.3,
       width: MediaQuery.of(context).size.width,
       child: CustomHomeScreenTabBarViewWithConsumer(
-          tabController: tabController,
-          pendingStatus: pendingStatus,
-          email: email,
-          widget: widget,
-          scrollController: _scrollController,
-          date: date,
-          completedStatus: completedStatus,
-          inboxStatus: inboxStatus),
+        tabController: tabController,
+        pendingStatus: pendingStatus,
+        email: email,
+        widget: widget,
+        scrollController: _scrollController,
+        date: date,
+        completedStatus: completedStatus,
+        inboxStatus: inboxStatus,
+        token: token,
+        uid: uid,
+      ),
     );
   }
 }
@@ -2196,6 +2274,8 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
     required this.date,
     required this.completedStatus,
     required this.inboxStatus,
+    required this.token,
+    required this.uid,
   }) : _scrollController = scrollController;
 
   final TabController tabController;
@@ -2206,6 +2286,7 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
   final DateTime date;
   final String completedStatus;
   final String inboxStatus;
+  final String token, uid;
 
   @override
   Widget build(BuildContext context) {
@@ -2222,6 +2303,8 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
           completedStatus: completedStatus,
           inboxStatus: inboxStatus,
           allAppProvidersProviders: allAppProvidersProviders,
+          token: token,
+          uid: uid,
         );
       },
     );
@@ -2239,7 +2322,9 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
       required this.date,
       required this.completedStatus,
       required this.inboxStatus,
-      required this.allAppProvidersProviders})
+      required this.allAppProvidersProviders,
+      required this.token,
+      required this.uid})
       : _scrollController = scrollController;
 
   final TabController tabController;
@@ -2251,6 +2336,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
   final String completedStatus;
   final String inboxStatus;
   final AllAppProviders allAppProvidersProviders;
+  final String token, uid;
 
   @override
   Widget build(BuildContext context) {
@@ -2265,6 +2351,8 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           widget: widget,
           scrollController: _scrollController,
           date: date,
+          token: token,
+          uid: uid,
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
@@ -2273,6 +2361,8 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           widget: widget,
           scrollController: _scrollController,
           date: date,
+          token: token,
+          uid: uid,
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
@@ -2281,6 +2371,8 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           widget: widget,
           scrollController: _scrollController,
           date: date,
+          token: token,
+          uid: uid,
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
@@ -2289,6 +2381,8 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           widget: widget,
           scrollController: _scrollController,
           date: date,
+          token: token,
+          uid: uid,
         ),
       ],
     );

@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import 'package:nowplaying/nowplaying.dart';
@@ -15,6 +19,7 @@ import 'package:task_app/styles.dart';
 import 'package:task_app/widgets/email_us_screen_widgets.dart';
 import 'package:telephony/telephony.dart';
 
+import '../services/keys.dart';
 import '../widgets/home_screen_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     "Personal",
     "Business",
   ];
-  String email = 'email', profileType = "";
+  String email = 'email', profileType = "", uid = "", token = "";
   String inboxStatus = "INBOX",
       completedStatus = "Completed",
       pendingStatus = "Pending",
@@ -55,6 +60,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool isShowingIsland = false;
   final telephony = Telephony.instance;
   String message = "";
+  int userPoints = 0,
+      taskDone = 0,
+      taskCount = 0,
+      taskDelete = 0,
+      taskPending = 0,
+      taskBusiness = 0,
+      taskPersonal = 0;
 
   @override
   void initState() {
@@ -85,16 +97,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     checkCallStatus();
 
-    Future.delayed(
-      const Duration(
-        milliseconds: 700,
-      ),
-      (() {
-        setState(() {
-          pageLoading = false;
-        });
-      }),
-    );
     super.initState();
   }
 
@@ -107,6 +109,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void getUserDetails() async {
     email = await StorageServices.getUserEmail();
     profileType = await StorageServices.getUserSignInType();
+    uid = await StorageServices.getUID();
+    token = await StorageServices.getUsrToken();
+    log(uid);
+    log(token);
+    await initValues();
+    // Future.delayed(
+    //   const Duration(
+    //     milliseconds: 700,
+    //   ),
+    //   (() {
+    //
+    //   }),
+    // );
+    setState(() {
+      pageLoading = false;
+    });
     // print(profileType);
   }
 
@@ -122,6 +140,222 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> refresh() async {
+    http.Response responsePoints = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
+
+    if (responsePoints.statusCode == 200) {
+      if (responseJsonPoints["success"]) {
+        userPoints = responseJsonPoints[Keys.data]["usrPoints"];
+      }
+    }
+
+    http.Response responseTaskDone = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseTaskDoneJson =
+        jsonDecode(responseTaskDone.body);
+
+    if (responseTaskDone.statusCode == 200) {
+      if (responseTaskDoneJson["success"]) {
+        taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
+      }
+    }
+
+    http.Response responseTaskCount = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseTaskCountJson =
+        jsonDecode(responseTaskCount.body);
+
+    if (responseTaskCount.statusCode == 200) {
+      if (responseTaskCountJson["success"]) {
+        taskCount = responseTaskCountJson[Keys.data]["taskCount"];
+      }
+    }
+
+    http.Response responseTaskDelete = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonDelete =
+        jsonDecode(responseTaskDelete.body);
+
+    if (responseTaskDelete.statusCode == 200) {
+      if (responseJsonDelete["success"]) {
+        taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
+      }
+    }
+
+    http.Response responsetaskPending = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskPending =
+        jsonDecode(responsetaskPending.body);
+
+    if (responsetaskPending.statusCode == 200) {
+      if (responseJsonTaskPending["success"]) {
+        taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
+      }
+    }
+
+    http.Response responseTaskBusiness = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskBusiness =
+        jsonDecode(responseTaskBusiness.body);
+
+    if (responseTaskBusiness.statusCode == 200) {
+      if (responseJsonTaskBusiness["success"]) {
+        taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
+      }
+    }
+
+    http.Response responseTaskPersonal = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskPersonal =
+        jsonDecode(responseTaskPersonal.body);
+
+    if (responseTaskPersonal.statusCode == 200) {
+      if (responseJsonTaskPersonal["success"]) {
+        taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future<void> initValues() async {
+    http.Response responsePoints = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
+
+    if (responsePoints.statusCode == 200) {
+      if (responseJsonPoints["success"]) {
+        userPoints = responseJsonPoints[Keys.data]["usrPoints"];
+      }
+    }
+
+    http.Response responseTaskDone = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseTaskDoneJson =
+        jsonDecode(responseTaskDone.body);
+
+    if (responseTaskDone.statusCode == 200) {
+      if (responseTaskDoneJson["success"]) {
+        taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
+      }
+    }
+
+    http.Response responseTaskCount = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseTaskCountJson =
+        jsonDecode(responseTaskCount.body);
+
+    if (responseTaskCount.statusCode == 200) {
+      if (responseTaskCountJson["success"]) {
+        taskCount = responseTaskCountJson[Keys.data]["taskCount"];
+      }
+    }
+
+    http.Response responseTaskDelete = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonDelete =
+        jsonDecode(responseTaskDelete.body);
+
+    if (responseTaskDelete.statusCode == 200) {
+      if (responseJsonDelete["success"]) {
+        taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
+      }
+    }
+
+    http.Response responsetaskPending = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskPending =
+        jsonDecode(responsetaskPending.body);
+
+    if (responsetaskPending.statusCode == 200) {
+      if (responseJsonTaskPending["success"]) {
+        taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
+      }
+    }
+
+    http.Response responseTaskBusiness = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskBusiness =
+        jsonDecode(responseTaskBusiness.body);
+
+    if (responseTaskBusiness.statusCode == 200) {
+      if (responseJsonTaskBusiness["success"]) {
+        taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
+      }
+    }
+
+    http.Response responseTaskPersonal = await http
+        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    Map<String, dynamic> responseJsonTaskPersonal =
+        jsonDecode(responseTaskPersonal.body);
+
+    if (responseTaskPersonal.statusCode == 200) {
+      if (responseJsonTaskPersonal["success"]) {
+        taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
+      }
+    }
+
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -133,10 +367,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               : null,
           floatingActionButton: const CustomFloatingActionButton(),
           backgroundColor: AppColors.mainColor,
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                child: CustomHomeScreenContainerWithConnectivityWidget(
+          body: RefreshIndicator(
+            onRefresh: refresh,
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  child: CustomHomeScreenContainerWithConnectivityWidget(
                     taskType: taskType,
                     tabController: tabController,
                     pendingStatus: pendingStatus,
@@ -145,119 +381,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     scrollController: _scrollController,
                     date: date,
                     completedStatus: completedStatus,
-                    inboxStatus: inboxStatus),
-              ),
-              Positioned(
-                top: 45,
-                right: 15,
-                child: CustomGlassIconButton(
-                  onPressed: (() {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (notificationContext) =>
-                            const NotificationScreen(),
-                      ),
-                    );
-                  }),
-                  icon: Icons.notifications,
+                    inboxStatus: inboxStatus,
+                    userPoints: userPoints,
+                    taskDone: taskDone,
+                    taskCount: taskCount,
+                    taskDelete: taskDelete,
+                    taskPending: taskPersonal,
+                    taskBusiness: taskBusiness,
+                    taskPersonal: taskPersonal,
+                    token: token,
+                    uid: uid,
+                  ),
                 ),
-              ),
-              Positioned(
-                top: 45,
-                left: 15,
-                height: 41,
-                width: 41,
-                child: CustomAppBarLeading(
-                  onPressed: (() {
-                    ZoomDrawer.of(context)!.toggle();
-                    // print(isPlaying);
-                  }),
-                  icon: Icons.menu,
+                Positioned(
+                  top: 45,
+                  right: 15,
+                  child: CustomGlassIconButton(
+                    onPressed: (() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (notificationContext) =>
+                              const NotificationScreen(),
+                        ),
+                      );
+                    }),
+                    icon: Icons.notifications,
+                  ),
                 ),
-              ),
-              Positioned(
-                top: 45,
-                left: 66,
-                right: 66,
-                // width: size.width,
-                child: Consumer<SongPlayingProvider>(
-                  builder: (allAppContext, allAppProvider, allAppChild) {
-                    return Consumer<NowPlayingTrack>(
-                      builder: (nowPlayingContext, nowPlayingTrack, _) {
-                        if (nowPlayingTrack.isPaused) {
-                          isPlaying = true;
-                          songName = nowPlayingTrack.title!;
-                          songArtist = nowPlayingTrack.artist!;
-                          Future.delayed(
-                            Duration.zero,
-                            (() {
-                              allAppProvider.isSongPlayingFunc(isPlaying);
-                              allAppProvider.songNameFunc(songName);
-                              allAppProvider.songArtistFunc(songArtist);
-                            }),
-                          );
-                          return Align(
-                            alignment: Alignment.center,
-                            child: GestureDetector(
-                              onTap: (() {}),
-                              child: GlassmorphicContainer(
-                                width: double.infinity,
-                                height: 41,
-                                borderRadius: 40,
-                                linearGradient:
-                                    AppColors.customGlassIconButtonGradient,
-                                border: 2,
-                                blur: 4,
-                                borderGradient: AppColors
-                                    .customGlassIconButtonBorderGradient,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 5,
-                                  ),
-                                  child: (nowPlayingTrack.image != null &&
-                                          nowPlayingTrack.title != null &&
-                                          nowPlayingTrack.artist != null &&
-                                          nowPlayingTrack.source != null)
-                                      ? HomeAppBarTitleRow(
-                                          isPaused: nowPlayingTrack.isPaused,
-                                          size: size,
-                                          hasImage: nowPlayingTrack.hasImage,
-                                          image: nowPlayingTrack.image!,
-                                          title: nowPlayingTrack.title!,
-                                          artist: nowPlayingTrack.artist!,
-                                          source: nowPlayingTrack.source!,
-                                        )
-                                      : const Center(
-                                          child: Text(
-                                            "Loading...",
-                                            style: AppColors.headingTextStyle,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (nowPlayingTrack.isStopped) {
-                          isPlaying = false;
-                          Future.delayed(
-                            Duration.zero,
-                            (() {
-                              allAppProvider.isSongPlayingFunc(isPlaying);
-                            }),
-                          );
-                          return CustomHomeScreenAppBarTitle(
-                            date: date,
-                          );
-                        }
-
-                        if (nowPlayingTrack.isPlaying) {
-                          if (nowPlayingTrack.image != null &&
-                              nowPlayingTrack.title != null &&
-                              nowPlayingTrack.artist != null &&
-                              nowPlayingTrack.source != null) {
+                Positioned(
+                  top: 45,
+                  left: 15,
+                  height: 41,
+                  width: 41,
+                  child: CustomAppBarLeading(
+                    onPressed: (() {
+                      ZoomDrawer.of(context)!.toggle();
+                      // print(isPlaying);
+                    }),
+                    icon: Icons.menu,
+                  ),
+                ),
+                Positioned(
+                  top: 45,
+                  left: 66,
+                  right: 66,
+                  // width: size.width,
+                  child: Consumer<SongPlayingProvider>(
+                    builder: (allAppContext, allAppProvider, allAppChild) {
+                      return Consumer<NowPlayingTrack>(
+                        builder: (nowPlayingContext, nowPlayingTrack, _) {
+                          if (nowPlayingTrack.isPaused) {
                             isPlaying = true;
                             songName = nowPlayingTrack.title!;
                             songArtist = nowPlayingTrack.artist!;
@@ -269,81 +443,154 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 allAppProvider.songArtistFunc(songArtist);
                               }),
                             );
-                          } else {
+                            return Align(
+                              alignment: Alignment.center,
+                              child: GestureDetector(
+                                onTap: (() {}),
+                                child: GlassmorphicContainer(
+                                  width: double.infinity,
+                                  height: 41,
+                                  borderRadius: 40,
+                                  linearGradient:
+                                      AppColors.customGlassIconButtonGradient,
+                                  border: 2,
+                                  blur: 4,
+                                  borderGradient: AppColors
+                                      .customGlassIconButtonBorderGradient,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 5,
+                                    ),
+                                    child: (nowPlayingTrack.image != null &&
+                                            nowPlayingTrack.title != null &&
+                                            nowPlayingTrack.artist != null &&
+                                            nowPlayingTrack.source != null)
+                                        ? HomeAppBarTitleRow(
+                                            isPaused: nowPlayingTrack.isPaused,
+                                            size: size,
+                                            hasImage: nowPlayingTrack.hasImage,
+                                            image: nowPlayingTrack.image!,
+                                            title: nowPlayingTrack.title!,
+                                            artist: nowPlayingTrack.artist!,
+                                            source: nowPlayingTrack.source!,
+                                          )
+                                        : const Center(
+                                            child: Text(
+                                              "Loading...",
+                                              style: AppColors.headingTextStyle,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (nowPlayingTrack.isStopped) {
+                            isPlaying = false;
                             Future.delayed(
                               Duration.zero,
                               (() {
-                                setState(() {});
+                                allAppProvider.isSongPlayingFunc(isPlaying);
                               }),
                             );
+                            return CustomHomeScreenAppBarTitle(
+                              date: date,
+                            );
                           }
-                          return Align(
-                            alignment: Alignment.center,
-                            child: GestureDetector(
-                              onTap: (() {}),
-                              child: GlassmorphicContainer(
-                                width: double.infinity,
-                                height: 41,
-                                borderRadius: 40,
-                                linearGradient:
-                                    AppColors.customGlassIconButtonGradient,
-                                border: 2,
-                                blur: 4,
-                                borderGradient: AppColors
-                                    .customGlassIconButtonBorderGradient,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 5,
-                                  ),
-                                  child: (nowPlayingTrack.image != null &&
-                                          nowPlayingTrack.title != null &&
-                                          nowPlayingTrack.artist != null &&
-                                          nowPlayingTrack.source != null)
-                                      ? HomeAppBarTitleRow(
-                                          isPaused: nowPlayingTrack.isPaused,
-                                          size: size,
-                                          hasImage: nowPlayingTrack.hasImage,
-                                          image: nowPlayingTrack.image!,
-                                          title: nowPlayingTrack.title!,
-                                          artist: nowPlayingTrack.artist!,
-                                          source: nowPlayingTrack.source!,
-                                        )
-                                      : const Center(
-                                          child: Text(
-                                            "Loading...",
-                                            style: AppColors.headingTextStyle,
+
+                          if (nowPlayingTrack.isPlaying) {
+                            if (nowPlayingTrack.image != null &&
+                                nowPlayingTrack.title != null &&
+                                nowPlayingTrack.artist != null &&
+                                nowPlayingTrack.source != null) {
+                              isPlaying = true;
+                              songName = nowPlayingTrack.title!;
+                              songArtist = nowPlayingTrack.artist!;
+                              Future.delayed(
+                                Duration.zero,
+                                (() {
+                                  allAppProvider.isSongPlayingFunc(isPlaying);
+                                  allAppProvider.songNameFunc(songName);
+                                  allAppProvider.songArtistFunc(songArtist);
+                                }),
+                              );
+                            } else {
+                              Future.delayed(
+                                Duration.zero,
+                                (() {
+                                  setState(() {});
+                                }),
+                              );
+                            }
+                            return Align(
+                              alignment: Alignment.center,
+                              child: GestureDetector(
+                                onTap: (() {}),
+                                child: GlassmorphicContainer(
+                                  width: double.infinity,
+                                  height: 41,
+                                  borderRadius: 40,
+                                  linearGradient:
+                                      AppColors.customGlassIconButtonGradient,
+                                  border: 2,
+                                  blur: 4,
+                                  borderGradient: AppColors
+                                      .customGlassIconButtonBorderGradient,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 5,
+                                    ),
+                                    child: (nowPlayingTrack.image != null &&
+                                            nowPlayingTrack.title != null &&
+                                            nowPlayingTrack.artist != null &&
+                                            nowPlayingTrack.source != null)
+                                        ? HomeAppBarTitleRow(
+                                            isPaused: nowPlayingTrack.isPaused,
+                                            size: size,
+                                            hasImage: nowPlayingTrack.hasImage,
+                                            image: nowPlayingTrack.image!,
+                                            title: nowPlayingTrack.title!,
+                                            artist: nowPlayingTrack.artist!,
+                                            source: nowPlayingTrack.source!,
+                                          )
+                                        : const Center(
+                                            child: Text(
+                                              "Loading...",
+                                              style: AppColors.headingTextStyle,
+                                            ),
                                           ),
-                                        ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            );
+                          }
+                          return CustomHomeScreenAppBarTitle(
+                            date: date,
                           );
-                        }
-                        return CustomHomeScreenAppBarTitle(
-                          date: date,
-                        );
-                      },
-                    );
-                  },
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-              if (pageLoading)
-                Positioned(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    decoration: const BoxDecoration(
-                      color: AppColors.mainColor,
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.white,
+                if (pageLoading)
+                  Positioned(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      decoration: const BoxDecoration(
+                        color: AppColors.mainColor,
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ));
   }

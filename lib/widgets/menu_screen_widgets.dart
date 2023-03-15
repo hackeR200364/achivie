@@ -24,10 +24,12 @@ class MenuScreenColumWithPadding extends StatelessWidget {
     super.key,
     required this.widget,
     required this.zoomDrawerController,
+    required this.points,
   });
 
   final ZoomDrawerController zoomDrawerController;
   final MenuScreen widget;
+  final int points;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,7 @@ class MenuScreenColumWithPadding extends StatelessWidget {
       child: MenuScreenMainColumn(
         zoomDrawerController: zoomDrawerController,
         widget: widget,
+        points: points,
       ),
     );
   }
@@ -49,10 +52,12 @@ class MenuScreenMainColumn extends StatelessWidget {
     super.key,
     required this.widget,
     required this.zoomDrawerController,
+    required this.points,
   });
 
   final ZoomDrawerController zoomDrawerController;
   final MenuScreen widget;
+  final int points;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +67,7 @@ class MenuScreenMainColumn extends StatelessWidget {
         MenuScreenListUpperColumn(
           zoomDrawerController: zoomDrawerController,
           widget: widget,
+          points: points,
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height / 2.4,
@@ -333,16 +339,20 @@ class MenuScreenListUpperColumn extends StatelessWidget {
     super.key,
     required this.widget,
     required this.zoomDrawerController,
+    required this.points,
   });
 
   final MenuScreen widget;
   final ZoomDrawerController zoomDrawerController;
+  final int points;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const MenuScreenProfileContainer(),
+        MenuScreenProfileContainer(
+          points: points,
+        ),
         MenuListItem(
           title: "Home",
           icon: Icons.home_filled,
@@ -462,7 +472,10 @@ class MenuListItem extends StatelessWidget {
 class MenuScreenProfileContainer extends StatelessWidget {
   const MenuScreenProfileContainer({
     super.key,
+    required this.points,
   });
+
+  final int points;
 
   @override
   Widget build(BuildContext context) {
@@ -472,7 +485,6 @@ class MenuScreenProfileContainer extends StatelessWidget {
           Duration.zero,
           (() {
             userDetailsProviderProvider.userNameFunc();
-            userDetailsProviderProvider.userPointsFunc();
           }),
         );
         return GlassmorphicContainer(
@@ -486,7 +498,7 @@ class MenuScreenProfileContainer extends StatelessWidget {
           borderGradient: AppColors.customGlassButtonTransparentGradient,
           child: MenuScreenProfileContainerChildColumn(
             name: userDetailsProviderProvider.userName,
-            points: userDetailsProviderProvider.userPoints,
+            points: points,
           ),
         );
       },

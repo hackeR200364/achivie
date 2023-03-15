@@ -43,7 +43,18 @@ class StorageServices {
     pref.setString(Keys.token, token);
   }
 
-  static Future<String> getToken() async {
+  static void setUsrResetToken(String token) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.resetToken, token);
+  }
+
+  static Future<String> getResetToken() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? resetToken = pref.getString(Keys.token) ?? "";
+    return resetToken;
+  }
+
+  static Future<String> getUsrToken() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? token = pref.getString(Keys.token) ?? "";
     return token;

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../styles.dart';
@@ -6,7 +5,6 @@ import '../styles.dart';
 class AppTaskSnackBar {
   SnackBar customizedSnackbarForTasks({
     required BuildContext streamContext,
-    required AsyncSnapshot<QuerySnapshot<Object?>> snapshot,
     required int listIndex,
     required String firestoreEmail,
     required VoidCallback onPressed,
