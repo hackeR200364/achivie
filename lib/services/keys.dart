@@ -4,6 +4,7 @@ class Keys {
   static const String google = "Google";
   static const String message = "message";
   static const String token = "token";
+  static const String resetToken = "resetToken";
   static const String userSignStatus = "signStatus";
   static const String isNewUser = "isNewUser";
   static const String userName = "userName";

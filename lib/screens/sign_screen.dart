@@ -40,6 +40,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool visibility2 = true;
   int signPage = 0;
   PackageInfo? packageInfo;
+  String resetToken = "", uid = "";
 
   // final signUpFormKey = GlobalKey<FormState>();
   // final signInFormKey = GlobalKey<FormState>();
@@ -478,14 +479,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         if (_emailController.text.isNotEmpty) {
                                           allAppProvidersProvider
                                               .isLoadingFunc(true);
-                                          // EmailPassAuthServices()
-                                          //     .forgotPassword(
-                                          //   email: _emailController.text.trim(),
-                                          //   context: allAppProvidersContext,
-                                          // );
 
                                           http.Response response =
-                                              await http.get(
+                                              await http.post(
                                             Uri.parse(
                                               "${Keys.apiUsersBaseUrl}/forgotPass/${_emailController.text.trim()}",
                                             ),
@@ -495,37 +491,69 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             },
                                           );
 
+                                          Map<String, dynamic> responseJson =
+                                              jsonDecode(response.body);
+
                                           if (response.statusCode == 200) {
                                             Map<String, dynamic> responseJson =
                                                 jsonDecode(response.body);
                                             log(responseJson.toString());
-                                            // if (responseJson["success"]) {
-                                            //   String decryptedPass = "";
-                                            //   final key =
-                                            //       encrypt_package.Key.fromUtf8(
-                                            //           'qwe1234');
-                                            //   final iv = encrypt_package.IV
-                                            //       .fromLength(10);
-                                            //   final encryptor =
-                                            //       encrypt_package.Encrypter(
-                                            //           encrypt_package.AES(key));
-                                            //
-                                            //   final encrypted =
-                                            //       encryptor.encrypt(
-                                            //     responseJson[Keys.data]
-                                            //         ["usrPassword"],
-                                            //     iv: iv,
-                                            //   );
-                                            //
-                                            //   // Convert the decrypted password from bytes to a string
-                                            //   final decrypted = encryptor
-                                            //       .decrypt(encrypted, iv: iv);
-                                            //   log("Decoded pass : $decrypted");
-                                            // }
-                                          }
 
-                                          allAppProvidersProvider
-                                              .isLoadingFunc(false);
+                                            if (responseJson["success"]) {
+                                              StorageServices.setUsrResetToken(
+                                                  responseJson["token"]);
+
+                                              resetToken =
+                                                  responseJson["token"];
+                                              uid = responseJson["uid"];
+
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                              setState(() {
+                                                signPage = 2;
+                                              });
+                                              _passController.clear();
+
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: responseJson[
+                                                      Keys.message],
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                            } else {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: responseJson[
+                                                      Keys.message],
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    responseJson[Keys.message],
+                                                context: allAppProvidersContext,
+                                              ),
+                                            );
+                                          }
                                         } else {
                                           allAppProvidersProvider
                                               .isLoadingFunc(false);
@@ -606,7 +634,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                                               String token =
                                                   await StorageServices
-                                                      .getToken();
+                                                      .getUsrToken();
 
                                               http.Response response =
                                                   await http.post(
@@ -641,12 +669,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       responseJson[Keys.data]
                                                           [Keys.usrEmail]);
                                                   StorageServices.setUserName(
-                                                      "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+                                                      "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
                                                   StorageServices.setUID(
                                                       responseJson[Keys.data]
                                                           [Keys.uid]);
                                                   StorageServices.setSignInType(
                                                       "Email");
+                                                  StorageServices.setUsrToken(
+                                                      responseJson["token"]);
 
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
@@ -860,7 +890,264 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ),
                                     ),
                                   ],
-                                )
+                                ),
+                              if (signPage == 2)
+                                AuthTextField(
+                                  controller: _passController,
+                                  hintText: "New Password",
+                                  keyboard: TextInputType.visiblePassword,
+                                  isPassField: true,
+                                  isEmailField: false,
+                                  isPassConfirmField: false,
+                                  icon: Icons.password,
+                                  pageIndex: 2,
+                                ),
+                              if (signPage == 2)
+                                AuthTextField(
+                                  controller: _passConfirmController,
+                                  hintText: "Confirm Password",
+                                  keyboard: TextInputType.visiblePassword,
+                                  isPassField: false,
+                                  isEmailField: false,
+                                  isPassConfirmField: true,
+                                  icon: Icons.password,
+                                  pageIndex: 2,
+                                ),
+
+                              if (signPage == 2)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 30),
+                                  child: (allAppProvidersProvider.isLoading)
+                                      ? Container(
+                                          height: 50,
+                                          width: size.width / 2,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.blackLow
+                                                    .withOpacity(0.5),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Lottie.asset(
+                                              "assets/loading-animation.json",
+                                              width: 100,
+                                              height: 50,
+                                            ),
+                                          ),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            InkWell(
+                                              onTap: (() async {
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(true);
+                                                setState(() {
+                                                  signPage = 1;
+                                                });
+                                                _passController.clear();
+                                                _passConfirmController.clear();
+
+                                                http.Response response =
+                                                    await http.post(
+                                                  Uri.parse(
+                                                    "${Keys.apiUsersBaseUrl}/cancelResetPass/$resetToken/$uid",
+                                                  ),
+                                                  headers: {
+                                                    "content-type":
+                                                        "application/json",
+                                                  },
+                                                );
+
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
+
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+                                              }),
+                                              child: Container(
+                                                height: 50,
+                                                width: size.width / 3,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: AppColors.blackLow
+                                                          .withOpacity(0.5),
+                                                      blurRadius: 10,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    "Cancel",
+                                                    style: TextStyle(
+                                                      color: AppColors
+                                                          .backgroundColour,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 17,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: (() async {
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(true);
+                                                if (_passController
+                                                        .text.isNotEmpty &&
+                                                    _passConfirmController
+                                                        .text.isNotEmpty &&
+                                                    _passController.text ==
+                                                        _passConfirmController
+                                                            .text) {
+                                                  log(uid);
+                                                  log(resetToken);
+                                                  http.Response response =
+                                                      await http.post(
+                                                    Uri.parse(
+                                                      "${Keys.apiUsersBaseUrl}/updateUserPassword",
+                                                    ),
+                                                    headers: {
+                                                      "content-type":
+                                                          "application/json",
+                                                    },
+                                                    body: jsonEncode({
+                                                      "usrPassword":
+                                                          _passController.text
+                                                              .trim(),
+                                                      "resetToken": resetToken,
+                                                      Keys.usrEmail:
+                                                          _emailController.text
+                                                              .trim(),
+                                                      Keys.uid: uid,
+                                                    }),
+                                                  );
+
+                                                  Map<String, dynamic>
+                                                      responseJson =
+                                                      jsonDecode(response.body);
+
+                                                  log(responseJson.toString());
+
+                                                  if (response.statusCode ==
+                                                      200) {
+                                                    if (responseJson[
+                                                        "success"]) {
+                                                      setState(() {
+                                                        signPage = 1;
+                                                      });
+                                                      ScaffoldMessenger.of(
+                                                              allAppProvidersContext)
+                                                          .showSnackBar(
+                                                        AppSnackbar()
+                                                            .customizedAppSnackbar(
+                                                          message:
+                                                              "${responseJson[Keys.message]}\nTry to login",
+                                                          context:
+                                                              allAppProvidersContext,
+                                                        ),
+                                                      );
+                                                      _passController.clear();
+                                                      _passConfirmController
+                                                          .clear();
+                                                      allAppProvidersProvider
+                                                          .isLoadingFunc(false);
+                                                    } else {
+                                                      allAppProvidersProvider
+                                                          .isLoadingFunc(false);
+                                                      ScaffoldMessenger.of(
+                                                              allAppProvidersContext)
+                                                          .showSnackBar(
+                                                        AppSnackbar()
+                                                            .customizedAppSnackbar(
+                                                          message: responseJson[
+                                                              Keys.message],
+                                                          context:
+                                                              allAppProvidersContext,
+                                                        ),
+                                                      );
+                                                    }
+                                                  } else {
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: response
+                                                            .statusCode
+                                                            .toString(),
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                  }
+
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+                                                } else {
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message:
+                                                          "Please fill the fields correctly",
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                }
+
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+                                              }),
+                                              child: Container(
+                                                height: 50,
+                                                width: size.width / 3,
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: AppColors.blackLow
+                                                          .withOpacity(0.5),
+                                                      blurRadius: 10,
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: const Center(
+                                                  child: Text(
+                                                    "Submit",
+                                                    style: TextStyle(
+                                                      color: AppColors
+                                                          .backgroundColour,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 17,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                ),
                             ],
                           ),
                         ),
