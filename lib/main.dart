@@ -15,6 +15,7 @@ import 'package:task_app/providers/user_details_providers.dart';
 import 'package:task_app/screens/splash_screen.dart';
 import 'package:task_app/services/auth_services.dart';
 import 'package:task_app/services/keys.dart';
+import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
 Future main() async {
@@ -36,14 +37,18 @@ Future main() async {
     }
   }
 
-  var permissionRequests = await [
+  await [
     Permission.sms,
     Permission.phone,
     Permission.audio,
     Permission.notification,
     Permission.storage,
-    Permission.accessNotificationPolicy,
   ].request();
+
+  bool signStatus = await StorageServices.getSignStatus();
+  if (!signStatus) {
+    await Permission.accessNotificationPolicy.request();
+  }
 
   await AwesomeNotifications().initialize(
     null,
