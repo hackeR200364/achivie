@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
@@ -8,10 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/Utils/snackbar_utils.dart';
+import 'package:task_app/models/profession_model.dart';
 import 'package:task_app/providers/app_providers.dart';
 import 'package:task_app/screens/main_screen.dart';
 import 'package:task_app/services/auth_services.dart';
@@ -33,6 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   late TextEditingController _emailController;
   late TextEditingController _firstNameController;
+  late TextEditingController _desController;
   late TextEditingController _lastNameController;
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
@@ -41,7 +45,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
   int signPage = 0;
   PackageInfo? packageInfo;
   String resetToken = "", uid = "";
-
+  File? selectedImage;
+  String _value = "0";
+  String profession = "";
+  static const List<ProfessionModel> professionList = <ProfessionModel>[
+    ProfessionModel(
+      id: "0",
+      label: "Choose Your Profession",
+    ),
+    ProfessionModel(
+      id: "1",
+      label: "Graduate",
+    ),
+    ProfessionModel(
+      id: "2",
+      label: "Under-Graduate",
+    ),
+    ProfessionModel(
+      id: "3",
+      label: "Post-Graduate",
+    ),
+    ProfessionModel(
+      id: "4",
+      label: "Working Professional",
+    ),
+    ProfessionModel(
+      id: "5",
+      label: "Entrepreneur",
+    ),
+    ProfessionModel(
+      id: "6",
+      label: "Youtuber",
+    ),
+    ProfessionModel(
+      id: "7",
+      label: "Freelancer",
+    ),
+    ProfessionModel(
+      id: "8",
+      label: "Trader",
+    ),
+    ProfessionModel(
+      id: "9",
+      label: "Programmer",
+    ),
+    ProfessionModel(
+      id: "10",
+      label: "Content Creator",
+    ),
+  ];
   // final signUpFormKey = GlobalKey<FormState>();
   // final signInFormKey = GlobalKey<FormState>();
 
@@ -74,6 +126,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _lastNameController = TextEditingController();
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
+    _desController = TextEditingController();
     getAppDetails();
 
     super.initState();
@@ -86,6 +139,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _lastNameController.dispose();
     _passConfirmController.dispose();
     _passController.dispose();
+    _desController.dispose();
     super.dispose();
   }
 
@@ -115,13 +169,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   "assets/auth-bg-pic.jpg",
                   fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height * 1.1 : size.height,
+                  height: (signPage == 0) ? size.height * 1.35 : size.height,
                 ),
               ),
               Positioned(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height * 1.1 : size.height,
+                  height: (signPage == 0) ? size.height * 1.35 : size.height,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -156,9 +210,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         GlassmorphicContainer(
                           width: size.width,
-                          height: (signPage == 0)
-                              ? size.height / 1.35
-                              : size.height / 2,
+                          height:
+                              (signPage == 0) ? size.height : size.height / 2,
                           borderRadius: 15,
                           linearGradient:
                               AppColors.customGlassIconButtonGradient,
@@ -170,6 +223,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             children: [
                               //SIGN UP
                               if (signPage == 0)
+                                GestureDetector(
+                                  onTap: (() async {
+                                    try {
+                                      final image = await ImagePicker()
+                                          .pickImage(
+                                              source: ImageSource.gallery);
+                                      if (image == null) return;
+
+                                      final imageTemp = File(image.path);
+                                      selectedImage = imageTemp;
+                                      setState(() {});
+                                    } on PlatformException catch (e) {
+                                      log(e.toString());
+                                    }
+                                  }),
+                                  child: (selectedImage != null)
+                                      ? Padding(
+                                          padding: EdgeInsets.only(
+                                            top: 20,
+                                          ),
+                                          child: CircleAvatar(
+                                            backgroundImage: FileImage(
+                                              selectedImage!,
+                                            ),
+                                            radius: 50,
+                                          ),
+                                        )
+                                      : Container(
+                                          margin: EdgeInsets.only(top: 20),
+                                          height: 100,
+                                          width: 100,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 70,
+                                              color: AppColors.backgroundColour,
+                                            ),
+                                          ),
+                                        ),
+                                ),
+
+                              if (signPage == 0)
                                 AuthNameTextField(
                                   icon: Icons.person,
                                   controller: _firstNameController,
@@ -180,6 +279,102 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   icon: Icons.badge_outlined,
                                   controller: _lastNameController,
                                   hintText: "Your Last Name",
+                                ),
+                              if (signPage == 0)
+                                AuthNameTextField(
+                                  icon: Icons.description,
+                                  controller: _desController,
+                                  hintText: "Your Short Description",
+                                  maxWords: 50,
+                                  desField: true,
+                                ),
+                              if (signPage == 0)
+                                Container(
+                                  margin: EdgeInsets.only(
+                                    top: 20,
+                                    left: 15,
+                                    right: 15,
+                                    bottom: 10,
+                                  ),
+                                  width: size.width,
+                                  child: Center(
+                                    child: DropdownButtonFormField(
+                                      decoration: InputDecoration(
+                                        counterText: "",
+                                        prefixIcon: Icon(
+                                          Icons.work,
+                                          color: AppColors.white,
+                                        ),
+                                        prefixStyle: const TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 16,
+                                        ),
+                                        hintText: "Study",
+                                        hintStyle: TextStyle(
+                                          color:
+                                              AppColors.white.withOpacity(0.5),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Colors.white,
+                                            width: 1.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(15.0),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            width: 1,
+                                            color: AppColors.white,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(15.0),
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            width: 1,
+                                            color: AppColors.white,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(15.0),
+                                        ),
+                                        contentPadding: const EdgeInsets.only(
+                                          left: 15,
+                                          right: 15,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 16,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: AppColors.white,
+                                      ),
+                                      enableFeedback: true,
+                                      elevation: 5,
+                                      dropdownColor: AppColors.backgroundColour,
+                                      borderRadius: BorderRadius.circular(15),
+                                      value: _value,
+                                      items: professionList.map(
+                                        (e) {
+                                          return DropdownMenuItem(
+                                            value: e.id,
+                                            child: Text(e.label),
+                                          );
+                                        },
+                                      ).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _value = value!;
+                                          profession =
+                                              professionList[int.parse(value)]
+                                                  .label;
+                                          log(profession);
+                                        });
+                                      },
+                                    ),
+                                  ),
                                 ),
                               if (signPage == 0)
                                 AuthTextField(
@@ -267,7 +462,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                         .trim() &&
                                                 EmailValidator.validate(
                                                     _emailController.text
-                                                        .trim())) {
+                                                        .trim()) &&
+                                                _desController
+                                                    .text.isNotEmpty &&
+                                                selectedImage != null &&
+                                                profession.isNotEmpty &&
+                                                _value.isNotEmpty &&
+                                                _value != "0") {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
                                                 // allAppProvidersProvider
@@ -349,6 +550,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                           .clear();
                                                       _passConfirmController
                                                           .clear();
+                                                      _desController.clear();
+                                                      _value = "0";
+                                                      selectedImage = null;
                                                       setState(() {
                                                         signPage = 1;
                                                       });
@@ -837,9 +1041,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     ),
                                     TextButton(
                                       onPressed: (() {
-                                        setState(() {
-                                          signPage = 1;
-                                        });
                                         allAppProvidersProvider
                                             .isLoadingFunc(false);
                                         _emailController.clear();
@@ -847,6 +1048,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         _firstNameController.clear();
                                         _lastNameController.clear();
                                         _passConfirmController.clear();
+                                        _desController.clear();
+                                        _value = "0";
+                                        selectedImage = null;
+                                        setState(() {
+                                          signPage = 1;
+                                        });
                                       }),
                                       child: const Text(
                                         "Login",
@@ -1371,16 +1578,20 @@ class _AuthTextFieldState extends State<AuthTextField> {
 }
 
 class AuthNameTextField extends StatefulWidget {
-  const AuthNameTextField({
+  AuthNameTextField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.icon,
+    this.maxWords,
+    this.desField,
     // required this.formKey,
   });
   final TextEditingController controller;
   final String hintText;
   final IconData icon;
+  int? maxWords;
+  bool? desField;
 
   @override
   State<AuthNameTextField> createState() => _AuthNameTextFieldState();
@@ -1396,52 +1607,71 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
         right: 15,
         bottom: 10,
       ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(
-            widget.icon,
-            color: AppColors.white,
-          ),
-          prefixStyle: const TextStyle(
-            color: AppColors.white,
-            fontSize: 16,
-          ),
-          hintText: widget.hintText,
-          hintStyle: TextStyle(
-            color: AppColors.white.withOpacity(0.5),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              color: Colors.white,
-              width: 1.0,
+      child: Consumer<AllAppProviders>(
+        builder: (allAppContext, allAppProvider, allAppChild) {
+          return TextFormField(
+            decoration: InputDecoration(
+              counterText: "",
+              suffixText: (widget.desField != null && widget.desField == true)
+                  ? "${allAppProvider.desPosition.toString()}/${widget.maxWords}"
+                  : "",
+              prefixIcon: Icon(
+                widget.icon,
+                color: AppColors.white,
+              ),
+              prefixStyle: const TextStyle(
+                color: AppColors.white,
+                fontSize: 16,
+              ),
+              hintText: widget.hintText,
+              hintStyle: TextStyle(
+                color: AppColors.white.withOpacity(0.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                  color: Colors.white,
+                  width: 1.0,
+                ),
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                  width: 1,
+                  color: AppColors.white,
+                ),
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              border: OutlineInputBorder(
+                borderSide: const BorderSide(
+                  width: 1,
+                  color: AppColors.white,
+                ),
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              contentPadding: const EdgeInsets.only(
+                left: 15,
+                right: 15,
+              ),
             ),
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(
-              width: 1,
+            onChanged: ((text) {
+              if (widget.desField != null && widget.desField == true) {
+                allAppProvider.desLengthFunc(text.trim().length);
+              }
+            }),
+            maxLength: widget.maxWords,
+            maxLines:
+                (widget.desField != null && widget.desField == true) ? 2 : null,
+            minLines: 1,
+            controller: widget.controller,
+            keyboardType: (widget.desField != null && widget.desField == true)
+                ? TextInputType.multiline
+                : TextInputType.name,
+            cursorColor: AppColors.white,
+            style: const TextStyle(
               color: AppColors.white,
             ),
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          border: OutlineInputBorder(
-            borderSide: const BorderSide(
-              width: 1,
-              color: AppColors.white,
-            ),
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          contentPadding: const EdgeInsets.only(
-            left: 15,
-            right: 15,
-          ),
-        ),
-        controller: widget.controller,
-        keyboardType: TextInputType.name,
-        cursorColor: AppColors.white,
-        style: const TextStyle(
-          color: AppColors.white,
-        ),
+          );
+        },
       ),
     );
   }
