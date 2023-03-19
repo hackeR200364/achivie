@@ -1688,8 +1688,8 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
         right: 10,
         left: 10,
       ),
-      child: StreamBuilder<http.Response>(
-        stream: (widget.status != "INBOX")
+      child: FutureBuilder<http.Response>(
+        future: (widget.status != "INBOX")
             ? http.get(
                 Uri.parse(
                     "${Keys.apiTasksBaseUrl}/getTasksOfTypeStatus/${widget.uid}/${widget.type}/${widget.status}"),
@@ -1697,7 +1697,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                   'content-Type': 'application/json',
                   'authorization': 'Bearer ${widget.token}',
                 },
-              ).asStream()
+              )
             : http.get(
                 Uri.parse(
                     "${Keys.apiTasksBaseUrl}/getAllTasksSpecificType/${widget.uid}/${widget.type}"),
@@ -1705,7 +1705,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                   "content-Type": "application/json",
                   "authorization": "Bearer ${widget.token}",
                 },
-              ).asStream(),
+              ),
         builder: (streamContext, AsyncSnapshot<http.Response> snapshot) {
           // print(snapshot.data!.docs.length);
 

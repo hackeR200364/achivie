@@ -142,15 +142,19 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
             ),
           ),
           InfoScreenPageIndexDot(
-              size: size, tabController: tabController, infoList: infoList),
+            size: size,
+            tabController: tabController,
+            infoList: infoList,
+          ),
           Positioned(
             top: MediaQuery.of(context).size.height / 15,
             left: 20,
             right: 20,
             child: InfoScreenAppBarWidgets(
-                tabIndex: tabIndex,
-                tabController: tabController,
-                infoList: infoList),
+              tabIndex: tabIndex,
+              tabController: tabController,
+              infoList: infoList,
+            ),
           ),
           if (pageLoading) const LoadingWidget(),
         ],

@@ -772,6 +772,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           );
                                           allAppProvidersProvider
                                               .newTaskUploadLoadingFunc(false);
+                                          Navigator.pop(context);
                                         } else {
                                           allAppProvidersProvider
                                               .newTaskUploadLoadingFunc(false);

@@ -78,4 +78,22 @@ class AllAppProviders extends ChangeNotifier {
     passConfirmVisibility = visibility;
     notifyListeners();
   }
+
+  String phCode = "+91";
+  void phCodeFunc(String code) {
+    phCode = code;
+    notifyListeners();
+  }
+
+  String phNumber = "";
+  void phNumberFunc(String number) {
+    phNumber = number;
+    notifyListeners();
+  }
+
+  String des = "";
+  void desFunc(String customDes) {
+    des = customDes;
+    notifyListeners();
+  }
 }
