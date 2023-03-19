@@ -96,4 +96,10 @@ class AllAppProviders extends ChangeNotifier {
     des = customDes;
     notifyListeners();
   }
+
+  int desPosition = 0;
+  void desLengthFunc(position) {
+    desPosition = position;
+    notifyListeners();
+  }
 }

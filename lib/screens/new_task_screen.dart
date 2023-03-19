@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -699,8 +700,10 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         Uri.parse(
                                             "${Keys.apiTasksBaseUrl}/createTask"),
                                         headers: {
-                                          "content-type": "application/json",
-                                          'authorization': 'Bearer $token',
+                                          HttpHeaders.contentTypeHeader:
+                                              "application/json",
+                                          HttpHeaders.authorizationHeader:
+                                              'Bearer $token',
                                         },
                                         body: jsonEncode({
                                           "uid": uid,
