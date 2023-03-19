@@ -73,7 +73,11 @@ dependencies:
   app_settings:
   flutter_native_splash:
   http:
-  encrypt:
+  country_code_picker:
+  screenshot:
+  image_gallery_saver:
+  share_plus:
+  path_provider:
 
 dev_dependencies:
   flutter_test:

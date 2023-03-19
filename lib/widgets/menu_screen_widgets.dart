@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/screens/profile_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/app_providers.dart';
@@ -487,18 +488,29 @@ class MenuScreenProfileContainer extends StatelessWidget {
             userDetailsProviderProvider.userNameFunc();
           }),
         );
-        return GlassmorphicContainer(
-          margin: const EdgeInsets.only(left: 10),
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height / 15,
-          borderRadius: 40,
-          linearGradient: AppColors.customGlassIconButtonGradient,
-          border: 2,
-          blur: 4,
-          borderGradient: AppColors.customGlassButtonTransparentGradient,
-          child: MenuScreenProfileContainerChildColumn(
-            name: userDetailsProviderProvider.userName,
-            points: points,
+        return InkWell(
+          onTap: (() {
+            ZoomDrawer.of(context)!.toggle();
+            Navigator.push(
+              _,
+              MaterialPageRoute(
+                builder: (profilePageContext) => const ProfileScreen(),
+              ),
+            );
+          }),
+          child: GlassmorphicContainer(
+            margin: const EdgeInsets.only(left: 10),
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height / 15,
+            borderRadius: 40,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 2,
+            blur: 4,
+            borderGradient: AppColors.customGlassButtonTransparentGradient,
+            child: MenuScreenProfileContainerChildColumn(
+              name: userDetailsProviderProvider.userName,
+              points: points,
+            ),
           ),
         );
       },

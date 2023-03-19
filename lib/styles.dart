@@ -8,12 +8,16 @@ class AppColors {
   static const blackLow = Colors.black;
   static const sky = Colors.blue;
   static const red = Colors.red;
+  static const diamond = Colors.lightBlue;
+  static const diamondDark = Colors.blueAccent;
   static const green = Colors.green;
   static const lightGreen = Colors.lightGreenAccent;
   static const orange = Colors.orange;
   static const yellow = Colors.yellow;
   static const lime = Colors.lime;
   static const mainColor = Color(0xFF1F1F39);
+  static const gold = Color(0xFFF2CD5C);
+  static const goldDark = Color(0xFFF2921D);
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
   static const scrollPhysics = BouncingScrollPhysics();
