@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
@@ -62,7 +61,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   String selected = "Personal";
   List<String> taskType = ["Personal", "Business"];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  // FirebaseFirestore firestore = FirebaseFirestore.instance;
   bool editOrNew = false, backPressed = false;
   int taskCount = 0,
       taskPending = 0,
@@ -75,7 +74,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   FocusNode? nameFocusNode;
   FocusNode? desFocusNode;
   FocusNode? notiFocusNode;
-  CollectionReference users = FirebaseFirestore.instance.collection("users");
+  // CollectionReference users = FirebaseFirestore.instance.collection("users");
   String token = "", uid = "";
 
   // late AnimationController controllerToIncreaseCurve;
@@ -176,27 +175,27 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
   // Future<String> usrToken() async => ;
 
-  Future<void> updatePoints({required int points}) async {
-    String email = await StorageServices.getUserEmail();
-
-    DocumentSnapshot userDoc = await users.doc(email).get();
-
-    if (!userDoc.data().toString().contains(Keys.userPoints)) {
-      await users.doc(email).set(
-        {
-          Keys.userPoints: 0,
-        },
-        SetOptions(
-          merge: true,
-        ),
-      );
-    }
-    await users.doc(email).update(
-      {
-        Keys.userPoints: await userDoc[Keys.userPoints] + points,
-      },
-    );
-  }
+  // Future<void> updatePoints({required int points}) async {
+  //   String email = await StorageServices.getUserEmail();
+  //
+  //   DocumentSnapshot userDoc = await users.doc(email).get();
+  //
+  //   if (!userDoc.data().toString().contains(Keys.userPoints)) {
+  //     await users.doc(email).set(
+  //       {
+  //         Keys.userPoints: 0,
+  //       },
+  //       SetOptions(
+  //         merge: true,
+  //       ),
+  //     );
+  //   }
+  //   await users.doc(email).update(
+  //     {
+  //       Keys.userPoints: await userDoc[Keys.userPoints] + points,
+  //     },
+  //   );
+  // }
 
   // Future<void> addTask({
   //   required String type,
@@ -208,50 +207,50 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   //   required BuildContext context,
   // }) async
 
-  Future<void> updateUserDetails({
-    required AllAppProviders loadingProvider,
-    required int updateTaskCount,
-    required String taskType,
-  }) async {
-    CollectionReference users = firestore.collection("users");
-    String email = await StorageServices.getUserEmail();
-
-    DocumentSnapshot userDoc = await users.doc(email).get();
-
-    await users.doc(email).update(
-      {
-        Keys.taskCount: userDoc[Keys.taskCount] + 1,
-      },
-    );
-    await users.doc(email).update(
-      {
-        Keys.taskPending: userDoc[Keys.taskPending] + 1,
-      },
-    );
-
-    String newTaskType =
-        (taskType == "Business") ? Keys.taskBusiness : Keys.taskPersonal;
-    await users.doc(email).update(
-      {
-        newTaskType: (newTaskType == Keys.taskBusiness)
-            ? userDoc[Keys.taskBusiness] + 1
-            : userDoc[Keys.taskPersonal] + 1,
-      },
-    );
-
-    await users.doc(email).update(
-      {
-        Keys.taskDone: userDoc[Keys.taskDone],
-      },
-    ).whenComplete(() {
-      return AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        title: "Hurray",
-        desc: "Your next goal is stored successfully",
-      ).show();
-    });
-  }
+  // Future<void> updateUserDetails({
+  //   required AllAppProviders loadingProvider,
+  //   required int updateTaskCount,
+  //   required String taskType,
+  // }) async {
+  //   CollectionReference users = firestore.collection("users");
+  //   String email = await StorageServices.getUserEmail();
+  //
+  //   DocumentSnapshot userDoc = await users.doc(email).get();
+  //
+  //   await users.doc(email).update(
+  //     {
+  //       Keys.taskCount: userDoc[Keys.taskCount] + 1,
+  //     },
+  //   );
+  //   await users.doc(email).update(
+  //     {
+  //       Keys.taskPending: userDoc[Keys.taskPending] + 1,
+  //     },
+  //   );
+  //
+  //   String newTaskType =
+  //       (taskType == "Business") ? Keys.taskBusiness : Keys.taskPersonal;
+  //   await users.doc(email).update(
+  //     {
+  //       newTaskType: (newTaskType == Keys.taskBusiness)
+  //           ? userDoc[Keys.taskBusiness] + 1
+  //           : userDoc[Keys.taskPersonal] + 1,
+  //     },
+  //   );
+  //
+  //   await users.doc(email).update(
+  //     {
+  //       Keys.taskDone: userDoc[Keys.taskDone],
+  //     },
+  //   ).whenComplete(() {
+  //     return AwesomeDialog(
+  //       context: context,
+  //       dialogType: DialogType.success,
+  //       title: "Hurray",
+  //       desc: "Your next goal is stored successfully",
+  //     ).show();
+  //   });
+  // }
 
   void taskDetails() {
     if (widget.taskName != null &&

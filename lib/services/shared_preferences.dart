@@ -48,6 +48,39 @@ class StorageServices {
     pref.setString(Keys.resetToken, token);
   }
 
+  static void setUsrDescription(String description) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.usrDescription, description);
+  }
+
+  static void setUsrProfilePic(String profilePic) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.usrProfilePic, profilePic);
+  }
+
+  static void setUsrProfession(String usrProfession) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.usrProfession, usrProfession);
+  }
+
+  static Future<String> getUsrProfession() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? usrProfession = pref.getString(Keys.usrProfession) ?? "";
+    return usrProfession;
+  }
+
+  static Future<String> getUsrProfilePic() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? usrProfilePic = pref.getString(Keys.usrProfilePic) ?? "";
+    return usrProfilePic;
+  }
+
+  static Future<String> getUsrDescription() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? usrDescription = pref.getString(Keys.usrDescription) ?? "";
+    return usrDescription;
+  }
+
   static Future<String> getResetToken() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? resetToken = pref.getString(Keys.token) ?? "";

@@ -1,83 +1,78 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
-import 'package:material_dialogs/dialogs.dart';
-import 'package:open_mail_app/open_mail_app.dart';
-import 'package:task_app/screens/main_screen.dart';
 
 import '../Utils/snackbar_utils.dart';
-import '../styles.dart';
 import 'keys.dart';
 import 'shared_preferences.dart';
 
-class GoogleSignInProvider extends ChangeNotifier {
-  final googleSignIn = GoogleSignIn();
-
-  Future googleLogin() async {
-    googleSignIn.signOut();
-    // print(googleSignIn.isSignedIn());
-    final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) return;
-    GoogleSignInAccount? user = googleUser;
-
-    final googleAuth = await googleUser.authentication;
-
-    OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithCredential(credential);
-
-    StorageServices.setSignStatus(true);
-    if (userCredential.additionalUserInfo!.isNewUser) {
-      StorageServices.setIsNewUser(true);
-    } else {
-      StorageServices.setIsNewUser(false);
-    }
-
-    DocumentSnapshot<Map<String, dynamic>> document = await FirebaseFirestore
-        .instance
-        .collection("users")
-        .doc(user.email)
-        .get();
-
-    if (document.exists) {
-    } else {
-      FirebaseFirestore.instance.collection("users").doc(user.email).set(
-        {
-          Keys.userName: user.displayName,
-          Keys.userEmail: user.email,
-          Keys.uid: user.id,
-          Keys.taskDone: 0,
-          Keys.taskPending: 0,
-          Keys.taskPersonal: 0,
-          Keys.taskBusiness: 0,
-          Keys.taskCount: 0,
-          Keys.taskDelete: 0,
-        },
-      );
-    }
-
-    StorageServices.setSignInType("Google");
-
-    notifyListeners();
-  }
-
-  Future logOut() async {
-    await googleSignIn.signOut();
-    await FirebaseAuth.instance.signOut();
-    StorageServices.setSignStatus(false);
-    notifyListeners();
-  }
-}
+// class GoogleSignInProvider extends ChangeNotifier {
+//   final googleSignIn = GoogleSignIn();
+//
+//   Future googleLogin() async {
+//     googleSignIn.signOut();
+//     // print(googleSignIn.isSignedIn());
+//     final googleUser = await googleSignIn.signIn();
+//     if (googleUser == null) return;
+//     GoogleSignInAccount? user = googleUser;
+//
+//     final googleAuth = await googleUser.authentication;
+//
+//     OAuthCredential credential = GoogleAuthProvider.credential(
+//       accessToken: googleAuth.accessToken,
+//       idToken: googleAuth.idToken,
+//     );
+//
+//     UserCredential userCredential =
+//         await FirebaseAuth.instance.signInWithCredential(credential);
+//
+//     StorageServices.setSignStatus(true);
+//     if (userCredential.additionalUserInfo!.isNewUser) {
+//       StorageServices.setIsNewUser(true);
+//     } else {
+//       StorageServices.setIsNewUser(false);
+//     }
+//
+//     DocumentSnapshot<Map<String, dynamic>> document = await FirebaseFirestore
+//         .instance
+//         .collection("users")
+//         .doc(user.email)
+//         .get();
+//
+//     if (document.exists) {
+//     } else {
+//       FirebaseFirestore.instance.collection("users").doc(user.email).set(
+//         {
+//           Keys.userName: user.displayName,
+//           Keys.userEmail: user.email,
+//           Keys.uid: user.id,
+//           Keys.taskDone: 0,
+//           Keys.taskPending: 0,
+//           Keys.taskPersonal: 0,
+//           Keys.taskBusiness: 0,
+//           Keys.taskCount: 0,
+//           Keys.taskDelete: 0,
+//         },
+//       );
+//     }
+//
+//     StorageServices.setSignInType("Google");
+//
+//     notifyListeners();
+//   }
+//
+//   Future logOut() async {
+//     await googleSignIn.signOut();
+//     await FirebaseAuth.instance.signOut();
+//     StorageServices.setSignStatus(false);
+//     notifyListeners();
+//   }
+// }
 
 // class FaceBookSignInServices {
 //   Future signInWithFacebook() async {
@@ -205,146 +200,146 @@ class EmailPassAuthServices {
     }
   }
 
-  Future emailPassSignIn({
-    required String email,
-    required String pass,
-    required BuildContext context,
-  }) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: pass,
-      );
+  // Future emailPassSignIn({
+  //   required String email,
+  //   required String pass,
+  //   required BuildContext context,
+  // }) async {
+  //   try {
+  //     await FirebaseAuth.instance.signInWithEmailAndPassword(
+  //       email: email,
+  //       password: pass,
+  //     );
+  //
+  //     StorageServices.setSignStatus(true);
+  //     StorageServices.setUserEmail(email);
+  //     StorageServices.setUID(pass);
+  //     try {
+  //       StorageServices.setSignInType("Email");
+  //       Navigator.pushReplacement(
+  //         context,
+  //         MaterialPageRoute(
+  //           builder: (nextPageContext) => const MainScreen(),
+  //         ),
+  //       );
+  //     } on FirebaseException catch (e) {
+  //       Dialogs.bottomMaterialDialog(
+  //         context: context,
+  //         color: AppColors.white,
+  //         title: "Warning",
+  //         msg: e.message,
+  //         msgStyle: const TextStyle(
+  //           color: AppColors.mainColor,
+  //           fontWeight: FontWeight.w600,
+  //         ),
+  //         titleStyle: const TextStyle(
+  //           color: AppColors.backgroundColour,
+  //           fontSize: 17,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       );
+  //     }
+  //   } on FirebaseException catch (e) {
+  //     // print(e.message);
+  //     Dialogs.bottomMaterialDialog(
+  //       context: context,
+  //       color: AppColors.white,
+  //       title: "Warning",
+  //       msg: e.message,
+  //       msgStyle: const TextStyle(
+  //         color: AppColors.mainColor,
+  //         fontWeight: FontWeight.w600,
+  //       ),
+  //       titleStyle: const TextStyle(
+  //         color: AppColors.backgroundColour,
+  //         fontSize: 17,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //     );
+  //   }
+  // }
 
-      StorageServices.setSignStatus(true);
-      StorageServices.setUserEmail(email);
-      StorageServices.setUID(pass);
-      try {
-        StorageServices.setSignInType("Email");
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (nextPageContext) => const MainScreen(),
-          ),
-        );
-      } on FirebaseException catch (e) {
-        Dialogs.bottomMaterialDialog(
-          context: context,
-          color: AppColors.white,
-          title: "Warning",
-          msg: e.message,
-          msgStyle: const TextStyle(
-            color: AppColors.mainColor,
-            fontWeight: FontWeight.w600,
-          ),
-          titleStyle: const TextStyle(
-            color: AppColors.backgroundColour,
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      }
-    } on FirebaseException catch (e) {
-      // print(e.message);
-      Dialogs.bottomMaterialDialog(
-        context: context,
-        color: AppColors.white,
-        title: "Warning",
-        msg: e.message,
-        msgStyle: const TextStyle(
-          color: AppColors.mainColor,
-          fontWeight: FontWeight.w600,
-        ),
-        titleStyle: const TextStyle(
-          color: AppColors.backgroundColour,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-    }
-  }
+  // Future forgotPassword({
+  //   required String email,
+  //   required BuildContext context,
+  // }) async {
+  //   try {
+  //     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  //     Dialogs.bottomMaterialDialog(
+  //       context: context,
+  //       color: AppColors.white,
+  //       title: "Success",
+  //       msg: "Password reset email sent. Please check your email app",
+  //       msgStyle: const TextStyle(
+  //         color: AppColors.mainColor,
+  //         fontWeight: FontWeight.w600,
+  //       ),
+  //       titleStyle: const TextStyle(
+  //         color: AppColors.backgroundColour,
+  //         fontSize: 17,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //       lottieBuilder: Lottie.asset("assets/success-done-animation.json"),
+  //       actions: [
+  //         InkWell(
+  //           onTap: (() async {
+  //             var result = await OpenMailApp.openMailApp();
+  //             if (!result.didOpen && !result.canOpen) {
+  //             } else if (!result.didOpen && result.canOpen) {
+  //               showDialog(
+  //                 context: context,
+  //                 builder: (_) {
+  //                   return MailAppPickerDialog(
+  //                     mailApps: result.options,
+  //                   );
+  //                 },
+  //               );
+  //             }
+  //           }),
+  //           child: Container(
+  //             height: 50,
+  //             decoration: BoxDecoration(
+  //               borderRadius: BorderRadius.circular(15),
+  //               color: AppColors.mainColor,
+  //             ),
+  //             child: const Center(
+  //               child: Text(
+  //                 "Open",
+  //                 style: TextStyle(
+  //                   color: AppColors.white,
+  //                   fontSize: 15,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     );
+  //   } on FirebaseException catch (e) {
+  //     Dialogs.bottomMaterialDialog(
+  //       context: context,
+  //       color: AppColors.white,
+  //       title: "Failed",
+  //       msg: e.message,
+  //       msgStyle: const TextStyle(
+  //         color: AppColors.mainColor,
+  //         fontWeight: FontWeight.w600,
+  //       ),
+  //       titleStyle: const TextStyle(
+  //         color: AppColors.backgroundColour,
+  //         fontSize: 17,
+  //         fontWeight: FontWeight.bold,
+  //       ),
+  //       lottieBuilder: Lottie.asset("assets/success-done-animation.json"),
+  //     );
+  //   }
+  // }
 
-  Future forgotPassword({
-    required String email,
-    required BuildContext context,
-  }) async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      Dialogs.bottomMaterialDialog(
-        context: context,
-        color: AppColors.white,
-        title: "Success",
-        msg: "Password reset email sent. Please check your email app",
-        msgStyle: const TextStyle(
-          color: AppColors.mainColor,
-          fontWeight: FontWeight.w600,
-        ),
-        titleStyle: const TextStyle(
-          color: AppColors.backgroundColour,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-        ),
-        lottieBuilder: Lottie.asset("assets/success-done-animation.json"),
-        actions: [
-          InkWell(
-            onTap: (() async {
-              var result = await OpenMailApp.openMailApp();
-              if (!result.didOpen && !result.canOpen) {
-              } else if (!result.didOpen && result.canOpen) {
-                showDialog(
-                  context: context,
-                  builder: (_) {
-                    return MailAppPickerDialog(
-                      mailApps: result.options,
-                    );
-                  },
-                );
-              }
-            }),
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: AppColors.mainColor,
-              ),
-              child: const Center(
-                child: Text(
-                  "Open",
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    } on FirebaseException catch (e) {
-      Dialogs.bottomMaterialDialog(
-        context: context,
-        color: AppColors.white,
-        title: "Failed",
-        msg: e.message,
-        msgStyle: const TextStyle(
-          color: AppColors.mainColor,
-          fontWeight: FontWeight.w600,
-        ),
-        titleStyle: const TextStyle(
-          color: AppColors.backgroundColour,
-          fontSize: 17,
-          fontWeight: FontWeight.bold,
-        ),
-        lottieBuilder: Lottie.asset("assets/success-done-animation.json"),
-      );
-    }
-  }
-
-  Future emailPassLogout({
-    required BuildContext context,
-  }) async {
-    await FirebaseAuth.instance.signOut();
-    StorageServices.setSignStatus(false);
-  }
+  // Future emailPassLogout({
+  //   required BuildContext context,
+  // }) async {
+  //   await FirebaseAuth.instance.signOut();
+  //   StorageServices.setSignStatus(false);
+  // }
 }

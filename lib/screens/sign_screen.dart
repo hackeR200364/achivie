@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:glassmorphism/glassmorphism.dart';
@@ -17,7 +17,6 @@ import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/models/profession_model.dart';
 import 'package:task_app/providers/app_providers.dart';
 import 'package:task_app/screens/main_screen.dart';
-import 'package:task_app/services/auth_services.dart';
 import 'package:task_app/services/keys.dart';
 import 'package:task_app/styles.dart';
 
@@ -33,7 +32,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   // int signStatus = 0;
   bool isLoading = false;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  // FirebaseFirestore firestore = FirebaseFirestore.instance;
   late TextEditingController _emailController;
   late TextEditingController _firstNameController;
   late TextEditingController _desController;
@@ -93,27 +92,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
       id: "10",
       label: "Content Creator",
     ),
+    ProfessionModel(
+      id: "11",
+      label: "Teacher",
+    ),
+    ProfessionModel(
+      id: "12",
+      label: "Tutor",
+    ),
+    ProfessionModel(
+      id: "13",
+      label: "Professor",
+    ),
+    ProfessionModel(
+      id: "14",
+      label: "Doctor",
+    ),
+    ProfessionModel(
+      id: "15",
+      label: "Engineer",
+    ),
   ];
   // final signUpFormKey = GlobalKey<FormState>();
   // final signInFormKey = GlobalKey<FormState>();
 
-  Future<void> googleSignIn(BuildContext context) async {
-    final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
-    await provider.googleLogin();
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    StorageServices.setUID(user.uid);
-    StorageServices.setUserName(user.displayName!);
-    StorageServices.setUserEmail(user.email!);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const MainScreen(),
-      ),
-    );
-  }
+  // Future<void> googleSignIn(BuildContext context) async {
+  //   final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
+  //   await provider.googleLogin();
+  //
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if (user == null) return;
+  //   StorageServices.setUID(user.uid);
+  //   StorageServices.setUserName(user.displayName!);
+  //   StorageServices.setUserEmail(user.email!);
+  //
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => const MainScreen(),
+  //     ),
+  //   );
+  // }
 
   void getAppDetails() async {
     packageInfo = await PackageInfo.fromPlatform();
@@ -169,13 +188,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   "assets/auth-bg-pic.jpg",
                   fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height * 1.35 : size.height,
+                  height: (signPage == 0)
+                      ? 1180
+                      : (size.height < 700)
+                          ? 800
+                          : size.height,
                 ),
               ),
               Positioned(
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0) ? size.height * 1.35 : size.height,
+                  height: (signPage == 0)
+                      ? 1180
+                      : (size.height < 700)
+                          ? 800
+                          : size.height,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -190,6 +217,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(
+                  top: 30,
                   left: 15,
                   right: 15,
                 ),
@@ -210,8 +238,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         GlassmorphicContainer(
                           width: size.width,
-                          height:
-                              (signPage == 0) ? size.height : size.height / 2,
+                          height: (signPage == 0) ? 870 : 420,
                           borderRadius: 15,
                           linearGradient:
                               AppColors.customGlassIconButtonGradient,
@@ -473,43 +500,106 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   _passConfirmController.text) {
                                                 // allAppProvidersProvider
                                                 //     .isLoadingFunc(true);
-                                                http.Response response =
-                                                    await http.post(
+                                                // http.Response response =
+                                                //     await http.post(
+                                                //   Uri.parse(
+                                                //       "${Keys.apiUsersBaseUrl}/create"),
+                                                //   headers: {
+                                                //     "content-type":
+                                                //         "application/json",
+                                                //   },
+                                                //   body: jsonEncode({
+                                                //     "usrFirstName":
+                                                //         _firstNameController
+                                                //             .text
+                                                //             .trim(),
+                                                //     "usrLastName":
+                                                //         _lastNameController.text
+                                                //             .trim(),
+                                                //     "usrPassword":
+                                                //         _passController.text
+                                                //             .trim(),
+                                                //     "usrEmail": _emailController
+                                                //         .text
+                                                //         .trim(),
+                                                //     "uid": _emailController.text
+                                                //         .trim()
+                                                //         .split('@')[0],
+                                                //   }),
+                                                // );
+
+                                                var request =
+                                                    http.MultipartRequest(
+                                                  'POST',
                                                   Uri.parse(
                                                       "${Keys.apiUsersBaseUrl}/create"),
-                                                  headers: {
-                                                    "content-type":
-                                                        "application/json",
-                                                  },
-                                                  body: jsonEncode({
-                                                    "usrFirstName":
-                                                        _firstNameController
-                                                            .text
-                                                            .trim(),
-                                                    "usrLastName":
-                                                        _lastNameController.text
-                                                            .trim(),
-                                                    "usrPassword":
-                                                        _passController.text
-                                                            .trim(),
-                                                    "usrEmail": _emailController
-                                                        .text
-                                                        .trim(),
-                                                    "uid": _emailController.text
-                                                        .trim()
-                                                        .split('@')[0],
-                                                  }),
                                                 );
+
+                                                var fileStream =
+                                                    http.ByteStream(
+                                                        selectedImage!
+                                                            .openRead());
+                                                var length =
+                                                    await selectedImage!
+                                                        .length();
+                                                var multipartFile =
+                                                    http.MultipartFile(
+                                                  Keys.usrProfilePic,
+                                                  fileStream,
+                                                  length,
+                                                  filename: selectedImage!.path
+                                                      .split('/')
+                                                      .last,
+                                                );
+
+                                                request.files
+                                                    .add(multipartFile);
+
+                                                request.headers[
+                                                        "content-type"] =
+                                                    "multipart/form-data";
+
+                                                request.fields[
+                                                        Keys.usrFirstName] =
+                                                    _firstNameController.text
+                                                        .trim();
+                                                request.fields[
+                                                        Keys.usrLastName] =
+                                                    _lastNameController.text
+                                                        .trim();
+                                                request.fields[
+                                                        Keys.usrPassword] =
+                                                    _passController.text.trim();
+                                                request.fields[Keys.usrEmail] =
+                                                    _emailController.text
+                                                        .trim();
+                                                request.fields[Keys.uid] =
+                                                    _emailController.text
+                                                        .trim()
+                                                        .split('@')[0];
+                                                request.fields[
+                                                        Keys.usrDescription] =
+                                                    _desController.text.trim();
+                                                request.fields[
+                                                        Keys.usrProfession] =
+                                                    profession;
+
+                                                var response =
+                                                    await request.send();
 
                                                 if (response.statusCode ==
                                                     200) {
-                                                  log(response.body.toString());
+                                                  log(response.stream
+                                                      .bytesToString()
+                                                      .toString());
                                                   StorageServices.setSignInType(
                                                       Keys.email);
 
                                                   Map<String, dynamic>
-                                                      responseJson =
-                                                      jsonDecode(response.body);
+                                                      responseJson = jsonDecode(
+                                                          response.stream
+                                                              .bytesToString()
+                                                              .toString());
 
                                                   if (responseJson["success"]) {
                                                     StorageServices.setUserName(
@@ -525,6 +615,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     StorageServices.setUsrToken(
                                                         responseJson[
                                                             Keys.token]);
+
+                                                    StorageServices
+                                                        .setUsrDescription(
+                                                            responseJson[Keys
+                                                                .usrDescription]);
+
+                                                    StorageServices
+                                                        .setUsrProfilePic(
+                                                            responseJson[Keys
+                                                                .usrProfilePic]);
+
+                                                    StorageServices
+                                                        .setUsrProfession(
+                                                            responseJson[Keys
+                                                                .usrProfession]);
 
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)

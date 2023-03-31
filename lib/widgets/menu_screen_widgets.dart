@@ -15,7 +15,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../providers/app_providers.dart';
 import '../providers/user_details_providers.dart';
 import '../screens/menu_screen.dart';
-import '../services/auth_services.dart';
 import '../services/notification_services.dart';
 import '../services/shared_preferences.dart';
 import '../styles.dart';
@@ -91,30 +90,28 @@ class MenuScreenExtraLogoutButtonParent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GoogleSignInProvider>(builder:
-        (googleSignInContext, googleSignInProvider, googleSignInChild) {
-      return Consumer<AllAppProviders>(
-          builder: (allAppProviderContext, allAppProvider, _) {
-        return MenuScreenExtraLogoutButton(
-          allAppProvider: allAppProvider,
-          googleSignInContext: googleSignInContext,
-          googleSignInProvider: googleSignInProvider,
-        );
-      });
+    return Consumer<AllAppProviders>(
+        builder: (allAppProviderContext, allAppProvider, _) {
+      return MenuScreenExtraLogoutButton(
+        allAppProvider: allAppProvider,
+        parentContext: allAppProviderContext,
+        // googleSignInContext: googleSignInContext,
+        // googleSignInProvider: googleSignInProvider,
+      );
     });
   }
 }
 
 class MenuScreenExtraLogoutButton extends StatelessWidget {
   const MenuScreenExtraLogoutButton(
-      {super.key,
-      required this.allAppProvider,
-      required this.googleSignInContext,
-      required this.googleSignInProvider});
+      {super.key, required this.allAppProvider, required this.parentContext
+      // required this.googleSignInContext,
+      // required this.googleSignInProvider,
+      });
 
   final AllAppProviders allAppProvider;
-  final BuildContext googleSignInContext;
-  final GoogleSignInProvider googleSignInProvider;
+  final BuildContext parentContext;
+  // final GoogleSignInProvider googleSignInProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +125,7 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
           enableDrag: false,
           isDismissible: false,
           barrierDismissible: false,
-          context: googleSignInContext,
+          context: parentContext,
           color: AppColors.backgroundColour,
           lottieBuilder: Lottie.asset("assets/warning-animation.json"),
           title: "Warning",
@@ -144,11 +141,11 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
           ),
           actions: [
             MenuScreenLogoutBottomSheetCancelButton(
-              googleSignInContext: googleSignInContext,
+              googleSignInContext: parentContext,
             ),
             MenuScreenLogoutBottomSheetLogoutButton(
-              googleSignInProvider: googleSignInProvider,
-              googleSignInContext: googleSignInContext,
+              // googleSignInProvider: parentContext,
+              googleSignInContext: parentContext,
             ),
           ],
         );
@@ -161,11 +158,11 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
 class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
   const MenuScreenLogoutBottomSheetLogoutButton({
     super.key,
-    required this.googleSignInProvider,
+    // required this.googleSignInProvider,
     required this.googleSignInContext,
   });
 
-  final GoogleSignInProvider googleSignInProvider;
+  // final GoogleSignInProvider googleSignInProvider;
   final BuildContext googleSignInContext;
 
   @override
@@ -174,11 +171,11 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
       onTap: (() async {
         await NotificationServices().cancelTasksNotification();
         if (await StorageServices.getUserSignInType() == "Google") {
-          await googleSignInProvider.logOut();
+          // await googleSignInProvider.logOut();
         } else if (await StorageServices.getUserSignInType() == "Email") {
-          EmailPassAuthServices().emailPassLogout(
-            context: googleSignInContext,
-          );
+          // EmailPassAuthServices().emailPassLogout(
+          //   context: googleSignInContext,
+          // );
         }
         SystemNavigator.pop();
       }),

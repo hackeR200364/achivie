@@ -1,6 +1,6 @@
 import UIKit
 import Flutter
-import FirebaseCore
+//import FirebaseCore
 
 import flutter_local_notifications
 
@@ -11,7 +11,7 @@ import flutter_local_notifications
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
 
-  FirebaseApp.configure()
+//  FirebaseApp.configure()
 
   FlutterLocalNotificationsPlugin.setPluginRegistrantCallback{
   (registry) in GeneratedPluginRegistrant.register(with:registry)}
