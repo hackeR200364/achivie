@@ -37,11 +37,11 @@ dependencies:
   percent_indicator:
   intl:
   provider:
-  firebase_auth:
-  google_sign_in:
-  firebase_core:
+#  firebase_auth:
+#  google_sign_in:
+#  firebase_core:
   shared_preferences:
-  cloud_firestore:
+#  cloud_firestore:
   awesome_dialog:
   focused_menu:
   interval_time_picker:

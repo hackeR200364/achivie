@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../services/shared_preferences.dart';
 
 class UserDetailsProvider extends ChangeNotifier {
-  final user = FirebaseAuth.instance.currentUser;
-  CollectionReference users = FirebaseFirestore.instance.collection("users");
+  // final user = FirebaseAuth.instance.currentUser;
+  // CollectionReference users = FirebaseFirestore.instance.collection("users");
 
   String userName = "";
   void userNameFunc() async {
@@ -73,9 +73,9 @@ class UserDetailsProvider extends ChangeNotifier {
   String? userProfileImage =
       "https://www.allthetests.com/quiz22/picture/pic_1171831236_1.png";
   void userProfileImageFunc() async {
-    userProfileImage = user!.photoURL;
-    StorageServices.setUserPhotoURL(userProfileImage ??
-        "https://www.allthetests.com/quiz22/picture/pic_1171831236_1.png");
+    // userProfileImage = user!.photoURL;
+    // StorageServices.setUserPhotoURL(userProfileImage ??
+    //     "https://www.allthetests.com/quiz22/picture/pic_1171831236_1.png");
     notifyListeners();
   }
 }

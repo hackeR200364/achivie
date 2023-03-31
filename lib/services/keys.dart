@@ -11,8 +11,12 @@ class Keys {
   static const String usrFirstName = "usrFirstName";
   static const String usrLastName = "usrLastName";
   static const String userPoints = "userPoints";
+  static const String usrDescription = "usrDescription";
+  static const String usrProfession = "usrProfession";
+  static const String usrProfilePic = "usrProfilePic";
   static const String uid = "uid";
   static const String userPassword = "userPassword";
+  static const String usrPassword = "usrPassword";
   static const String userEmail = "userEmail";
   static const String usrEmail = "usrEmail";
   static const String userPhoto = "userPhoto";
