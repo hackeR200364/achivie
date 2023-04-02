@@ -162,6 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               foregroundImage: NetworkImage(
                                 profilePic,
                               ),
+                              backgroundColor: AppColors.mainColor,
                               radius: 50,
                             ),
                           if (profilePic.isEmpty) Container(),

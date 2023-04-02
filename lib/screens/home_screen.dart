@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
@@ -52,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int counter = 0;
   final assetsAudioPlayer = AssetsAudioPlayer();
   late ScrollController _scrollController;
-  bool pageLoading = true;
+  bool pageLoading = false;
   String songName = "";
   String songArtist = "";
   bool isPlaying = false;
@@ -152,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     if (response.statusCode == 200) {
       if (responseJson["success"]) {
-        userPoints = responseJson[Keys.data]["usrPoints"];
+        StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
         taskDone = responseJson[Keys.data][Keys.taskDone];
         taskDelete = responseJson[Keys.data][Keys.taskDelete];
         taskPending = responseJson[Keys.data][Keys.taskPending];
@@ -274,6 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         taskBusiness = responseJson[Keys.data][Keys.taskBusiness];
         taskPersonal = responseJson[Keys.data][Keys.taskPersonal];
         taskCount = responseJson[Keys.data][Keys.taskCount];
+        log(responseJson[Keys.data][Keys.usrPoints].toString());
         setState(() {});
       }
     }
@@ -381,6 +383,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           floatingActionButton: const CustomFloatingActionButton(),
           backgroundColor: AppColors.mainColor,
           body: RefreshIndicator(
+            displacement: 5,
+            edgeOffset: 87,
+            color: AppColors.backgroundColour,
+            backgroundColor: AppColors.mainColor,
+            triggerMode: RefreshIndicatorTriggerMode.anywhere,
             onRefresh: refresh,
             child: Stack(
               children: [
@@ -586,22 +593,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     },
                   ),
                 ),
-                if (pageLoading)
-                  Positioned(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height,
-                      decoration: const BoxDecoration(
-                        color: AppColors.mainColor,
-                      ),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                // if (pageLoading)
+                //   Positioned(
+                //     child: Container(
+                //       width: MediaQuery.of(context).size.width,
+                //       height: MediaQuery.of(context).size.height,
+                //       decoration: const BoxDecoration(
+                //         color: AppColors.mainColor,
+                //       ),
+                //       child: const Center(
+                //         child: CircularProgressIndicator(
+                //           strokeWidth: 2,
+                //           color: AppColors.white,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
               ],
             ),
           ),

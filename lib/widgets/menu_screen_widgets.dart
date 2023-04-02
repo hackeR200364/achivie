@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zoom_drawer/config.dart';
@@ -375,15 +373,15 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           setIndex: widget.setIndex,
           zoomDrawerController: zoomDrawerController,
         ),
-        if (Platform.isAndroid)
-          MenuListItem(
-            title: "Send SMS",
-            icon: Icons.sms,
-            index: 3,
-            selectedIndex: widget.selectedIndex,
-            setIndex: widget.setIndex,
-            zoomDrawerController: zoomDrawerController,
-          ),
+        // if (Platform.isAndroid)
+        //   MenuListItem(
+        //     title: "Send SMS",
+        //     icon: Icons.sms,
+        //     index: 3,
+        //     selectedIndex: widget.selectedIndex,
+        //     setIndex: widget.setIndex,
+        //     zoomDrawerController: zoomDrawerController,
+        //   ),
       ],
     );
   }

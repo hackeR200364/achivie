@@ -440,6 +440,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: CupertinoPicker(
+                                magnification: 1.1,
+                                diameterRatio: 1.5,
                                 backgroundColor: AppColors.transparent,
                                 itemExtent: 23,
                                 onSelectedItemChanged: (value) {
@@ -735,8 +737,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                                 Keys.notificationID],
                                             title: _notificationController.text
                                                 .trim(),
-                                            body:
-                                                "${_taskNameController.text.trim()}\n${_descriptionController.text.trim()}",
+                                            body: _descriptionController.text
+                                                .trim(),
                                             dateTime: scheduleDateTIme,
                                             payload:
                                                 scheduleDateTIme.toString(),
@@ -795,8 +797,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                       allAppProvidersProvider
                                           .newTaskUploadLoadingFunc(false);
-                                    } else if (widget.userEmail != null &&
-                                        widget.taskDoc != null) {
+                                    } else if (widget.userEmail != null) {
                                       // DocumentSnapshot taskDoc =
                                       //     await FirebaseFirestore.instance
                                       //         .collection("users")
@@ -947,6 +948,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                       Map<String, dynamic> responseJson =
                                           jsonDecode(response.body);
+                                      log(responseJson.toString());
 
                                       if (response.statusCode == 200) {
                                         if (responseJson["success"]) {
