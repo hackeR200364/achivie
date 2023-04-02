@@ -97,6 +97,12 @@ class AllAppProviders extends ChangeNotifier {
     notifyListeners();
   }
 
+  String keySkill = "";
+  void keySkillFunc(String customKeySkill) {
+    keySkill = customKeySkill;
+    notifyListeners();
+  }
+
   int desPosition = 0;
   void desLengthFunc(position) {
     desPosition = position;

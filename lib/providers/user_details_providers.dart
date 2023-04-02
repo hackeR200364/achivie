@@ -15,7 +15,7 @@ class UserDetailsProvider extends ChangeNotifier {
     // StorageServices.setUserName(userName);
 
     // userName = await StorageServices.getUserName();
-    userName = await StorageServices.getUserName();
+    userName = await StorageServices.getUsrName();
 
     notifyListeners();
   }

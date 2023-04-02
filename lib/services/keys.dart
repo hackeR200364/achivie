@@ -5,22 +5,22 @@ class Keys {
   static const String message = "message";
   static const String token = "token";
   static const String resetToken = "resetToken";
-  static const String userSignStatus = "signStatus";
-  static const String isNewUser = "isNewUser";
-  static const String userName = "userName";
+  static const String usrSignStatus = "signStatus";
+  static const String isNewUsr = "isNewUsr";
+  static const String usrName = "usrName";
   static const String usrFirstName = "usrFirstName";
   static const String usrLastName = "usrLastName";
-  static const String userPoints = "userPoints";
+  static const String usrPoints = "usrPoints";
   static const String usrDescription = "usrDescription";
   static const String usrProfession = "usrProfession";
   static const String usrProfilePic = "usrProfilePic";
   static const String uid = "uid";
-  static const String userPassword = "userPassword";
+  // static const String userPassword = "userPassword";
   static const String usrPassword = "usrPassword";
-  static const String userEmail = "userEmail";
+  // static const String userEmail = "userEmail";
   static const String usrEmail = "usrEmail";
-  static const String userPhoto = "userPhoto";
-  static const String userSignInType = "userSignInType";
+  static const String usrPhoto = "usrPhoto";
+  static const String usrSignInType = "usrSignInType";
   static const String taskName = "taskName";
   static const String taskDes = "taskDes";
   static const String taskNotification = "taskNotification";
@@ -48,7 +48,8 @@ class Keys {
   static const String userSongStatus = "userSongStatus";
   static const String userSongName = "userSongName";
   static const String userSongApp = "userSongApp";
-  static const String apiBaseUrl = "https://achivie.cyclic.app";
+  static const String apiBaseUrl =
+      "https://backend-api.achivie.com/v1/development";
   static const String apiUsersBaseUrl = "$apiBaseUrl/api/users";
   static const String apiTasksBaseUrl = "$apiBaseUrl/api/tasks";
 }

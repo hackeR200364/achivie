@@ -176,10 +176,10 @@ class EmailPassAuthServices {
 
       if (responseJson["success"]) {
         StorageServices.setSignInType(Keys.email);
-        StorageServices.setUserName(
+        StorageServices.setUsrName(
             "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
         StorageServices.setUID(responseJson[Keys.data][Keys.uid]);
-        StorageServices.setUserEmail(responseJson[Keys.data][Keys.usrEmail]);
+        StorageServices.setUsrEmail(responseJson[Keys.data][Keys.usrEmail]);
         StorageServices.setUsrToken(responseJson[Keys.token]);
 
         AppSnackbar().customizedAppSnackbar(

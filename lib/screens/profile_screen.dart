@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -5,6 +6,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,6 +15,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/providers/app_providers.dart';
+import 'package:task_app/services/keys.dart';
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
@@ -26,25 +29,28 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String name = "";
-  String email = "";
-  String des = "dfds";
+  String name = "", email = "", profilePic = "", profession = "", des = "";
+
   bool phoneVisibility = false;
   bool desVisibility = false;
-  bool shareVisibility = false;
-  int totalTasks = 10;
-  int totalPending = 0;
-  int totalDone = 5;
-  int totalBusiness = 0;
-  int totalPersonal = 0;
-  int totalDelete = 0;
+  bool skillVisibility = false;
+  int rate = 0;
+  // int totalPending = 0;
+  // int totalDone = 5;
+  // int totalBusiness = 0;
+  // int totalPersonal = 0;
+  // int totalDelete = 0;
   late TextEditingController _phoneController;
   late TextEditingController _desController;
+  late TextEditingController _keySkillController;
   late ScreenshotController _screenshotController;
 
   void getDetails() async {
-    name = await StorageServices.getUserName();
-    email = await StorageServices.getUserEmail();
+    name = await StorageServices.getUsrName();
+    email = await StorageServices.getUsrEmail();
+    profilePic = await StorageServices.getUsrProfilePic();
+    des = await StorageServices.getUsrDescription();
+    profession = await StorageServices.getUsrProfession();
     _desController.text = des;
     setState(() {});
   }
@@ -54,7 +60,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _phoneController = TextEditingController();
     _desController = TextEditingController();
     _screenshotController = ScreenshotController();
+    _keySkillController = TextEditingController();
     getDetails();
+    completionRate();
     super.initState();
   }
 
@@ -76,8 +84,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return "";
   }
 
-  int completionRate() =>
-      ((totalDone / (totalTasks - totalDelete)) * 100).round();
+  Future<void> completionRate() async {
+    // ((totalDone / (totalTasks - totalDelete)) * 100).round();
+
+    String uid = await StorageServices.getUID();
+    String token = await StorageServices.getUsrToken();
+
+    http.Response response = await http.get(
+        Uri.parse("${Keys.apiUsersBaseUrl}/completionRate/$uid"),
+        headers: {
+          "content-type": "application/json",
+          'Authorization': 'Bearer $token',
+        });
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      log(responseJson.toString());
+      if (responseJson["success"]) {
+        rate = responseJson["completionRate"];
+        setState(() {});
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,12 +157,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          CircleAvatar(
-                            foregroundImage: NetworkImage(
-                              "https://media-cldnry.s-nbcnews.com/image/upload/MSNBC/Components/Photo/_new/g-tch-091221-avatar-333p.jpg",
+                          if (profilePic.isNotEmpty)
+                            CircleAvatar(
+                              foregroundImage: NetworkImage(
+                                profilePic,
+                              ),
+                              radius: 50,
                             ),
-                            radius: 50,
-                          ),
+                          if (profilePic.isEmpty) Container(),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         style: TextStyle(
                                           overflow: TextOverflow.clip,
                                           color: AppColors.blackLow
-                                              .withOpacity(0.6),
+                                              .withOpacity(0.45),
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -254,29 +284,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    "StudyStatus",
+                                    profession,
                                     style: TextStyle(
                                       overflow: TextOverflow.clip,
                                       color: AppColors.green,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  Container(
-                                    height: 10,
-                                    width: 1.5,
-                                    margin: EdgeInsets.symmetric(horizontal: 5),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.grey,
+                                  if (skillVisibility)
+                                    Container(
+                                      height: 10,
+                                      width: 1.5,
+                                      margin:
+                                          EdgeInsets.symmetric(horizontal: 5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.grey,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    "KeySkill",
-                                    style: TextStyle(
-                                      overflow: TextOverflow.clip,
-                                      color: AppColors.green,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                  if (skillVisibility)
+                                    Consumer<AllAppProviders>(builder:
+                                        (allAppContext, allAppProvider,
+                                            allAppChild) {
+                                      return Container(
+                                        width: size.width / 4,
+                                        child: Text(
+                                          allAppProvider.keySkill,
+                                          style: TextStyle(
+                                            overflow: TextOverflow.clip,
+                                            color: AppColors.green,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      );
+                                    }),
                                 ],
                               ),
                               SizedBox(
@@ -291,27 +331,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           AppColors.blackLow.withOpacity(0.6),
                                     ),
                                   ),
-                                  if (completionRate() <= 25)
+                                  if (rate <= 25)
                                     Text(
-                                      "${completionRate().toString()}%",
+                                      "${rate.toString()}%",
                                       style: TextStyle(
                                         color: AppColors.red,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  if (completionRate() > 25 &&
-                                      completionRate() <= 50)
+                                  if (rate > 25 && rate <= 50)
                                     Text(
-                                      "${completionRate().toString()}%",
+                                      "${rate.toString()}%",
                                       style: TextStyle(
                                         color: AppColors.orange,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  if (completionRate() > 50 &&
-                                      completionRate() <= 100)
+                                  if (rate > 50 && rate <= 100)
                                     Text(
-                                      "${completionRate().toString()}%",
+                                      "${rate.toString()}%",
                                       style: TextStyle(
                                         color: AppColors.green,
                                         fontWeight: FontWeight.bold,
@@ -332,7 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   SizedBox(
                                     width: 5,
                                   ),
-                                  if (completionRate() <= 25)
+                                  if (rate <= 25)
                                     Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 15,
@@ -356,8 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                     ),
-                                  if (completionRate() > 25 &&
-                                      completionRate() <= 50)
+                                  if (rate > 25 && rate <= 50)
                                     Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 15,
@@ -381,8 +418,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                     ),
-                                  if (completionRate() > 50 &&
-                                      completionRate() <= 100)
+                                  if (rate > 50 && rate <= 100)
                                     Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 15,
@@ -411,7 +447,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   Center(
                                     child: Text(
-                                      "Achivie.com",
+                                      "achivie.com",
                                       style: TextStyle(
                                         color: AppColors.backgroundColour,
                                         fontWeight: FontWeight.w400,
@@ -652,6 +688,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: _desController,
+                          keyboardType: TextInputType.text,
+                          cursorColor: AppColors.white,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                GestureDetector(
+                  onTap: (() {
+                    setState(() {
+                      skillVisibility = !skillVisibility;
+                    });
+                  }),
+                  child: GlassmorphicContainer(
+                    margin: EdgeInsets.only(
+                      top: 15,
+                      bottom: 15,
+                      left: 30,
+                      right: 30,
+                    ),
+                    width: size.width,
+                    height: 35,
+                    borderRadius: 20,
+                    linearGradient: AppColors.customGlassIconButtonGradient,
+                    border: 2,
+                    blur: 3,
+                    borderGradient:
+                        AppColors.customGlassIconButtonBorderGradient,
+                    child: Center(
+                      child: (skillVisibility)
+                          ? Text(
+                              "Remove Key Skill",
+                              style: AppColors.subHeadingTextStyle,
+                            )
+                          : Text(
+                              "Add Key Skill",
+                              style: AppColors.subHeadingTextStyle,
+                            ),
+                    ),
+                  ),
+                ),
+                if (skillVisibility)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 10,
+                      left: 30,
+                      right: 30,
+                      bottom: 10,
+                    ),
+                    child: Consumer<AllAppProviders>(
+                      builder: (allAppContext, allAppProvider, allAppChild) {
+                        return TextFormField(
+                          scrollPhysics: AppColors.scrollPhysics,
+                          maxLines: 5,
+                          minLines: 1,
+                          onChanged: ((keySkill) {
+                            allAppProvider.keySkillFunc(keySkill.trim());
+                          }),
+                          decoration: InputDecoration(
+                            errorStyle: const TextStyle(
+                              overflow: TextOverflow.clip,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.school,
+                              color: AppColors.white,
+                            ),
+                            prefixStyle: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                            ),
+                            hintText: "Key Skill",
+                            hintStyle: TextStyle(
+                              color: AppColors.white.withOpacity(0.5),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.white,
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                width: 1,
+                                color: AppColors.white,
+                              ),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                width: 1,
+                                color: AppColors.white,
+                              ),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            contentPadding: const EdgeInsets.only(
+                              left: 15,
+                              right: 15,
+                            ),
+                          ),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          controller: _keySkillController,
                           keyboardType: TextInputType.text,
                           cursorColor: AppColors.white,
                           style: const TextStyle(

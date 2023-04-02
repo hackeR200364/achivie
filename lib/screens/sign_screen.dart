@@ -312,7 +312,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   icon: Icons.description,
                                   controller: _desController,
                                   hintText: "Your Short Description",
-                                  maxWords: 50,
+                                  maxWords: 100,
                                   desField: true,
                                 ),
                               if (signPage == 0)
@@ -584,51 +584,61 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                         Keys.usrProfession] =
                                                     profession;
 
-                                                var response =
-                                                    await request.send();
+                                                http.Response response =
+                                                    await http.Response
+                                                        .fromStream(
+                                                            await request
+                                                                .send());
+
+                                                Map<String, dynamic>
+                                                    responseJson = await json
+                                                        .decode(response.body);
+
+                                                log(responseJson.toString());
 
                                                 if (response.statusCode ==
                                                     200) {
-                                                  log(response.stream
-                                                      .bytesToString()
-                                                      .toString());
+                                                  // log(response.stream
+                                                  //     .bytesToString()
+                                                  //     .toString());
                                                   StorageServices.setSignInType(
                                                       Keys.email);
 
-                                                  Map<String, dynamic>
-                                                      responseJson = jsonDecode(
-                                                          response.stream
-                                                              .bytesToString()
-                                                              .toString());
-
                                                   if (responseJson["success"]) {
-                                                    StorageServices.setUserName(
-                                                        "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+                                                    StorageServices.setUsrName(
+                                                        "${responseJson[Keys.data][0][Keys.usrFirstName]}${responseJson[Keys.data][0][Keys.usrLastName]}");
+
                                                     StorageServices.setUID(
                                                         responseJson[Keys.data]
-                                                            [Keys.uid]);
-                                                    StorageServices
-                                                        .setUserEmail(
-                                                            responseJson[
-                                                                    Keys.data][
-                                                                Keys.usrEmail]);
+                                                            [0][Keys.uid]);
+
+                                                    StorageServices.setUsrEmail(
+                                                        responseJson[Keys.data]
+                                                            [0][Keys.usrEmail]);
+
                                                     StorageServices.setUsrToken(
                                                         responseJson[
                                                             Keys.token]);
 
                                                     StorageServices
                                                         .setUsrDescription(
-                                                            responseJson[Keys
+                                                            responseJson[
+                                                                Keys
+                                                                    .data][0][Keys
                                                                 .usrDescription]);
 
                                                     StorageServices
                                                         .setUsrProfilePic(
-                                                            responseJson[Keys
+                                                            responseJson[
+                                                                Keys
+                                                                    .data][0][Keys
                                                                 .usrProfilePic]);
 
                                                     StorageServices
                                                         .setUsrProfession(
-                                                            responseJson[Keys
+                                                            responseJson[
+                                                                Keys
+                                                                    .data][0][Keys
                                                                 .usrProfession]);
 
                                                     ScaffoldMessenger.of(
@@ -643,7 +653,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     );
                                                     String signInType =
                                                         await StorageServices
-                                                            .getUserSignInType();
+                                                            .getUsrSignInType();
 
                                                     if (signInType ==
                                                         Keys.email) {
@@ -685,8 +695,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       .showSnackBar(
                                                     AppSnackbar()
                                                         .customizedAppSnackbar(
-                                                      message:
-                                                          "Something went wrong",
+                                                      message: responseJson[
+                                                          Keys.message],
                                                       context:
                                                           allAppProvidersContext,
                                                     ),
@@ -941,9 +951,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               //   context: allAppProvidersContext,
                                               // );
 
-                                              String token =
-                                                  await StorageServices
-                                                      .getUsrToken();
+                                              // String token =
+                                              //     await StorageServices
+                                              //         .getUsrToken();
 
                                               http.Response response =
                                                   await http.post(
@@ -952,18 +962,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 headers: {
                                                   "content-type":
                                                       "application/json",
-                                                  'Authorization':
-                                                      'Bearer $token',
+                                                  // 'Authorization':
+                                                  //     'Bearer $token',
                                                 },
                                                 body: jsonEncode({
-                                                  "usrPassword": _passController
-                                                      .text
-                                                      .trim(),
-                                                  "usrEmail": _emailController
-                                                      .text
-                                                      .trim(),
+                                                  Keys.usrPassword:
+                                                      _passController.text
+                                                          .trim(),
+                                                  Keys.usrEmail:
+                                                      _emailController.text
+                                                          .trim(),
                                                 }),
                                               );
+
+                                              log(response.body);
 
                                               if (response.statusCode == 200) {
                                                 Map<String, dynamic>
@@ -972,20 +984,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 log(responseJson.toString());
 
                                                 if (responseJson["success"]) {
-                                                  StorageServices.setSignStatus(
-                                                      true);
-                                                  StorageServices.setUserEmail(
-                                                      responseJson[Keys.data]
-                                                          [Keys.usrEmail]);
-                                                  StorageServices.setUserName(
-                                                      "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
+                                                  StorageServices.setUsrName(
+                                                      "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+
                                                   StorageServices.setUID(
                                                       responseJson[Keys.data]
                                                           [Keys.uid]);
-                                                  StorageServices.setSignInType(
-                                                      "Email");
+
+                                                  StorageServices.setUsrEmail(
+                                                      responseJson[Keys.data]
+                                                          [Keys.usrEmail]);
+
                                                   StorageServices.setUsrToken(
-                                                      responseJson["token"]);
+                                                      responseJson[Keys.token]);
+
+                                                  StorageServices
+                                                      .setUsrDescription(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][Keys
+                                                              .usrDescription]);
+
+                                                  StorageServices
+                                                      .setUsrProfilePic(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][Keys
+                                                              .usrProfilePic]);
+
+                                                  StorageServices
+                                                      .setUsrProfession(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][Keys
+                                                              .usrProfession]);
 
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)

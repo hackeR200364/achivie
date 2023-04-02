@@ -170,9 +170,9 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
     return InkWell(
       onTap: (() async {
         await NotificationServices().cancelTasksNotification();
-        if (await StorageServices.getUserSignInType() == "Google") {
+        if (await StorageServices.getUsrSignInType() == "Google") {
           // await googleSignInProvider.logOut();
-        } else if (await StorageServices.getUserSignInType() == "Email") {
+        } else if (await StorageServices.getUsrSignInType() == "Email") {
           // EmailPassAuthServices().emailPassLogout(
           //   context: googleSignInContext,
           // );

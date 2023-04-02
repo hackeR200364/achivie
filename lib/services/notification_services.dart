@@ -113,6 +113,11 @@ class NotificationServices {
     required String payload,
     required DateTime dateTime,
   }) async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+
+    if (!isAllowed) {
+      await AwesomeNotifications().requestPermissionToSendNotifications();
+    }
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: id,
