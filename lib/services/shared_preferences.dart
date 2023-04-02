@@ -5,12 +5,12 @@ import 'keys.dart';
 class StorageServices {
   static void setSignStatus(bool signStatus) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setBool(Keys.userSignStatus, signStatus);
+    pref.setBool(Keys.usrSignStatus, signStatus);
   }
 
-  static void setUserName(String userName) async {
+  static void setUsrName(String userName) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Keys.userName, userName);
+    pref.setString(Keys.usrName, userName);
   }
 
   static void setUID(String uid) async {
@@ -18,24 +18,24 @@ class StorageServices {
     pref.setString(Keys.uid, uid);
   }
 
-  static void setUserEmail(String email) async {
+  static void setUsrEmail(String email) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Keys.userEmail, email);
+    pref.setString(Keys.usrEmail, email);
   }
 
-  static void setIsNewUser(bool isNewUser) async {
+  static void setIsNewUsr(bool isNewUser) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setBool(Keys.isNewUser, isNewUser);
+    pref.setBool(Keys.isNewUsr, isNewUser);
   }
 
-  static void setUserPhotoURL(String url) async {
+  static void setUsrPhotoURL(String url) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Keys.userPhoto, url);
+    pref.setString(Keys.usrPhoto, url);
   }
 
   static void setSignInType(String type) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Keys.userSignInType, type);
+    pref.setString(Keys.usrSignInType, type);
   }
 
   static void setUsrToken(String token) async {
@@ -61,6 +61,17 @@ class StorageServices {
   static void setUsrProfession(String usrProfession) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString(Keys.usrProfession, usrProfession);
+  }
+
+  static void setUsrPoints(int usrPoints) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setInt(Keys.usrPoints, usrPoints);
+  }
+
+  static Future<int> getUsrPoints() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    int? usrPoints = pref.getInt(Keys.usrPoints) ?? 0;
+    return usrPoints;
   }
 
   static Future<String> getUsrProfession() async {
@@ -93,33 +104,33 @@ class StorageServices {
     return token;
   }
 
-  static Future<String> getUserSignInType() async {
+  static Future<String> getUsrSignInType() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    String? type = pref.getString(Keys.userSignInType) ?? "";
+    String? type = pref.getString(Keys.usrSignInType) ?? "";
     return type;
   }
 
-  static Future<String> getUserPhotoURL() async {
+  static Future<String> getUsrPhotoURL() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    String? photoURL = pref.getString(Keys.userPhoto) ?? "";
+    String? photoURL = pref.getString(Keys.usrPhoto) ?? "";
     return photoURL;
   }
 
-  static Future<bool> getIsNewUser() async {
+  static Future<bool> getIsNewUsr() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    bool? isNewUser = pref.getBool(Keys.isNewUser) ?? false;
+    bool? isNewUser = pref.getBool(Keys.isNewUsr) ?? false;
     return isNewUser;
   }
 
-  static Future<String> getUserEmail() async {
+  static Future<String> getUsrEmail() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    String? userEmail = pref.getString(Keys.userEmail) ?? "";
+    String? userEmail = pref.getString(Keys.usrEmail) ?? "";
     return userEmail;
   }
 
-  static Future<String> getUserName() async {
+  static Future<String> getUsrName() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    String? userName = pref.getString(Keys.userName) ?? "";
+    String? userName = pref.getString(Keys.usrName) ?? "";
     return userName;
   }
 
@@ -131,7 +142,7 @@ class StorageServices {
 
   static Future<bool> getSignStatus() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    bool? signStatus = pref.getBool(Keys.userSignStatus) ?? false;
+    bool? signStatus = pref.getBool(Keys.usrSignStatus) ?? false;
     return signStatus;
   }
 }

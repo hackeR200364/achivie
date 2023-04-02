@@ -1,12 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/config.dart';
-import 'package:http/http.dart' as http;
 import 'package:task_app/services/shared_preferences.dart';
 import 'package:task_app/styles.dart';
 
-import '../services/keys.dart';
 import '../widgets/menu_screen_widgets.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -38,21 +34,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Future<void> usrPoints() async {
-    String uid = await StorageServices.getUID();
-    String token = await StorageServices.getUsrToken();
-    http.Response responsePoints = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
-
-    if (responsePoints.statusCode == 200) {
-      if (responseJsonPoints["success"]) {
-        points = responseJsonPoints[Keys.data]["usrPoints"];
-      }
-    }
+    points = await StorageServices.getUsrPoints();
     setState(() {});
   }
 

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       showNotification: false,
       volume: 50,
     );
-    checkCallStatus();
+    if (Platform.isAndroid) checkCallStatus();
 
     super.initState();
   }
@@ -107,12 +107,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void getUserDetails() async {
-    email = await StorageServices.getUserEmail();
-    profileType = await StorageServices.getUserSignInType();
+    email = await StorageServices.getUsrEmail();
+    profileType = await StorageServices.getUsrSignInType();
     uid = await StorageServices.getUID();
     token = await StorageServices.getUsrToken();
-    log(uid);
-    log(token);
+
     await initValues();
     // Future.delayed(
     //   const Duration(
@@ -141,219 +140,233 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> refresh() async {
-    http.Response responsePoints = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
+    http.Response response = await http.get(
+      Uri.parse("${Keys.apiUsersBaseUrl}/taskRecords/$uid"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
 
-    Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
+    Map<String, dynamic> responseJson = jsonDecode(response.body);
 
-    if (responsePoints.statusCode == 200) {
-      if (responseJsonPoints["success"]) {
-        userPoints = responseJsonPoints[Keys.data]["usrPoints"];
+    if (response.statusCode == 200) {
+      if (responseJson["success"]) {
+        userPoints = responseJson[Keys.data]["usrPoints"];
+        taskDone = responseJson[Keys.data][Keys.taskDone];
+        taskDelete = responseJson[Keys.data][Keys.taskDelete];
+        taskPending = responseJson[Keys.data][Keys.taskPending];
+        taskBusiness = responseJson[Keys.data][Keys.taskBusiness];
+        taskPersonal = responseJson[Keys.data][Keys.taskPersonal];
+        taskCount = responseJson[Keys.data][Keys.taskCount];
+        setState(() {});
       }
     }
 
-    http.Response responseTaskDone = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseTaskDoneJson =
-        jsonDecode(responseTaskDone.body);
-
-    if (responseTaskDone.statusCode == 200) {
-      if (responseTaskDoneJson["success"]) {
-        taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
-      }
-    }
-
-    http.Response responseTaskCount = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseTaskCountJson =
-        jsonDecode(responseTaskCount.body);
-
-    if (responseTaskCount.statusCode == 200) {
-      if (responseTaskCountJson["success"]) {
-        taskCount = responseTaskCountJson[Keys.data]["taskCount"];
-      }
-    }
-
-    http.Response responseTaskDelete = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonDelete =
-        jsonDecode(responseTaskDelete.body);
-
-    if (responseTaskDelete.statusCode == 200) {
-      if (responseJsonDelete["success"]) {
-        taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
-      }
-    }
-
-    http.Response responsetaskPending = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskPending =
-        jsonDecode(responsetaskPending.body);
-
-    if (responsetaskPending.statusCode == 200) {
-      if (responseJsonTaskPending["success"]) {
-        taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
-      }
-    }
-
-    http.Response responseTaskBusiness = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskBusiness =
-        jsonDecode(responseTaskBusiness.body);
-
-    if (responseTaskBusiness.statusCode == 200) {
-      if (responseJsonTaskBusiness["success"]) {
-        taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
-      }
-    }
-
-    http.Response responseTaskPersonal = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
-      'content-Type': 'application/json',
-      'authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskPersonal =
-        jsonDecode(responseTaskPersonal.body);
-
-    if (responseTaskPersonal.statusCode == 200) {
-      if (responseJsonTaskPersonal["success"]) {
-        taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
-      }
-    }
-
-    setState(() {});
+    // http.Response responseTaskDone = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseTaskDoneJson =
+    //     jsonDecode(responseTaskDone.body);
+    //
+    // if (responseTaskDone.statusCode == 200) {
+    //   if (responseTaskDoneJson["success"]) {
+    //     taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskCount = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseTaskCountJson =
+    //     jsonDecode(responseTaskCount.body);
+    //
+    // if (responseTaskCount.statusCode == 200) {
+    //   if (responseTaskCountJson["success"]) {
+    //     taskCount = responseTaskCountJson[Keys.data]["taskCount"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskDelete = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonDelete =
+    //     jsonDecode(responseTaskDelete.body);
+    //
+    // if (responseTaskDelete.statusCode == 200) {
+    //   if (responseJsonDelete["success"]) {
+    //     taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
+    //   }
+    // }
+    //
+    // http.Response responsetaskPending = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskPending =
+    //     jsonDecode(responsetaskPending.body);
+    //
+    // if (responsetaskPending.statusCode == 200) {
+    //   if (responseJsonTaskPending["success"]) {
+    //     taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskBusiness = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskBusiness =
+    //     jsonDecode(responseTaskBusiness.body);
+    //
+    // if (responseTaskBusiness.statusCode == 200) {
+    //   if (responseJsonTaskBusiness["success"]) {
+    //     taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskPersonal = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskPersonal =
+    //     jsonDecode(responseTaskPersonal.body);
+    //
+    // if (responseTaskPersonal.statusCode == 200) {
+    //   if (responseJsonTaskPersonal["success"]) {
+    //     taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
+    //   }
+    // }
   }
 
   Future<void> initValues() async {
-    http.Response responsePoints = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/usrPoints/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
+    http.Response response = await http.get(
+      Uri.parse("${Keys.apiUsersBaseUrl}/taskRecords/$uid"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
 
-    Map<String, dynamic> responseJsonPoints = jsonDecode(responsePoints.body);
+    Map<String, dynamic> responseJson = jsonDecode(response.body);
 
-    if (responsePoints.statusCode == 200) {
-      if (responseJsonPoints["success"]) {
-        userPoints = responseJsonPoints[Keys.data]["usrPoints"];
+    if (response.statusCode == 200) {
+      if (responseJson["success"]) {
+        StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
+        taskDone = responseJson[Keys.data][Keys.taskDone];
+        taskDelete = responseJson[Keys.data][Keys.taskDelete];
+        taskPending = responseJson[Keys.data][Keys.taskPending];
+        taskBusiness = responseJson[Keys.data][Keys.taskBusiness];
+        taskPersonal = responseJson[Keys.data][Keys.taskPersonal];
+        taskCount = responseJson[Keys.data][Keys.taskCount];
+        setState(() {});
       }
     }
 
-    http.Response responseTaskDone = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseTaskDoneJson =
-        jsonDecode(responseTaskDone.body);
-
-    if (responseTaskDone.statusCode == 200) {
-      if (responseTaskDoneJson["success"]) {
-        taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
-      }
-    }
-
-    http.Response responseTaskCount = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseTaskCountJson =
-        jsonDecode(responseTaskCount.body);
-
-    if (responseTaskCount.statusCode == 200) {
-      if (responseTaskCountJson["success"]) {
-        taskCount = responseTaskCountJson[Keys.data]["taskCount"];
-      }
-    }
-
-    http.Response responseTaskDelete = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonDelete =
-        jsonDecode(responseTaskDelete.body);
-
-    if (responseTaskDelete.statusCode == 200) {
-      if (responseJsonDelete["success"]) {
-        taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
-      }
-    }
-
-    http.Response responsetaskPending = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskPending =
-        jsonDecode(responsetaskPending.body);
-
-    if (responsetaskPending.statusCode == 200) {
-      if (responseJsonTaskPending["success"]) {
-        taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
-      }
-    }
-
-    http.Response responseTaskBusiness = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskBusiness =
-        jsonDecode(responseTaskBusiness.body);
-
-    if (responseTaskBusiness.statusCode == 200) {
-      if (responseJsonTaskBusiness["success"]) {
-        taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
-      }
-    }
-
-    http.Response responseTaskPersonal = await http
-        .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    });
-
-    Map<String, dynamic> responseJsonTaskPersonal =
-        jsonDecode(responseTaskPersonal.body);
-
-    if (responseTaskPersonal.statusCode == 200) {
-      if (responseJsonTaskPersonal["success"]) {
-        taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
-      }
-    }
-
-    setState(() {});
+    // http.Response responseTaskDone = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseTaskDoneJson =
+    //     jsonDecode(responseTaskDone.body);
+    //
+    // if (responseTaskDone.statusCode == 200) {
+    //   if (responseTaskDoneJson["success"]) {
+    //     taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskCount = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseTaskCountJson =
+    //     jsonDecode(responseTaskCount.body);
+    //
+    // if (responseTaskCount.statusCode == 200) {
+    //   if (responseTaskCountJson["success"]) {
+    //     taskCount = responseTaskCountJson[Keys.data]["taskCount"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskDelete = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonDelete =
+    //     jsonDecode(responseTaskDelete.body);
+    //
+    // if (responseTaskDelete.statusCode == 200) {
+    //   if (responseJsonDelete["success"]) {
+    //     taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
+    //   }
+    // }
+    //
+    // http.Response responsetaskPending = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskPending =
+    //     jsonDecode(responsetaskPending.body);
+    //
+    // if (responsetaskPending.statusCode == 200) {
+    //   if (responseJsonTaskPending["success"]) {
+    //     taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskBusiness = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskBusiness =
+    //     jsonDecode(responseTaskBusiness.body);
+    //
+    // if (responseTaskBusiness.statusCode == 200) {
+    //   if (responseJsonTaskBusiness["success"]) {
+    //     taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
+    //   }
+    // }
+    //
+    // http.Response responseTaskPersonal = await http
+    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
+    //   'content-Type': 'application/json',
+    //   'authorization': 'Bearer $token',
+    // });
+    //
+    // Map<String, dynamic> responseJsonTaskPersonal =
+    //     jsonDecode(responseTaskPersonal.body);
+    //
+    // if (responseTaskPersonal.statusCode == 200) {
+    //   if (responseJsonTaskPersonal["success"]) {
+    //     taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
+    //   }
+    // }
   }
 
   @override
