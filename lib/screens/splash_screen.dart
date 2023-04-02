@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               (signStatus!) ? const MainScreen() : const SignUpScreen(),
-          transitionDuration: Duration(seconds: 2),
+          transitionDuration: Duration(milliseconds: 600),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var begin = 0.0;
             var end = 1.0;
@@ -131,7 +131,7 @@ class _SplashScreenState extends State<SplashScreen>
             TextLiquidFill(
               loadDuration: const Duration(seconds: 3),
               waveDuration: const Duration(seconds: 2),
-              boxHeight: MediaQuery.of(context).size.height / 12,
+              boxHeight: MediaQuery.of(context).size.height / 10,
               boxWidth: MediaQuery.of(context).size.width,
               waveColor: Colors.white,
               boxBackgroundColor: AppColors.mainColor,

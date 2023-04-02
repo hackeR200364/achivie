@@ -1019,6 +1019,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                                   .data][Keys
                                                               .usrProfession]);
 
+                                                  StorageServices.setSignStatus(
+                                                      true);
+                                                  StorageServices.setSignInType(
+                                                      Keys.email);
+
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(

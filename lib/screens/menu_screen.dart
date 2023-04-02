@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:task_app/services/shared_preferences.dart';
@@ -25,16 +27,13 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   void initState() {
-    allFunc();
+    usrPoints();
     super.initState();
   }
 
-  allFunc() async {
-    await usrPoints();
-  }
-
-  Future<void> usrPoints() async {
+  usrPoints() async {
     points = await StorageServices.getUsrPoints();
+    log(points.toString());
     setState(() {});
   }
 

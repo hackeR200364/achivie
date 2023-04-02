@@ -661,6 +661,8 @@ class CustomHomeScreenTabBarHeadList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TabBar(
+      enableFeedback: true,
+      splashBorderRadius: BorderRadius.circular(50),
       physics: AppColors.scrollPhysics,
       isScrollable: true,
       indicatorSize: TabBarIndicatorSize.label,
@@ -787,7 +789,7 @@ class HomeScreenTaskTypePickerContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(15),
-      padding: const EdgeInsets.only(left: 10),
+      // padding: const EdgeInsets.only(left: 10),
       height: 40,
       width: MediaQuery.of(context).size.width,
       // color: AppColors.sky,
@@ -1752,7 +1754,11 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                 height: MediaQuery.of(context).size.height / 2.4,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.separated(
-                  physics: AppColors.scrollPhysics,
+                  padding: EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                  ),
+                  // physics: AppColors.scrollPhysics,
                   itemCount: tasksJson[Keys.data].length,
                   controller: widget.scrollController,
                   itemBuilder: (listContext, listIndex) {
