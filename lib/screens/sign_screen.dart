@@ -267,7 +267,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   }),
                                   child: (selectedImage != null)
                                       ? Padding(
-                                          padding: EdgeInsets.only(
+                                          padding: const EdgeInsets.only(
                                             top: 20,
                                           ),
                                           child: CircleAvatar(
@@ -278,14 +278,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ),
                                         )
                                       : Container(
-                                          margin: EdgeInsets.only(top: 20),
+                                          margin:
+                                              const EdgeInsets.only(top: 20),
                                           height: 100,
                                           width: 100,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             color: AppColors.white,
                                             shape: BoxShape.circle,
                                           ),
-                                          child: Center(
+                                          child: const Center(
                                             child: Icon(
                                               Icons.person,
                                               size: 70,
@@ -317,7 +318,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                               if (signPage == 0)
                                 Container(
-                                  margin: EdgeInsets.only(
+                                  margin: const EdgeInsets.only(
                                     top: 20,
                                     left: 15,
                                     right: 15,
@@ -328,7 +329,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     child: DropdownButtonFormField(
                                       decoration: InputDecoration(
                                         counterText: "",
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                           Icons.work,
                                           color: AppColors.white,
                                         ),
@@ -1212,7 +1213,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
+                                    const Text(
                                       "Don't have any account?",
                                       style: TextStyle(
                                         color: AppColors.white,

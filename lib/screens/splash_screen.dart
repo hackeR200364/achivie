@@ -65,8 +65,8 @@ class _SplashScreenState extends State<SplashScreen>
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              PermissionDeniedScreen(),
-          transitionDuration: Duration(milliseconds: 200),
+              const PermissionDeniedScreen(),
+          transitionDuration: const Duration(milliseconds: 200),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var begin = 0.0;
             var end = 1.0;
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               (signStatus!) ? const MainScreen() : const SignUpScreen(),
-          transitionDuration: Duration(milliseconds: 600),
+          transitionDuration: const Duration(milliseconds: 600),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var begin = 0.0;
             var end = 1.0;

@@ -36,7 +36,7 @@ class NotificationScreen extends StatelessWidget {
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               // log(snapshot.data.toString());
               return ListView.builder(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   top: 30,
                 ),
                 physics: AppColors.scrollPhysics,
@@ -44,12 +44,12 @@ class NotificationScreen extends StatelessWidget {
                 itemBuilder: (BuildContext context, int index) {
                   NotificationModel notification = snapshot.data![index];
                   return Container(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       bottom: 20,
                       left: 15,
                       right: 15,
                     ),
-                    padding: EdgeInsets.only(
+                    padding: const EdgeInsets.only(
                       top: 15,
                       bottom: 15,
                       left: 15,
@@ -75,14 +75,14 @@ class NotificationScreen extends StatelessWidget {
                               blur: 4,
                               borderGradient:
                                   AppColors.customGlassIconButtonBorderGradient,
-                              child: Center(
+                              child: const Center(
                                 child: Icon(
                                   Icons.notifications,
                                   color: AppColors.white,
                                 ),
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 15,
                             ),
                             Column(
@@ -90,14 +90,14 @@ class NotificationScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   notification.content!.title!,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppColors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 10,
                                 ),
                                 Text(
@@ -118,7 +118,7 @@ class NotificationScreen extends StatelessWidget {
               );
             }
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(
                   color: AppColors.backgroundColour,
                 ),
@@ -135,7 +135,7 @@ class NotificationScreen extends StatelessWidget {
                   SizedBox(
                     height: MediaQuery.of(context).size.height / 6,
                   ),
-                  Center(
+                  const Center(
                     child: Text(
                       "Nothing to show",
                       style: AppColors.headingTextStyle,
@@ -144,7 +144,7 @@ class NotificationScreen extends StatelessWidget {
                 ],
               );
             }
-            return Center(
+            return const Center(
               child: Text("Nothing"),
             );
           },

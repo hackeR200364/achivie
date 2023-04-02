@@ -7,7 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:http/http.dart' as http;
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -141,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Screenshot(
                     controller: _screenshotController,
                     child: Container(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                         top: 20,
                         bottom: 20,
                       ),
@@ -172,14 +172,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               Text(
                                 name,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.blackLow,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 20,
                                   letterSpacing: 2,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 5,
                               ),
                               SizedBox(
@@ -209,17 +209,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                               Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.email,
                                     color: AppColors.grey,
                                     size: 20,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 5,
                                   ),
                                   Text(
@@ -234,18 +234,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ],
                               ),
                               if (phoneVisibility)
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
                               if (phoneVisibility)
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.phone,
                                       color: AppColors.grey,
                                       size: 17,
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 5,
                                     ),
                                     Consumer<AllAppProviders>(builder:
@@ -262,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   .withOpacity(0.5),
                                             ),
                                           ),
-                                          SizedBox(
+                                          const SizedBox(
                                             width: 3,
                                           ),
                                           Text(
@@ -279,14 +279,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     }),
                                   ],
                                 ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                               Row(
                                 children: [
                                   Text(
                                     profession,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       overflow: TextOverflow.clip,
                                       color: AppColors.green,
                                       fontWeight: FontWeight.w500,
@@ -296,9 +296,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Container(
                                       height: 10,
                                       width: 1.5,
-                                      margin:
-                                          EdgeInsets.symmetric(horizontal: 5),
-                                      decoration: BoxDecoration(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 5),
+                                      decoration: const BoxDecoration(
                                         color: AppColors.grey,
                                       ),
                                     ),
@@ -306,11 +306,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     Consumer<AllAppProviders>(builder:
                                         (allAppContext, allAppProvider,
                                             allAppChild) {
-                                      return Container(
+                                      return SizedBox(
                                         width: size.width / 4,
                                         child: Text(
                                           allAppProvider.keySkill,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             overflow: TextOverflow.clip,
                                             color: AppColors.green,
                                             fontWeight: FontWeight.w500,
@@ -320,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     }),
                                 ],
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                               Row(
@@ -335,7 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   if (rate <= 25)
                                     Text(
                                       "${rate.toString()}%",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: AppColors.red,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -343,7 +343,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   if (rate > 25 && rate <= 50)
                                     Text(
                                       "${rate.toString()}%",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: AppColors.orange,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -351,42 +351,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   if (rate > 50 && rate <= 100)
                                     Text(
                                       "${rate.toString()}%",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: AppColors.green,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                 ],
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10,
                               ),
                               Row(
                                 children: [
-                                  CircleAvatar(
+                                  const CircleAvatar(
                                     radius: 10,
                                     backgroundImage:
                                         AssetImage("assets/logo.png"),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 5,
                                   ),
                                   if (rate <= 25)
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 15,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(15),
-                                        gradient: LinearGradient(
+                                        gradient: const LinearGradient(
                                           colors: [
                                             AppColors.red,
                                             AppColors.orange,
                                           ],
                                         ),
                                       ),
-                                      child: Center(
+                                      child: const Center(
                                         child: Text(
                                           "Silver",
                                           style: TextStyle(
@@ -397,20 +397,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   if (rate > 25 && rate <= 50)
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 15,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(15),
-                                        gradient: LinearGradient(
+                                        gradient: const LinearGradient(
                                           colors: [
                                             AppColors.goldDark,
                                             AppColors.gold,
                                           ],
                                         ),
                                       ),
-                                      child: Center(
+                                      child: const Center(
                                         child: Text(
                                           "Gold",
                                           style: TextStyle(
@@ -421,20 +421,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ),
                                   if (rate > 50 && rate <= 100)
                                     Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                         horizontal: 15,
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(15),
-                                        gradient: LinearGradient(
+                                        gradient: const LinearGradient(
                                           colors: [
                                             AppColors.diamondDark,
                                             AppColors.diamond,
                                           ],
                                         ),
                                       ),
-                                      child: Center(
+                                      child: const Center(
                                         child: Text(
                                           "Diamond",
                                           style: TextStyle(
@@ -443,10 +443,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                     ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 10,
                                   ),
-                                  Center(
+                                  const Center(
                                     child: Text(
                                       "achivie.com",
                                       style: TextStyle(
@@ -471,7 +471,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     });
                   }),
                   child: GlassmorphicContainer(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: 30,
                       bottom: 15,
                       left: 30,
@@ -518,9 +518,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 .hasMatch(number)) {
                               return "Please Enter a Valid Phone Number";
                             }
+                            return null;
                           }),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.white,
                           ),
                           keyboardType: TextInputType.phone,
@@ -535,7 +536,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             prefixIcon: CountryCodePicker(
                               initialSelection: "IN",
                               showCountryOnly: true,
-                              textStyle: TextStyle(
+                              textStyle: const TextStyle(
                                 color: AppColors.white,
                               ),
                               onInit: ((code) {
@@ -601,7 +602,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     });
                   }),
                   child: GlassmorphicContainer(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: 15,
                       bottom: 15,
                       left: 30,
@@ -649,7 +650,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             errorStyle: const TextStyle(
                               overflow: TextOverflow.clip,
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.description,
                               color: AppColors.white,
                             ),
@@ -705,7 +706,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     });
                   }),
                   child: GlassmorphicContainer(
-                    margin: EdgeInsets.only(
+                    margin: const EdgeInsets.only(
                       top: 15,
                       bottom: 15,
                       left: 30,
@@ -753,7 +754,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             errorStyle: const TextStyle(
                               overflow: TextOverflow.clip,
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.school,
                               color: AppColors.white,
                             ),
@@ -858,7 +859,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       );
                     }),
                     child: GlassmorphicContainer(
-                      margin: EdgeInsets.only(
+                      margin: const EdgeInsets.only(
                         top: 15,
                         bottom: 15,
                         left: 30,
@@ -1020,20 +1021,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return GestureDetector(
                     onTap: (() async {
                       allAppProvider.isLoadingFunc(true);
-                      final visitingCard =
-                          await _screenshotController.capture();
+                      // final visitingCard =
+                      //     await _screenshotController.capture();
 
-                      final date = DateTime.now()
-                          .toIso8601String()
-                          .replaceAll(".", "-")
-                          .replaceAll(":", "-");
+                      // final date = DateTime.now()
+                      //     .toIso8601String()
+                      //     .replaceAll(".", "-")
+                      //     .replaceAll(":", "-");
 
-                      final savedFile = await ImageGallerySaver.saveImage(
-                        visitingCard!,
-                        name: "achivie_visiting_card_$date",
-                        quality: 100,
-                        isReturnImagePathOfIOS: true,
-                      );
+                      // final savedFile = await ImageGallerySaver.saveImage(
+                      //   visitingCard!,
+                      //   name: "achivie_visiting_card_$date",
+                      //   quality: 100,
+                      //   isReturnImagePathOfIOS: true,
+                      // );
 
                       AppSnackbar().customizedAppSnackbar(
                         message: "Your progress card was saved successfully",
@@ -1042,7 +1043,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       allAppProvider.isLoadingFunc(false);
                     }),
                     child: GlassmorphicContainer(
-                      margin: EdgeInsets.only(
+                      margin: const EdgeInsets.only(
                         top: 15,
                         bottom: 15,
                         left: 30,

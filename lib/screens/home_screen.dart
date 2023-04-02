@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     getUserDetails();
     bannerAd = BannerAd(
       size: AdSize.banner,
-      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      adUnitId: "ca-app-pub-7050103229809241/3214418719",
       listener: BannerAdListener(
         onAdLoaded: ((ad) {
           setState(() {

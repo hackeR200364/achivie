@@ -30,7 +30,7 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
     subjectFocusNode = FocusNode();
     bodyFocusNode = FocusNode();
     nativeAd = NativeAd(
-      adUnitId: "ca-app-pub-3940256099942544/2247696110",
+      adUnitId: "ca-app-pub-7050103229809241/9825125720",
       factoryId: "listTile",
       listener: NativeAdListener(
         onAdLoaded: ((ad) {
@@ -48,7 +48,7 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
     nativeAd.load();
     bannerAd = BannerAd(
       size: AdSize.banner,
-      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      adUnitId: "ca-app-pub-7050103229809241/8931642611",
       listener: BannerAdListener(
         onAdLoaded: ((ad) {
           setState(() {
