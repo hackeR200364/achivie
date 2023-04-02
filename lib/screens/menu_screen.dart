@@ -41,13 +41,10 @@ class _MenuScreenState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.mainColor,
-      body: SingleChildScrollView(
-        physics: AppColors.scrollPhysics,
-        child: MenuScreenColumWithPadding(
-          zoomDrawerController: widget.zoomDrawerController,
-          widget: widget,
-          points: points,
-        ),
+      body: MenuScreenColumWithPadding(
+        zoomDrawerController: widget.zoomDrawerController,
+        widget: widget,
+        points: points,
       ),
     );
   }

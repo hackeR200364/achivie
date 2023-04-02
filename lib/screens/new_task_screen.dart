@@ -138,7 +138,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     // );
     bannerAd = BannerAd(
       size: AdSize.banner,
-      adUnitId: "ca-app-pub-3940256099942544/6300978111",
+      adUnitId: "ca-app-pub-7050103229809241/9110329950",
       listener: BannerAdListener(
         onAdLoaded: ((ad) {
           // print("Banner ad loaded ${ad.adUnitId}");
@@ -149,7 +149,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     bannerAd!.load();
 
     RewardedAd.load(
-      adUnitId: "ca-app-pub-3940256099942544/5224354917",
+      adUnitId: "ca-app-pub-7050103229809241/9285784264",
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: ((onAdLoaded) {

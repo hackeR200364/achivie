@@ -1754,7 +1754,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                 height: MediaQuery.of(context).size.height / 2.4,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.separated(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                     left: 10,
                     right: 10,
                   ),
@@ -1854,7 +1854,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                       Navigator.pop(unDoneContext);
                                     }),
                                   );
-                                  return TaskUnDoneDialogChild();
+                                  return const TaskUnDoneDialogChild();
                                 },
                               );
 
@@ -1949,7 +1949,6 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     subMessage: "You completed your task",
                                     subMessageBottomDivision: 5,
                                   );
-                                  ;
                                 },
                               );
                             } else {
