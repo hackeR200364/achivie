@@ -1595,7 +1595,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "OTP Verification",
                                           style: TextStyle(
                                             color: AppColors.white,
@@ -1603,7 +1603,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        SizedBox(
+                                        const SizedBox(
                                           height: 5,
                                         ),
                                         Text(
@@ -1915,14 +1915,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
         bottom: 10,
       ),
       child: TextFormField(
-        toolbarOptions: (widget.isPassField || widget.isPassConfirmField)
-            ? const ToolbarOptions(selectAll: true)
-            : const ToolbarOptions(
-                selectAll: true,
-                copy: true,
-                cut: true,
-                paste: true,
-              ),
+        enableInteractiveSelection:
+            (widget.isPassField || widget.isPassConfirmField) ? false : true,
         decoration: InputDecoration(
           errorStyle: const TextStyle(
             overflow: TextOverflow.clip,

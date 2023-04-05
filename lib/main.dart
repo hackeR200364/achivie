@@ -35,8 +35,6 @@ Future main() async {
   }
 
   await [
-    Permission.sms,
-    Permission.phone,
     Permission.audio,
     Permission.notification,
     Permission.storage,
@@ -98,15 +96,6 @@ Future main() async {
         ChangeNotifierProvider(
           create: (_) => UserDetailsProvider(),
         ),
-        // ChangeNotifierProvider(
-        //   create: (_) => GoogleSignInProvider(),
-        // ),
-        // ChangeNotifierProvider(
-        //   create: (_) => TaskDetailsProvider(),
-        // ),
-        // ChangeNotifierProvider(
-        //   create: (_) => AllTaskProvider(),
-        // ),
         ChangeNotifierProvider(
           create: (_) => SongPlayingProvider(),
         ),
@@ -130,11 +119,6 @@ class TaskApp extends StatefulWidget {
 class _TaskAppState extends State<TaskApp> {
   @override
   void initState() {
-    // AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-    //   if (!isAllowed) {
-    //     AwesomeNotifications().requestPermissionToSendNotifications();
-    //   }
-    // });
     super.initState();
   }
 

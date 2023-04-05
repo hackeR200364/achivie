@@ -14,6 +14,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils/snackbar_utils.dart';
@@ -682,10 +683,10 @@ class CustomHomeScreenTabBarHeadList extends StatelessWidget {
           label: "COMPLETED",
         ),
         CustomTabBarItems(
-          label: "DELETED",
+          label: "INBOX",
         ),
         CustomTabBarItems(
-          label: "INBOX",
+          label: "DELETED",
         ),
       ],
     );
@@ -913,7 +914,7 @@ class HomeScreenGraphContainer extends StatelessWidget {
           personal: taskPersonal,
           pending: taskPending,
           business: taskBusiness,
-          count: taskCount,
+          count: taskCount - taskDelete,
         ),
       ),
     );
@@ -1049,15 +1050,30 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      userDetailsProviderProvider.userName,
-      style: const TextStyle(
-        color: AppColors.white,
-        overflow: TextOverflow.fade,
-        fontSize: 17,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 3,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (userDetailsProviderProvider.userName.trim().split(" ").length < 3)
+          Center(
+            child: Text(
+              userDetailsProviderProvider.userName,
+              style: AppColors.headingTextStyle,
+            ),
+          ),
+        if (userDetailsProviderProvider.userName.trim().split(" ").length > 2)
+          SizedBox(
+            height: 41,
+            child: Marquee(
+              fadingEdgeStartFraction: 0.2,
+              fadingEdgeEndFraction: 0.2,
+              velocity: 50,
+              blankSpace: 1,
+              text: userDetailsProviderProvider.userName.padLeft(30),
+              style: AppColors.headingTextStyle,
+            ),
+          ),
+      ],
     );
   }
 }
@@ -1137,7 +1153,7 @@ class TaskDialog extends StatelessWidget {
                     headMessage,
                     style: const TextStyle(
                       color: AppColors.white,
-                      fontSize: 35,
+                      fontSize: 20,
                       letterSpacing: 3,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1150,7 +1166,7 @@ class TaskDialog extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: AppColors.white,
-                      fontSize: 20,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1713,7 +1729,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
           if (snapshot.hasError) {
             return const Center(
               child: Text(
-                "error",
+                "No data",
                 style: AppColors.headingTextStyle,
               ),
             );
@@ -2000,7 +2016,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           [Keys.taskTime],
                                       taskType: snapshotList[listIndex]
                                           [Keys.taskType],
-                                      taskDoc: "taskDocID",
+                                      // taskDoc: "taskDocID",
                                       userEmail: widget.firestoreEmail,
                                       taskDate: snapshotList[listIndex]
                                           [Keys.taskDate],
@@ -2024,7 +2040,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                   [Keys.taskNotification],
                               taskTime: snapshotList[listIndex][Keys.taskTime],
                               taskType: snapshotList[listIndex][Keys.taskType],
-                              taskDoc: "taskDocID",
+                              // taskDoc: "taskDocID",
                               notificationID: snapshotList[listIndex]
                                   [Keys.notificationID],
                               userEmail: widget.firestoreEmail,
@@ -2183,8 +2199,8 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                 firestoreEmail: widget.firestoreEmail,
                                 streamContext: streamContext,
                                 onPressed: (() {
-                                  String taskDocID =
-                                      snapshotList[listIndex].reference.id;
+                                  // String taskDocID =
+                                  //     snapshotList[listIndex].reference.id;
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -2200,7 +2216,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                             [Keys.taskTime],
                                         taskType: snapshotList[listIndex]
                                             [Keys.taskType],
-                                        taskDoc: taskDocID,
+                                        // taskDoc: taskDocID,
                                         userEmail: widget.firestoreEmail,
                                         taskDate: snapshotList[listIndex]
                                             [Keys.taskDate],
@@ -2532,7 +2548,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
-          status: Keys.deleteStatus,
+          status: inboxStatus,
           firestoreEmail: email,
           widget: widget,
           scrollController: _scrollController,
@@ -2542,7 +2558,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
-          status: inboxStatus,
+          status: Keys.deleteStatus,
           firestoreEmail: email,
           widget: widget,
           scrollController: _scrollController,

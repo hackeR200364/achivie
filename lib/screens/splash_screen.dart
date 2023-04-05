@@ -50,15 +50,13 @@ class _SplashScreenState extends State<SplashScreen>
     Map<Permission, PermissionStatus> statuses = await [
       // Permission.accessNotificationPolicy,
       Permission.notification,
-      Permission.phone,
-      Permission.sms,
+      // Permission.phone,
+      // Permission.sms,
     ].request();
 
     // Check if any of the permissions are denied
     bool isAnyPermissionDenied =
         statuses.values.any((status) => status.isDenied);
-
-    // Do something based on the permissions status
 
     if (isAnyPermissionDenied) {
       Navigator.pushReplacement(

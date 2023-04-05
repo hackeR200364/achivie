@@ -167,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   backgroundColor: AppColors.mainColor,
                                   radius: 50,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 15,
                                 ),
                                 if (rate <= 25)
@@ -445,16 +445,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 height: 10,
                               ),
                               Row(
-                                children: [
-                                  const CircleAvatar(
+                                children: const [
+                                  CircleAvatar(
                                     radius: 10,
                                     backgroundImage:
                                         AssetImage("assets/logo.png"),
                                   ),
-                                  const SizedBox(
+                                  SizedBox(
                                     width: 10,
                                   ),
-                                  const Center(
+                                  Center(
                                     child: Text(
                                       "achivie.com",
                                       style: TextStyle(

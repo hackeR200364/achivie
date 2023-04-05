@@ -52,14 +52,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
         scrollPhysics: AppColors.scrollPhysics,
         maxLines: widget.maxLen,
         minLines: widget.minLen,
-        toolbarOptions: (widget.isPassField || widget.isPassConfirmField)
-            ? const ToolbarOptions(selectAll: true)
-            : const ToolbarOptions(
-                selectAll: true,
-                copy: true,
-                cut: true,
-                paste: true,
-              ),
+        enableInteractiveSelection:
+            (widget.isPassField || widget.isPassConfirmField) ? false : true
+        // (widget.isPassField || widget.isPassConfirmField)
+        //     ? const ToolbarOptions(selectAll: true)
+        //     : const ToolbarOptions(
+        //         selectAll: true,
+        //         copy: true,
+        //         cut: true,
+        //         paste: true,
+        //       )
+        ,
         decoration: InputDecoration(
           errorStyle: const TextStyle(
             overflow: TextOverflow.clip,

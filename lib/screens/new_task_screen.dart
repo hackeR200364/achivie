@@ -31,7 +31,7 @@ class NewTaskScreen extends StatefulWidget {
     this.taskDes,
     this.taskName,
     this.taskNoti,
-    this.taskDoc,
+    // this.taskDoc,
     this.userEmail,
     this.notificationID,
   });
@@ -42,7 +42,7 @@ class NewTaskScreen extends StatefulWidget {
   final String? taskTime;
   final String? taskDate;
   final String? taskNoti;
-  final String? taskDoc;
+  // final String? taskDoc;
   final String? userEmail;
   final int? notificationID;
   @override
@@ -394,6 +394,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
+                    top: 5,
                     left: 5,
                     right: 5,
                     bottom: 20,
@@ -1087,7 +1088,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         (!updateTask)
                                             ? "ADD YOUR TASK"
                                             : "UPDATE YOUR TASK",
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: AppColors.backgroundColour,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 17,

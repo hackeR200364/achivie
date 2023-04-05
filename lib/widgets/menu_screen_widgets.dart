@@ -4,6 +4,7 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:marquee/marquee.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/screens/profile_screen.dart';
@@ -71,7 +72,7 @@ class MenuScreenMainColumn extends StatelessWidget {
           height: MediaQuery.of(context).size.height / 2.4,
         ),
         Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
             left: 10,
           ),
           child: MenuScreenExtraLogoutButtonParent(
@@ -194,7 +195,7 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (logoutContext) => SignUpScreen(),
+            builder: (logoutContext) => const SignUpScreen(),
           ),
         );
       }),
@@ -548,13 +549,28 @@ class MenuScreenProfileContainerChildColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            name,
-            style: AppColors.headingTextStyle,
-          ),
+          if (name.trim().split(" ").length < 2)
+            Center(
+              child: Text(
+                name,
+                style: AppColors.headingTextStyle,
+              ),
+            ),
+          if (name.trim().split(" ").length > 1)
+            SizedBox(
+              height: 41 / 2,
+              child: Marquee(
+                fadingEdgeStartFraction: 0.2,
+                fadingEdgeEndFraction: 0.2,
+                velocity: 50,
+                blankSpace: 1,
+                text: name.padLeft(30),
+                style: AppColors.headingTextStyle,
+              ),
+            ),
           const SizedBox(
             height: 2,
           ),
