@@ -40,7 +40,6 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
         }),
         onAdFailedToLoad: ((ad, err) {
           nativeAd.dispose();
-          // print("Native ad failed : ${err.message}");
         }),
       ),
       request: const AdRequest(),
