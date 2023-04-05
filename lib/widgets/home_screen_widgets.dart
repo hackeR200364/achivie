@@ -128,16 +128,12 @@ class FocusedMenuTileChildContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 10,
+        horizontal: 15,
         vertical: 15,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.backgroundColour,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-          bottomRight: Radius.circular(15),
-        ),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: FocusMenuTileRow(
         name: name,
@@ -382,7 +378,7 @@ class FocusedMenuTileFirstRow extends StatelessWidget {
           pendingStatus: pendingStatus,
         ),
         const SizedBox(
-          width: 15,
+          width: 5,
         ),
         FocusedMenuTileTaskDetailsContainer(
           name: name,
@@ -432,10 +428,10 @@ class FocusedMenuTileTaskDes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width / 3,
+      width: MediaQuery.of(context).size.width / 5,
       child: Text(
         des,
-        // overflow: TextOverflow.ellipsis,
+        overflow: TextOverflow.clip,
         softWrap: true,
         style: TextStyle(
           color: AppColors.white.withOpacity(0.5),
@@ -455,10 +451,10 @@ class FocusedMenuTileTaskName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width / 3,
+      width: MediaQuery.of(context).size.width / 4,
       child: Text(
         name,
-        // overflow: TextOverflow.ellipsis,
+        overflow: TextOverflow.ellipsis,
         softWrap: true,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
@@ -481,7 +477,7 @@ class FocusedMenuTileIconContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.only(right: 10),
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
       ),
@@ -1203,18 +1199,18 @@ class _BarChart extends StatelessWidget {
             ],
             showingTooltipIndicators: [0],
           ),
+          // BarChartGroupData(
+          //   x: 1,
+          //   barRods: [
+          //     BarChartRodData(
+          //       toY: deleted.toDouble(),
+          //       gradient: _barsGradient,
+          //     )
+          //   ],
+          //   showingTooltipIndicators: [0],
+          // ),
           BarChartGroupData(
             x: 1,
-            barRods: [
-              BarChartRodData(
-                toY: deleted.toDouble(),
-                gradient: _barsGradient,
-              )
-            ],
-            showingTooltipIndicators: [0],
-          ),
-          BarChartGroupData(
-            x: 2,
             barRods: [
               BarChartRodData(
                 toY: pending.toDouble(),
@@ -1224,7 +1220,7 @@ class _BarChart extends StatelessWidget {
             showingTooltipIndicators: [0],
           ),
           BarChartGroupData(
-            x: 3,
+            x: 2,
             barRods: [
               BarChartRodData(
                 toY: business.toDouble(),
@@ -1234,7 +1230,7 @@ class _BarChart extends StatelessWidget {
             showingTooltipIndicators: [0],
           ),
           BarChartGroupData(
-            x: 4,
+            x: 3,
             barRods: [
               BarChartRodData(
                 toY: personal.toDouble(),
@@ -1270,17 +1266,17 @@ class _BarChart extends StatelessWidget {
                   );
                 case 1:
                   return const Text(
-                    "\nDeleted",
+                    "\nPending",
                     style: textStyle,
                   );
                 case 2:
                   return const Text(
-                    "\nPending",
+                    "\nBusiness",
                     style: textStyle,
                   );
                 case 3:
                   return const Text(
-                    "\nBusiness",
+                    "\nPersonal",
                     style: textStyle,
                   );
                 case 4:

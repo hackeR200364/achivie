@@ -158,26 +158,109 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           if (profilePic.isNotEmpty)
-                            CircleAvatar(
-                              foregroundImage: NetworkImage(
-                                profilePic,
-                              ),
-                              backgroundColor: AppColors.mainColor,
-                              radius: 50,
+                            Column(
+                              children: [
+                                CircleAvatar(
+                                  foregroundImage: NetworkImage(
+                                    profilePic,
+                                  ),
+                                  backgroundColor: AppColors.mainColor,
+                                  radius: 50,
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                if (rate <= 25)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.red,
+                                          AppColors.orange,
+                                        ],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Silver",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (rate > 25 && rate <= 50)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.goldDark,
+                                          AppColors.gold,
+                                        ],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Gold",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                if (rate > 50 && rate <= 100)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 15,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.diamondDark,
+                                          AppColors.diamond,
+                                        ],
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Diamond",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           if (profilePic.isEmpty) Container(),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                name,
-                                style: const TextStyle(
-                                  color: AppColors.blackLow,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 20,
-                                  letterSpacing: 2,
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      color: AppColors.blackLow,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 20,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(
                                 height: 5,
@@ -368,81 +451,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     backgroundImage:
                                         AssetImage("assets/logo.png"),
                                   ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  if (rate <= 25)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 15,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(15),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            AppColors.red,
-                                            AppColors.orange,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          "Silver",
-                                          style: TextStyle(
-                                            color: AppColors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  if (rate > 25 && rate <= 50)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 15,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(15),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            AppColors.goldDark,
-                                            AppColors.gold,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          "Gold",
-                                          style: TextStyle(
-                                            color: AppColors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  if (rate > 50 && rate <= 100)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 15,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(15),
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            AppColors.diamondDark,
-                                            AppColors.diamond,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          "Diamond",
-                                          style: TextStyle(
-                                            color: AppColors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                   const SizedBox(
                                     width: 10,
                                   ),

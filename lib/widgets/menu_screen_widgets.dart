@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
@@ -8,6 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/screens/profile_screen.dart';
+import 'package:task_app/screens/sign_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/app_providers.dart';
@@ -70,11 +70,13 @@ class MenuScreenMainColumn extends StatelessWidget {
         SizedBox(
           height: MediaQuery.of(context).size.height / 2.4,
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(
             left: 10,
           ),
-          child: MenuScreenExtraLogoutButtonParent(),
+          child: MenuScreenExtraLogoutButtonParent(
+            parentContext: context,
+          ),
         ),
       ],
     );
@@ -84,7 +86,10 @@ class MenuScreenMainColumn extends StatelessWidget {
 class MenuScreenExtraLogoutButtonParent extends StatelessWidget {
   const MenuScreenExtraLogoutButtonParent({
     super.key,
+    required this.parentContext,
   });
+
+  final BuildContext parentContext;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +97,7 @@ class MenuScreenExtraLogoutButtonParent extends StatelessWidget {
         builder: (allAppProviderContext, allAppProvider, _) {
       return MenuScreenExtraLogoutButton(
         allAppProvider: allAppProvider,
-        parentContext: allAppProviderContext,
+        parentContext: parentContext,
         // googleSignInContext: googleSignInContext,
         // googleSignInProvider: googleSignInProvider,
       );
@@ -141,10 +146,7 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
             MenuScreenLogoutBottomSheetCancelButton(
               googleSignInContext: parentContext,
             ),
-            MenuScreenLogoutBottomSheetLogoutButton(
-              // googleSignInProvider: parentContext,
-              googleSignInContext: parentContext,
-            ),
+            const MenuScreenLogoutBottomSheetLogoutButton(),
           ],
         );
       }),
@@ -157,25 +159,44 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
   const MenuScreenLogoutBottomSheetLogoutButton({
     super.key,
     // required this.googleSignInProvider,
-    required this.googleSignInContext,
+    // required this.googleSignInContext,
   });
 
   // final GoogleSignInProvider googleSignInProvider;
-  final BuildContext googleSignInContext;
+  // final BuildContext googleSignInContext;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: (() async {
         await NotificationServices().cancelTasksNotification();
-        if (await StorageServices.getUsrSignInType() == "Google") {
-          // await googleSignInProvider.logOut();
-        } else if (await StorageServices.getUsrSignInType() == "Email") {
-          // EmailPassAuthServices().emailPassLogout(
-          //   context: googleSignInContext,
-          // );
-        }
-        SystemNavigator.pop();
+
+        StorageServices.setUsrName("");
+
+        StorageServices.setUID("");
+
+        StorageServices.setUsrEmail("");
+
+        StorageServices.setUsrToken("");
+
+        StorageServices.setUsrDescription("");
+
+        StorageServices.setUsrProfilePic("");
+
+        StorageServices.setUsrProfession("");
+
+        StorageServices.setSignStatus(false);
+
+        StorageServices.setSignInType("");
+
+        Navigator.pop(context);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (logoutContext) => SignUpScreen(),
+          ),
+        );
       }),
       child: Container(
         height: 40,
