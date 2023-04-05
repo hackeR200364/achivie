@@ -39,6 +39,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
+  late TextEditingController _otpController;
   bool visibility = true;
   bool visibility2 = true;
   int signPage = 0;
@@ -47,6 +48,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   File? selectedImage;
   String _value = "0";
   String profession = "";
+  String verificationToken = "";
+  int otp = 0;
   static const List<ProfessionModel> professionList = <ProfessionModel>[
     ProfessionModel(
       id: "0",
@@ -146,6 +149,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passController = TextEditingController();
     _passConfirmController = TextEditingController();
     _desController = TextEditingController();
+    _otpController = TextEditingController();
     getAppDetails();
 
     super.initState();
@@ -190,9 +194,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   width: MediaQuery.of(context).size.width,
                   height: (signPage == 0)
                       ? 1180
-                      : (size.height < 700)
-                          ? 800
-                          : size.height,
+                      : (signPage == 4)
+                          ? size.height
+                          : (size.height < 700)
+                              ? 800
+                              : size.height,
                 ),
               ),
               Positioned(
@@ -200,9 +206,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   width: MediaQuery.of(context).size.width,
                   height: (signPage == 0)
                       ? 1180
-                      : (size.height < 700)
-                          ? 800
-                          : size.height,
+                      : (signPage == 4)
+                          ? size.height
+                          : (size.height < 700)
+                              ? 800
+                              : size.height,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -238,7 +246,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         GlassmorphicContainer(
                           width: size.width,
-                          height: (signPage == 0) ? 870 : 420,
+                          height: (signPage == 0)
+                              ? 870
+                              : (signPage == 4)
+                                  ? 310
+                                  : 420,
                           borderRadius: 15,
                           linearGradient:
                               AppColors.customGlassIconButtonGradient,
@@ -658,7 +670,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                                                     if (signInType ==
                                                         Keys.email) {
-                                                      _emailController.clear();
                                                       _passController.clear();
                                                       _firstNameController
                                                           .clear();
@@ -670,7 +681,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       _value = "0";
                                                       selectedImage = null;
                                                       setState(() {
-                                                        signPage = 1;
+                                                        signPage = 4;
                                                       });
                                                     }
                                                     allAppProvidersProvider
@@ -967,6 +978,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   //     'Bearer $token',
                                                 },
                                                 body: jsonEncode({
+                                                  Keys.uid: _emailController
+                                                      .text
+                                                      .trim()
+                                                      .split('@')[0],
                                                   Keys.usrPassword:
                                                       _passController.text
                                                           .trim(),
@@ -977,16 +992,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               );
 
                                               log(response.body);
+                                              Map<String, dynamic>
+                                                  responseJson =
+                                                  jsonDecode(response.body);
 
                                               if (response.statusCode == 200) {
-                                                Map<String, dynamic>
-                                                    responseJson =
-                                                    jsonDecode(response.body);
                                                 log(responseJson.toString());
 
                                                 if (responseJson["success"]) {
                                                   StorageServices.setUsrName(
-                                                      "${responseJson[Keys.data][Keys.usrFirstName]}${responseJson[Keys.data][Keys.usrLastName]}");
+                                                      "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
 
                                                   StorageServices.setUID(
                                                       responseJson[Keys.data]
@@ -1058,6 +1073,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     ),
                                                   );
                                                 }
+                                              }
+
+                                              if (response.statusCode == 403) {
+                                                signPage = 4;
+                                                verificationToken =
+                                                    responseJson[
+                                                        "verificationToken"];
+                                                otp = responseJson["otp"];
+                                                setState(() {});
+
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message: responseJson[
+                                                        Keys.message],
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
                                               }
                                             } else {
                                               allAppProvidersProvider
@@ -1299,11 +1338,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               onTap: (() async {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(true);
-                                                setState(() {
-                                                  signPage = 1;
-                                                });
-                                                _passController.clear();
-                                                _passConfirmController.clear();
 
                                                 http.Response response =
                                                     await http.post(
@@ -1319,6 +1353,56 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 Map<String, dynamic>
                                                     responseJson =
                                                     jsonDecode(response.body);
+
+                                                log(responseJson.toString());
+
+                                                if (response.statusCode ==
+                                                    200) {
+                                                  if (responseJson["success"]) {
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            Keys.message],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+
+                                                    setState(() {
+                                                      signPage = 1;
+                                                    });
+                                                    _passController.clear();
+                                                    _passConfirmController
+                                                        .clear();
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            Keys.message],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message:
+                                                          "Something went wrong, please try after sometime",
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                }
 
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
@@ -1496,6 +1580,250 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               ),
                                             ),
                                           ],
+                                        ),
+                                ),
+
+                              if (signPage == 4)
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 25,
+                                      top: 30,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "OTP Verification",
+                                          style: TextStyle(
+                                            color: AppColors.white,
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          "Please enter the OTP send to ${_emailController.text.trim()}",
+                                          style: TextStyle(
+                                              color: AppColors.white
+                                                  .withOpacity(0.8),
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w300,
+                                              overflow: TextOverflow.clip),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              if (signPage == 4)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  child: AuthTextField(
+                                    controller: _otpController,
+                                    hintText: "OTP",
+                                    keyboard: TextInputType.number,
+                                    isPassField: false,
+                                    isEmailField: false,
+                                    isPassConfirmField: false,
+                                    icon: Icons.password,
+                                    pageIndex: 4,
+                                  ),
+                                ),
+                              if (signPage == 4)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 20,
+                                    left: 15,
+                                    right: 15,
+                                    bottom: 10,
+                                  ),
+                                  child: (allAppProvidersProvider.isLoading)
+                                      ? Container(
+                                          height: 50,
+                                          width: size.width / 2,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.blackLow
+                                                    .withOpacity(0.5),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Lottie.asset(
+                                              "assets/loading-animation.json",
+                                              width: 100,
+                                              height: 50,
+                                            ),
+                                          ),
+                                        )
+                                      : InkWell(
+                                          onTap: (() async {
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(true);
+                                            const CircularProgressIndicator(
+                                              backgroundColor:
+                                                  AppColors.backgroundColour,
+                                            );
+                                            if (_otpController
+                                                .text.isNotEmpty) {
+                                              // EmailPassAuthServices()
+                                              //     .emailPassSignIn(
+                                              //   email: _emailController.text
+                                              //       .trim(),
+                                              //   pass:
+                                              //       _passController.text.trim(),
+                                              //   context: allAppProvidersContext,
+                                              // );
+
+                                              // String token =
+                                              //     await StorageServices
+                                              //         .getUsrToken();
+
+                                              if (_otpController.text.trim() ==
+                                                  otp.toString()) {
+                                                http.Response response =
+                                                    await http.post(
+                                                  Uri.parse(
+                                                      "${Keys.apiUsersBaseUrl}/verification/${_emailController.text.trim().split('@')[0]}/$verificationToken/$otp"),
+                                                  headers: {
+                                                    "content-type":
+                                                        "application/json",
+                                                    // 'Authorization':
+                                                    //     'Bearer $token',
+                                                  },
+                                                );
+
+                                                log(response.body);
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
+
+                                                if (response.statusCode ==
+                                                    200) {
+                                                  log(responseJson.toString());
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+
+                                                  if (responseJson["success"]) {
+                                                    setState(() {
+                                                      signPage = 1;
+                                                    });
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            "message"],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            "message"],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                  }
+                                                } else {
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: response
+                                                          .statusCode
+                                                          .toString(),
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                }
+                                              } else {
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message:
+                                                        "Please check your OTP",
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Please enter the OTP",
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                            }
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                          }),
+                                          child: Container(
+                                            height: 50,
+                                            width: size.width / 2,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: AppColors.blackLow
+                                                      .withOpacity(0.5),
+                                                  blurRadius: 10,
+                                                ),
+                                              ],
+                                            ),
+                                            child: const Center(
+                                              child: Text(
+                                                "Submit",
+                                                style: TextStyle(
+                                                  color: AppColors
+                                                      .backgroundColour,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                 ),
                             ],

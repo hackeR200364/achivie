@@ -62,7 +62,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
   List<String> taskType = ["Personal", "Business"];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool editOrNew = false, backPressed = false;
+  bool updateTask = false, backPressed = false;
   int taskCount = 0,
       taskPending = 0,
       taskBusiness = 0,
@@ -262,7 +262,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       _descriptionController.text = widget.taskDes!;
       _notificationController.text = widget.taskNoti!;
 
-      editOrNew = true;
+      updateTask = true;
     }
   }
 
@@ -400,62 +400,63 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                   ),
                   child: Column(
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(
-                          top: 30,
-                          bottom: 15,
-                          left: 15,
-                          right: 15,
-                        ),
-                        padding: const EdgeInsets.only(left: 5, right: 5),
-                        height: 40,
-                        width: MediaQuery.of(context).size.width,
-                        // color: AppColors.sky,
-                        decoration: BoxDecoration(
+                      if (!updateTask)
+                        Container(
+                          margin: const EdgeInsets.only(
+                            top: 30,
+                            bottom: 15,
+                            left: 15,
+                            right: 15,
+                          ),
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          height: 40,
+                          width: MediaQuery.of(context).size.width,
                           // color: AppColors.sky,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Consumer<AllAppProviders>(
-                          builder: (allAppProvidersCtx, allAppProvidersProvider,
-                              allAppProvidersChild) {
-                            List<Text> taskTypeTextList = [];
+                          decoration: BoxDecoration(
+                            // color: AppColors.sky,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Consumer<AllAppProviders>(
+                            builder: (allAppProvidersCtx,
+                                allAppProvidersProvider, allAppProvidersChild) {
+                              List<Text> taskTypeTextList = [];
 
-                            for (String type in taskType) {
-                              taskTypeTextList.add(
-                                Text(
-                                  type,
-                                  style: const TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                              for (String type in taskType) {
+                                taskTypeTextList.add(
+                                  Text(
+                                    type,
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
+                                );
+                              }
+
+                              return Container(
+                                padding: const EdgeInsets.only(top: 5),
+                                decoration: BoxDecoration(
+                                  color: AppColors.backgroundColour,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: CupertinoPicker(
+                                  magnification: 1.1,
+                                  diameterRatio: 1.5,
+                                  backgroundColor: AppColors.transparent,
+                                  itemExtent: 23,
+                                  onSelectedItemChanged: (value) {
+                                    allAppProvidersProvider
+                                        .selectedTypeFunc(taskType[value]);
+                                    // print(AllAppProvidersProvider.selectedType);
+                                    // print(taskType[value]);
+                                  },
+                                  children: taskTypeTextList,
                                 ),
                               );
-                            }
-
-                            return Container(
-                              padding: const EdgeInsets.only(top: 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.backgroundColour,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: CupertinoPicker(
-                                magnification: 1.1,
-                                diameterRatio: 1.5,
-                                backgroundColor: AppColors.transparent,
-                                itemExtent: 23,
-                                onSelectedItemChanged: (value) {
-                                  allAppProvidersProvider
-                                      .selectedTypeFunc(taskType[value]);
-                                  // print(AllAppProvidersProvider.selectedType);
-                                  // print(taskType[value]);
-                                },
-                                children: taskTypeTextList,
-                              ),
-                            );
-                          },
+                            },
+                          ),
                         ),
-                      ),
 
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -524,8 +525,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               );
 
                               final newTime = await showIntervalTimePicker(
-                                interval: 15,
-                                visibleStep: VisibleStep.fifteenths,
+                                interval: 5,
+                                visibleStep: VisibleStep.fifths,
                                 context: context,
                                 initialTime: TimeOfDay(
                                   hour: (initialMinuteSelection(date.minute) ==
@@ -696,7 +697,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                     token = await StorageServices.getUsrToken();
                                     uid = await StorageServices.getUID();
 
-                                    if (!editOrNew) {
+                                    if (!updateTask) {
                                       http.Response response = await http.post(
                                         Uri.parse(
                                             "${Keys.apiTasksBaseUrl}/createTask"),
@@ -797,7 +798,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
                                       allAppProvidersProvider
                                           .newTaskUploadLoadingFunc(false);
-                                    } else if (widget.userEmail != null) {
+                                    } else {
                                       // DocumentSnapshot taskDoc =
                                       //     await FirebaseFirestore.instance
                                       //         .collection("users")
@@ -938,19 +939,17 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           Keys.taskNotification:
                                               _notificationController.text
                                                   .trim(),
-                                          Keys.taskType: allAppProvidersProvider
-                                              .selectedType
-                                              .trim(),
+                                          Keys.taskType: widget.taskType,
                                           Keys.notificationID:
                                               widget.notificationID,
+                                          Keys.uid: uid,
                                         }),
                                       );
 
-                                      Map<String, dynamic> responseJson =
-                                          jsonDecode(response.body);
-                                      log(responseJson.toString());
-
                                       if (response.statusCode == 200) {
+                                        Map<String, dynamic> responseJson =
+                                            jsonDecode(response.body);
+                                        log(responseJson.toString());
                                         if (responseJson["success"]) {
                                           await rewardedAd?.show(
                                             onUserEarnedReward:
@@ -986,10 +985,10 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                             id: widget.notificationID!,
                                             title: _notificationController.text
                                                 .trim(),
-                                            body:
-                                                "${_taskNameController.text.trim()}\n${_descriptionController.text.trim()}",
+                                            body: _descriptionController.text
+                                                .trim(),
                                             payload:
-                                                scheduleDateTIme.toString(),
+                                                _taskNameController.text.trim(),
                                             dateTime: scheduleDateTIme,
                                           );
 
@@ -1084,8 +1083,10 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           height: 50,
                                         ),
                                       )
-                                    : const Text(
-                                        "ADD YOUR TASK",
+                                    : Text(
+                                        (!updateTask)
+                                            ? "ADD YOUR TASK"
+                                            : "UPDATE YOUR TASK",
                                         style: TextStyle(
                                           color: AppColors.backgroundColour,
                                           fontWeight: FontWeight.bold,

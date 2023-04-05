@@ -79,6 +79,7 @@ dependencies:
   share_plus:
   path_provider:
   image_picker:
+  pinput:
 
 dev_dependencies:
   flutter_test:
