@@ -31,6 +31,13 @@ class _MenuScreenState extends State<MenuScreen> {
     super.initState();
   }
 
+  @override
+  void reassemble() {
+    super.reassemble();
+    usrPoints();
+    log("message");
+  }
+
   usrPoints() async {
     points = await StorageServices.getUsrPoints();
     log(points.toString());

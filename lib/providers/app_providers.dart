@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../services/shared_preferences.dart';
+
 class AllAppProviders extends ChangeNotifier {
   String selectedType = 'Personal';
   void selectedTypeFunc(String selected) async {
@@ -106,6 +108,12 @@ class AllAppProviders extends ChangeNotifier {
   int desPosition = 0;
   void desLengthFunc(position) {
     desPosition = position;
+    notifyListeners();
+  }
+
+  int points = 0;
+  void pointsFunc() async {
+    points = await StorageServices.getUsrPoints();
     notifyListeners();
   }
 }

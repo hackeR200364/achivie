@@ -149,10 +149,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     );
 
-    Map<String, dynamic> responseJson = jsonDecode(response.body);
-
     if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
       if (responseJson["success"]) {
+        log(responseJson.toString());
         StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
         taskDone = responseJson[Keys.data][Keys.taskDone];
         taskDelete = responseJson[Keys.data][Keys.taskDelete];
@@ -264,9 +264,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     );
 
-    Map<String, dynamic> responseJson = jsonDecode(response.body);
-
     if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+
       if (responseJson["success"]) {
         StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
         taskDone = responseJson[Keys.data][Keys.taskDone];
@@ -406,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     taskDone: taskDone,
                     taskCount: taskCount,
                     taskDelete: taskDelete,
-                    taskPending: taskPersonal,
+                    taskPending: taskPending,
                     taskBusiness: taskBusiness,
                     taskPersonal: taskPersonal,
                     token: token,
