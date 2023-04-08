@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  bool? signStatus = false;
+  bool signStatus = false;
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -47,9 +48,12 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> checkAllPermissions() async {
+    signStatus = await StorageServices.getSignStatus();
+    log(signStatus.toString());
+
     Map<Permission, PermissionStatus> statuses = await [
-      // Permission.accessNotificationPolicy,
-      Permission.notification,
+      if (!signStatus) Permission.accessNotificationPolicy,
+      if (!signStatus) Permission.notification,
       // Permission.phone,
       // Permission.sms,
     ].request();
@@ -86,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              (signStatus!) ? const MainScreen() : const SignUpScreen(),
+              (signStatus) ? const MainScreen() : const SignUpScreen(),
           transitionDuration: const Duration(milliseconds: 600),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             var begin = 0.0;
@@ -106,9 +110,7 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  void getUserSignStatus() async {
-    signStatus = await StorageServices.getSignStatus();
-  }
+  void getUserSignStatus() async {}
 
   @override
   Widget build(BuildContext context) {

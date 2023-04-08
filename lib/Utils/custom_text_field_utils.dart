@@ -48,6 +48,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         bottom: 10,
       ),
       child: TextFormField(
+        textCapitalization: TextCapitalization.sentences,
         focusNode: widget.focusNode,
         scrollPhysics: AppColors.scrollPhysics,
         maxLines: widget.maxLen,

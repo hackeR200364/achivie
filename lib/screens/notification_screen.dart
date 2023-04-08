@@ -85,29 +85,32 @@ class NotificationScreen extends StatelessWidget {
                             const SizedBox(
                               width: 15,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  notification.content!.title!,
-                                  style: const TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    overflow: TextOverflow.ellipsis,
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width / 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    notification.content!.title!,
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                  notification.content!.body!,
-                                  style: TextStyle(
-                                    color: AppColors.white.withOpacity(0.6),
-                                    overflow: TextOverflow.ellipsis,
+                                  const SizedBox(
+                                    height: 10,
                                   ),
-                                ),
-                              ],
+                                  Text(
+                                    notification.content!.body!,
+                                    style: TextStyle(
+                                      color: AppColors.white.withOpacity(0.6),
+                                      overflow: TextOverflow.clip,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

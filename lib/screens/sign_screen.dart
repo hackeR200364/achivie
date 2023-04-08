@@ -680,10 +680,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       _desController.clear();
                                                       _value = "0";
                                                       selectedImage = null;
+                                                      verificationToken =
+                                                          responseJson["token"];
+                                                      otp = responseJson["otp"];
                                                       setState(() {
                                                         signPage = 4;
                                                       });
                                                     }
+
                                                     allAppProvidersProvider
                                                         .isLoadingFunc(false);
                                                   } else {
@@ -992,11 +996,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               );
 
                                               log(response.body);
-                                              Map<String, dynamic>
-                                                  responseJson =
-                                                  jsonDecode(response.body);
 
                                               if (response.statusCode == 200) {
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
                                                 log(responseJson.toString());
 
                                                 if (responseJson["success"]) {
@@ -1061,6 +1065,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     ),
                                                   );
                                                 } else {
+                                                  _emailController.clear();
+                                                  _passController.clear();
+                                                  setState(() {
+                                                    signPage = 0;
+                                                  });
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(
@@ -1076,6 +1085,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               }
 
                                               if (response.statusCode == 403) {
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
                                                 signPage = 4;
                                                 verificationToken =
                                                     responseJson[
@@ -1350,14 +1362,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   },
                                                 );
 
-                                                Map<String, dynamic>
-                                                    responseJson =
-                                                    jsonDecode(response.body);
-
-                                                log(responseJson.toString());
-
                                                 if (response.statusCode ==
                                                     200) {
+                                                  Map<String, dynamic>
+                                                      responseJson =
+                                                      jsonDecode(response.body);
+
+                                                  log(responseJson.toString());
                                                   if (responseJson["success"]) {
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
@@ -1470,14 +1481,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     }),
                                                   );
 
-                                                  Map<String, dynamic>
-                                                      responseJson =
-                                                      jsonDecode(response.body);
-
-                                                  log(responseJson.toString());
-
                                                   if (response.statusCode ==
                                                       200) {
+                                                    Map<String, dynamic>
+                                                        responseJson =
+                                                        jsonDecode(
+                                                            response.body);
+
+                                                    log(responseJson
+                                                        .toString());
                                                     if (responseJson[
                                                         "success"]) {
                                                       setState(() {
@@ -1691,6 +1703,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               //     await StorageServices
                                               //         .getUsrToken();
 
+                                              log(otp.toString());
                                               if (_otpController.text.trim() ==
                                                   otp.toString()) {
                                                 http.Response response =
@@ -1706,12 +1719,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 );
 
                                                 log(response.body);
-                                                Map<String, dynamic>
-                                                    responseJson =
-                                                    jsonDecode(response.body);
 
                                                 if (response.statusCode ==
                                                     200) {
+                                                  Map<String, dynamic>
+                                                      responseJson =
+                                                      jsonDecode(response.body);
                                                   log(responseJson.toString());
                                                   allAppProvidersProvider
                                                       .isLoadingFunc(false);
