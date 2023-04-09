@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
@@ -49,11 +48,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> checkAllPermissions() async {
     signStatus = await StorageServices.getSignStatus();
-    log(signStatus.toString());
 
     Map<Permission, PermissionStatus> statuses = await [
-      if (!signStatus) Permission.accessNotificationPolicy,
-      if (!signStatus) Permission.notification,
+      Permission.accessNotificationPolicy,
+      Permission.notification,
       // Permission.phone,
       // Permission.sms,
     ].request();

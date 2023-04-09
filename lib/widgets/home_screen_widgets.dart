@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
+import 'package:task_app/screens/profile_screen.dart';
 
 import '../Utils/snackbar_utils.dart';
 import '../providers/app_providers.dart';
@@ -657,38 +658,40 @@ class CustomHomeScreenTabBarHeadList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TabBar(
-      enableFeedback: true,
-      splashBorderRadius: BorderRadius.circular(50),
-      physics: AppColors.scrollPhysics,
-      isScrollable: true,
-      indicatorSize: TabBarIndicatorSize.label,
-      indicator: BoxDecoration(
-        color: AppColors.backgroundColour,
-        borderRadius: BorderRadius.circular(50),
+    return Center(
+      child: TabBar(
+        enableFeedback: true,
+        splashBorderRadius: BorderRadius.circular(50),
+        physics: AppColors.scrollPhysics,
+        isScrollable: true,
+        indicatorSize: TabBarIndicatorSize.label,
+        indicator: BoxDecoration(
+          color: AppColors.backgroundColour,
+          borderRadius: BorderRadius.circular(50),
+        ),
+        labelColor: AppColors.white,
+        labelStyle: const TextStyle(
+          // color: AppColors.grey,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+        unselectedLabelColor: AppColors.backgroundColour,
+        controller: tabController,
+        tabs: const [
+          CustomTabBarItems(
+            label: "PENDING",
+          ),
+          CustomTabBarItems(
+            label: "COMPLETED",
+          ),
+          CustomTabBarItems(
+            label: "INBOX",
+          ),
+          // CustomTabBarItems(
+          //   label: "DELETED",
+          // ),
+        ],
       ),
-      labelColor: AppColors.white,
-      labelStyle: const TextStyle(
-        // color: AppColors.grey,
-        fontSize: 10,
-        fontWeight: FontWeight.bold,
-      ),
-      unselectedLabelColor: AppColors.backgroundColour,
-      controller: tabController,
-      tabs: const [
-        CustomTabBarItems(
-          label: "PENDING",
-        ),
-        CustomTabBarItems(
-          label: "COMPLETED",
-        ),
-        CustomTabBarItems(
-          label: "INBOX",
-        ),
-        CustomTabBarItems(
-          label: "DELETED",
-        ),
-      ],
     );
   }
 }
@@ -944,11 +947,18 @@ class CustomFloatingActionButton extends StatelessWidget {
   }
 }
 
-class CustomFloatingActionButtonChild extends StatelessWidget {
+class CustomFloatingActionButtonChild extends StatefulWidget {
   const CustomFloatingActionButtonChild({
     super.key,
   });
 
+  @override
+  State<CustomFloatingActionButtonChild> createState() =>
+      _CustomFloatingActionButtonChildState();
+}
+
+class _CustomFloatingActionButtonChildState
+    extends State<CustomFloatingActionButtonChild> {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -957,9 +967,13 @@ class CustomFloatingActionButtonChild extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (nextPageContext) => const NewTaskScreen(),
+              builder: (nextPageContext) {
+                return const NewTaskScreen();
+              },
             ),
-          );
+          ).then((value) {
+            setState(() {});
+          });
         },
         icon: const Icon(
           Icons.add,
@@ -1011,27 +1025,38 @@ class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.center,
-      child: GlassmorphicContainer(
-        width: double.infinity,
-        height: 41,
-        borderRadius: 40,
-        linearGradient: AppColors.customGlassIconButtonGradient,
-        border: 2,
-        blur: 4,
-        borderGradient: AppColors.customGlassIconButtonBorderGradient,
-        child: Center(
-          child: SingleChildScrollView(
-            physics: AppColors.scrollPhysics,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CustomHomeScreenAppBarTitleHeading(
-                  userDetailsProviderProvider: userDetailsProviderProvider,
-                ),
-                CustomHomeScreenAppBarTitleSubHeading(
-                  date: date,
-                ),
-              ],
+      child: GestureDetector(
+        onDoubleTap: (() {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (nextPageContext) => const ProfileScreen(),
+            ),
+          );
+        }),
+        child: GlassmorphicContainer(
+          width: double.infinity,
+          height: 41,
+          borderRadius: 40,
+          linearGradient: AppColors.customGlassIconButtonGradient,
+          border: 2,
+          blur: 4,
+          borderGradient: AppColors.customGlassIconButtonBorderGradient,
+          child: Center(
+            child: SingleChildScrollView(
+              physics: AppColors.scrollPhysics,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CustomHomeScreenAppBarTitleHeading(
+                    userDetailsProviderProvider: userDetailsProviderProvider,
+                  ),
+                  CustomHomeScreenAppBarTitleSubHeading(
+                    date: date,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1378,6 +1403,7 @@ class CustomHomeScreenTabs extends StatefulWidget {
     required this.date,
     required this.token,
     required this.uid,
+    // required this.refresh,
   });
 
   final String type;
@@ -1387,6 +1413,7 @@ class CustomHomeScreenTabs extends StatefulWidget {
   final ScrollController scrollController;
   final DateTime date;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   State<CustomHomeScreenTabs> createState() => _CustomHomeScreenTabsState();
@@ -1868,7 +1895,9 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                   );
                                   return const TaskUnDoneDialogChild();
                                 },
-                              );
+                              ).then((value) async {
+                                // await widget.refresh;
+                              });
 
                               NotificationServices()
                                   .createScheduledTaskNotification(
@@ -1952,6 +1981,7 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     ),
                                     (() {
                                       Navigator.pop(doneContext);
+                                      // widget.refresh;
                                     }),
                                   );
                                   return TaskDialog(
@@ -1962,7 +1992,9 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     subMessageBottomDivision: 5,
                                   );
                                 },
-                              );
+                              ).then((value) async {
+                                // await widget.refresh;
+                              });
                             } else {
                               AppSnackbar().customizedAppSnackbar(
                                 message: doneResponseJson["message"],
@@ -2051,81 +2083,82 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                       }),
                       tileThirdOnPressed: (() async {
                         // String taskDocID = snapshotList[listIndex].reference.id;
+                        // log(snapshotList[listIndex][Keys.taskStatus]);
 
-                        if (snapshotList[listIndex][Keys.taskStatus] !=
+                        // if (snapshotList[listIndex][Keys.taskStatus] !=
+                        //     Keys.deleteStatus) {
+                        //   // deleteTasks(
+                        //   //   taskSavedDay: taskSavedDay,
+                        //   //   taskSavedYear: taskSavedYear,
+                        //   //   taskSavedMonth: taskSavedMonth,
+                        //   //   taskSavedMinute: taskSavedMinute,
+                        //   //   taskSavedHour: taskSavedHour,
+                        //   //   taskDocID: taskDocID,
+                        //   //   status: snapshotList[listIndex][Keys.taskStatus],
+                        //   //   firestoreEmail: widget.firestoreEmail,
+                        //   // );
+                        //
+                        //   http.Response deleteTaskResponse = await http.post(
+                        //     Uri.parse("${Keys.apiTasksBaseUrl}/deleteTask"),
+                        //     headers: {
+                        //       "content-Type": "application/json",
+                        //       "authorization": "Bearer ${widget.token}",
+                        //     },
+                        //     body: jsonEncode(
+                        //       {
+                        //         Keys.uid: widget.uid,
+                        //         Keys.notificationID: snapshotList[listIndex]
+                        //             [Keys.notificationID],
+                        //       },
+                        //     ),
+                        //   );
+                        //
+                        //   Map<String, dynamic> deleteTaskResponseJson =
+                        //       jsonDecode(deleteTaskResponse.body);
+                        //
+                        //   if (deleteTaskResponse.statusCode == 200) {
+                        //     if (deleteTaskResponseJson["success"]) {
+                        //       NotificationServices()
+                        //           .cancelTaskScheduledNotification(
+                        //         id: snapshotList[listIndex]
+                        //             [Keys.notificationID],
+                        //       );
+                        //
+                        //       showDialog(
+                        //         context: streamContext,
+                        //         builder: (BuildContext deleteContext) {
+                        //           Future.delayed(
+                        //             const Duration(
+                        //               seconds: 2,
+                        //             ),
+                        //             (() {
+                        //               Navigator.pop(deleteContext);
+                        //             }),
+                        //           );
+                        //           return TaskDialog(
+                        //             animation: "assets/deleted-animation.json",
+                        //             headMessage: "Deleted!",
+                        //             subMessage: "Your this task is deleted",
+                        //             subMessageBottomDivision: 5,
+                        //           );
+                        //         },
+                        //       );
+                        //     } else {
+                        //       AppSnackbar().customizedAppSnackbar(
+                        //         message: deleteTaskResponseJson["message"],
+                        //         context: streamContext,
+                        //       );
+                        //     }
+                        //   } else {
+                        //     AppSnackbar().customizedAppSnackbar(
+                        //       message: deleteTaskResponse.statusCode.toString(),
+                        //       context: streamContext,
+                        //     );
+                        //   }
+                        // }
+
+                        if (snapshotList[listIndex][Keys.taskStatus] ==
                             Keys.deleteStatus) {
-                          // deleteTasks(
-                          //   taskSavedDay: taskSavedDay,
-                          //   taskSavedYear: taskSavedYear,
-                          //   taskSavedMonth: taskSavedMonth,
-                          //   taskSavedMinute: taskSavedMinute,
-                          //   taskSavedHour: taskSavedHour,
-                          //   taskDocID: taskDocID,
-                          //   status: snapshotList[listIndex][Keys.taskStatus],
-                          //   firestoreEmail: widget.firestoreEmail,
-                          // );
-
-                          http.Response deleteTaskResponse = await http.post(
-                            Uri.parse("${Keys.apiTasksBaseUrl}/deleteTask"),
-                            headers: {
-                              "content-Type": "application/json",
-                              "authorization": "Bearer ${widget.token}",
-                            },
-                            body: jsonEncode(
-                              {
-                                Keys.uid: widget.uid,
-                                Keys.notificationID: snapshotList[listIndex]
-                                    [Keys.notificationID],
-                              },
-                            ),
-                          );
-
-                          Map<String, dynamic> deleteTaskResponseJson =
-                              jsonDecode(deleteTaskResponse.body);
-
-                          if (deleteTaskResponse.statusCode == 200) {
-                            if (deleteTaskResponseJson["success"]) {
-                              NotificationServices()
-                                  .cancelTaskScheduledNotification(
-                                id: snapshotList[listIndex]
-                                    [Keys.notificationID],
-                              );
-
-                              showDialog(
-                                context: streamContext,
-                                builder: (BuildContext deleteContext) {
-                                  Future.delayed(
-                                    const Duration(
-                                      seconds: 2,
-                                    ),
-                                    (() {
-                                      Navigator.pop(deleteContext);
-                                    }),
-                                  );
-                                  return TaskDialog(
-                                    animation: "assets/deleted-animation.json",
-                                    headMessage: "Deleted!",
-                                    subMessage: "Your this task is deleted",
-                                    subMessageBottomDivision: 5,
-                                  );
-                                },
-                              );
-                            } else {
-                              AppSnackbar().customizedAppSnackbar(
-                                message: deleteTaskResponseJson["message"],
-                                context: streamContext,
-                              );
-                            }
-                          } else {
-                            AppSnackbar().customizedAppSnackbar(
-                              message: deleteTaskResponse.statusCode.toString(),
-                              context: streamContext,
-                            );
-                          }
-                        }
-
-                        if ((snapshotList[listIndex][Keys.taskStatus] ==
-                            Keys.deleteStatus)) {
                           if (taskSavedDate.difference(widget.date).inMinutes >
                               0) {
                             http.Response undoResponse = await http.post(
@@ -2143,31 +2176,36 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               ),
                             );
 
-                            Map<String, dynamic> undoResponseJson =
-                                jsonDecode(undoResponse.body);
-
                             if (undoResponse.statusCode == 200) {
+                              Map<String, dynamic> undoResponseJson =
+                                  jsonDecode(undoResponse.body);
+                              log(undoResponseJson.toString());
                               if (undoResponseJson["success"]) {
-                                NotificationServices()
+                                log(snapshotList[listIndex][Keys.notificationID]
+                                    .toString());
+                                await NotificationServices()
                                     .createScheduledTaskNotification(
-                                  id: undoResponseJson[Keys.notificationID],
-                                  title:
-                                      undoResponseJson[Keys.taskNotification],
+                                  id: snapshotList[listIndex]
+                                      [Keys.notificationID],
+                                  title: snapshotList[listIndex]
+                                      [Keys.taskNotification],
                                   body:
-                                      "${undoResponseJson[Keys.taskName]}\n${undoResponseJson[Keys.taskDes]}",
-                                  payload: undoResponseJson[Keys.taskDes],
+                                      "${snapshotList[listIndex][Keys.taskName]}\n${snapshotList[listIndex][Keys.taskDes]}",
+                                  payload: snapshotList[listIndex]
+                                      [Keys.taskDes],
                                   dateTime: taskSavedDate,
                                 );
 
                                 showDialog(
                                   context: streamContext,
-                                  builder: (BuildContext unDoContext) {
+                                  builder: (BuildContext undoContext) {
                                     Future.delayed(
                                       const Duration(
                                         seconds: 2,
                                       ),
                                       (() {
-                                        Navigator.pop(unDoContext);
+                                        Navigator.pop(undoContext);
+                                        // widget.refresh;
                                       }),
                                     );
                                     return TaskDialog(
@@ -2227,6 +2265,80 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                               ),
                             );
                           }
+                        } else {
+                          // deleteTasks(
+                          //   taskSavedDay: taskSavedDay,
+                          //   taskSavedYear: taskSavedYear,
+                          //   taskSavedMonth: taskSavedMonth,
+                          //   taskSavedMinute: taskSavedMinute,
+                          //   taskSavedHour: taskSavedHour,
+                          //   taskDocID: taskDocID,
+                          //   status: snapshotList[listIndex][Keys.taskStatus],
+                          //   firestoreEmail: widget.firestoreEmail,
+                          // );
+
+                          log(snapshotList[listIndex][Keys.notificationID]
+                              .toString());
+
+                          http.Response deleteTaskResponse = await http.post(
+                            Uri.parse("${Keys.apiTasksBaseUrl}/deleteTask"),
+                            headers: {
+                              "content-Type": "application/json",
+                              "authorization": "Bearer ${widget.token}",
+                            },
+                            body: jsonEncode(
+                              {
+                                Keys.uid: widget.uid,
+                                Keys.notificationID: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              },
+                            ),
+                          );
+
+                          if (deleteTaskResponse.statusCode == 200) {
+                            Map<String, dynamic> deleteTaskResponseJson =
+                                jsonDecode(deleteTaskResponse.body);
+                            log(deleteTaskResponseJson.toString());
+                            if (deleteTaskResponseJson["success"]) {
+                              NotificationServices()
+                                  .cancelTaskScheduledNotification(
+                                id: snapshotList[listIndex]
+                                    [Keys.notificationID],
+                              );
+
+                              showDialog(
+                                context: streamContext,
+                                builder: (BuildContext deleteContext) {
+                                  Future.delayed(
+                                    const Duration(
+                                      seconds: 2,
+                                    ),
+                                    (() {
+                                      Navigator.pop(deleteContext);
+                                    }),
+                                  );
+                                  return TaskDialog(
+                                    animation: "assets/deleted-animation.json",
+                                    headMessage: "Deleted!",
+                                    subMessage: "Your this task is deleted",
+                                    subMessageBottomDivision: 5,
+                                  );
+                                },
+                              ).then((value) {
+                                // widget.refresh;
+                              });
+                            } else {
+                              AppSnackbar().customizedAppSnackbar(
+                                message: deleteTaskResponseJson["message"],
+                                context: streamContext,
+                              );
+                            }
+                          } else {
+                            AppSnackbar().customizedAppSnackbar(
+                              message: deleteTaskResponse.statusCode.toString(),
+                              context: streamContext,
+                            );
+                          }
                         }
                       }),
                     );
@@ -2266,6 +2378,7 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
     required this.taskPersonal,
     required this.token,
     required this.uid,
+    // required this.refresh,
   }) : _scrollController = scrollController;
 
   final List<String> taskType;
@@ -2285,6 +2398,7 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
       taskBusiness,
       taskPersonal;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -2310,6 +2424,7 @@ class CustomHomeScreenContainerWithConnectivityWidget extends StatelessWidget {
           taskPersonal: taskPersonal,
           token: token,
           uid: uid,
+          // refresh: refresh,
         );
       },
     );
@@ -2337,6 +2452,7 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
     required this.taskPersonal,
     required this.token,
     required this.uid,
+    // required this.refresh,
   }) : _scrollController = scrollController;
 
   final List<String> taskType;
@@ -2356,6 +2472,7 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
       taskBusiness,
       taskPersonal;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -2391,6 +2508,7 @@ class CustomHomeScreenMainColumn extends StatelessWidget {
           inboxStatus: inboxStatus,
           token: token,
           uid: uid,
+          // refresh: refresh,
         ),
 
         // bottomTiles(heading: "COMPLETED", value: "10"),
@@ -2412,6 +2530,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
     required this.inboxStatus,
     required this.token,
     required this.uid,
+    // required this.refresh,
   }) : _scrollController = scrollController;
 
   final TabController tabController;
@@ -2423,6 +2542,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
   final String completedStatus;
   final String inboxStatus;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -2440,6 +2560,7 @@ class CustomHomeScreenTabBarViewParentContainer extends StatelessWidget {
         inboxStatus: inboxStatus,
         token: token,
         uid: uid,
+        // refresh: refresh,
       ),
     );
   }
@@ -2458,6 +2579,7 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
     required this.inboxStatus,
     required this.token,
     required this.uid,
+    // required this.refresh,
   }) : _scrollController = scrollController;
 
   final TabController tabController;
@@ -2469,6 +2591,7 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
   final String completedStatus;
   final String inboxStatus;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -2487,6 +2610,7 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
           allAppProvidersProviders: allAppProvidersProviders,
           token: token,
           uid: uid,
+          // refresh: refresh,
         );
       },
     );
@@ -2494,20 +2618,21 @@ class CustomHomeScreenTabBarViewWithConsumer extends StatelessWidget {
 }
 
 class CustomHomeScreenTabBarView extends StatelessWidget {
-  const CustomHomeScreenTabBarView(
-      {super.key,
-      required this.tabController,
-      required this.pendingStatus,
-      required this.email,
-      required this.widget,
-      required ScrollController scrollController,
-      required this.date,
-      required this.completedStatus,
-      required this.inboxStatus,
-      required this.allAppProvidersProviders,
-      required this.token,
-      required this.uid})
-      : _scrollController = scrollController;
+  const CustomHomeScreenTabBarView({
+    super.key,
+    required this.tabController,
+    required this.pendingStatus,
+    required this.email,
+    required this.widget,
+    required ScrollController scrollController,
+    required this.date,
+    required this.completedStatus,
+    required this.inboxStatus,
+    required this.allAppProvidersProviders,
+    required this.token,
+    required this.uid,
+    // required this.refresh,
+  }) : _scrollController = scrollController;
 
   final TabController tabController;
   final String pendingStatus;
@@ -2519,6 +2644,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
   final String inboxStatus;
   final AllAppProviders allAppProvidersProviders;
   final String token, uid;
+  // final Future<void> refresh;
 
   @override
   Widget build(BuildContext context) {
@@ -2535,6 +2661,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           date: date,
           token: token,
           uid: uid,
+          // refresh: refresh,
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
@@ -2545,6 +2672,7 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           date: date,
           token: token,
           uid: uid,
+          // refresh: refresh,
         ),
         CustomHomeScreenTabs(
           type: allAppProvidersProviders.selectedType,
@@ -2555,17 +2683,19 @@ class CustomHomeScreenTabBarView extends StatelessWidget {
           date: date,
           token: token,
           uid: uid,
+          // refresh: refresh,
         ),
-        CustomHomeScreenTabs(
-          type: allAppProvidersProviders.selectedType,
-          status: Keys.deleteStatus,
-          firestoreEmail: email,
-          widget: widget,
-          scrollController: _scrollController,
-          date: date,
-          token: token,
-          uid: uid,
-        ),
+        // CustomHomeScreenTabs(
+        //   type: allAppProvidersProviders.selectedType,
+        //   status: Keys.deleteStatus,
+        //   firestoreEmail: email,
+        //   widget: widget,
+        //   scrollController: _scrollController,
+        //   date: date,
+        //   token: token,
+        //   uid: uid,
+        //   // refresh: refresh,
+        // ),
       ],
     );
   }

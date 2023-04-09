@@ -322,7 +322,14 @@ class InfoPageSocialsWidget extends StatelessWidget {
       child: Column(
         children: [
           MenuScreenExtraButton(
-            onTap: () {},
+            onTap: (() async {
+              await launchUrl(
+                Uri.parse(
+                  "https://www.linkedin.com/in/rupam-karmakar-411157212/",
+                ),
+                mode: LaunchMode.externalNonBrowserApplication,
+              );
+            }),
             title: "Visit Website",
           ),
           const SizedBox(

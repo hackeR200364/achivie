@@ -195,7 +195,7 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (logoutContext) => const SignUpScreen(),
+            builder: (logoutContext) => SignUpScreen(),
           ),
         );
       }),
@@ -274,20 +274,20 @@ class MenuScreenSocialSecondRow extends StatelessWidget {
             );
           }),
         ),
-        SizedBox(
-          width: spacerWidth,
-        ),
-        MenuScreenSocialMediaButton(
-          icon: "assets/social-icons/github-logo.png",
-          onPressed: (() async {
-            await launchUrl(
-              Uri.parse(
-                "https://github.com/hackeR200364",
-              ),
-              mode: LaunchMode.externalNonBrowserApplication,
-            );
-          }),
-        ),
+        // SizedBox(
+        //   width: spacerWidth,
+        // ),
+        // MenuScreenSocialMediaButton(
+        //   icon: "assets/social-icons/github-logo.png",
+        //   onPressed: (() async {
+        //     await launchUrl(
+        //       Uri.parse(
+        //         "https://github.com/hackeR200364",
+        //       ),
+        //       mode: LaunchMode.externalNonBrowserApplication,
+        //     );
+        //   }),
+        // ),
       ],
     );
   }
@@ -310,7 +310,7 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
           onPressed: (() async {
             await launchUrl(
               Uri.parse(
-                "https://twitter.com/rupam7803?ref_src=twsrc%5Etfw",
+                "https://twitter.com/Achivie2023?t=VG2JSu04d_HDfQgqRKqVNw&s=08",
               ),
               mode: LaunchMode.externalNonBrowserApplication,
             );
@@ -324,29 +324,29 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
           onPressed: (() async {
             await launchUrl(
               Uri.parse(
-                "https://www.instagram.com/studnite/",
+                "https://instagram.com/achivie2023?igshid=ZDdkNTZiNTM=",
               ),
               mode: LaunchMode.externalNonBrowserApplication,
             );
           }),
         ),
-        SizedBox(
-          width: spacerWidth,
-        ),
-        MenuScreenSocialMediaButton(
-          icon: "assets/social-icons/facebook-logo.png",
-          onPressed: (() async {
-            await launchUrl(
-              Uri.parse(
-                "https://www.facebook.com/rupamkarmaka12",
-              ),
-              mode: LaunchMode.externalNonBrowserApplication,
-            );
-          }),
-        ),
-        SizedBox(
-          width: MediaQuery.of(context).size.width / 30,
-        ),
+        // SizedBox(
+        //   width: spacerWidth,
+        // ),
+        // MenuScreenSocialMediaButton(
+        //   icon: "assets/social-icons/facebook-logo.png",
+        //   onPressed: (() async {
+        //     await launchUrl(
+        //       Uri.parse(
+        //         "https://www.facebook.com/rupamkarmaka12",
+        //       ),
+        //       mode: LaunchMode.externalNonBrowserApplication,
+        //     );
+        //   }),
+        // ),
+        // SizedBox(
+        //   width: MediaQuery.of(context).size.width / 30,
+        // ),
       ],
     );
   }
@@ -575,7 +575,7 @@ class MenuScreenProfileContainerChildColumn extends StatelessWidget {
             height: 2,
           ),
           Text(
-            "Total points : ${NumberFormat.compact().format(points)}",
+            "Total Points : ${NumberFormat.compact().format(points)}",
             style: AppColors.subHeadingTextStyle,
           ),
         ],

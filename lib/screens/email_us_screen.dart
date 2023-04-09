@@ -16,9 +16,10 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
   late TextEditingController _bodyController;
   late TextEditingController _subjectController;
   BannerAd? bannerAd;
+  RewardedAd? rewardedAd;
+  late NativeAd nativeAd;
   late FocusNode subjectFocusNode;
   late FocusNode bodyFocusNode;
-  late NativeAd nativeAd;
   bool isNativeAdLoaded = false;
   bool isBannerAdLoaded = false;
   bool pageLoading = true;
@@ -59,6 +60,18 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
       request: const AdRequest(),
     );
     bannerAd!.load();
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-7050103229809241/4264358038",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          // print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
+    );
 
     super.initState();
   }
@@ -109,6 +122,7 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
               bodyController: _bodyController,
               isNativeAdLoaded: isNativeAdLoaded,
               nativeAd: nativeAd,
+              rewardedAd: rewardedAd,
             ),
           ),
           if (pageLoading)

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
+// import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -22,6 +22,7 @@ import 'package:telephony/telephony.dart';
 
 import '../services/keys.dart';
 import '../widgets/home_screen_widgets.dart';
+import 'new_task_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -51,14 +52,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   BannerAd? bannerAd;
   bool isBannerAdLoaded = false;
   int counter = 0;
-  final assetsAudioPlayer = AssetsAudioPlayer();
+  // final assetsAudioPlayer = AssetsAudioPlayer();
   late ScrollController _scrollController;
   bool pageLoading = false;
   String songName = "";
   String songArtist = "";
   bool isPlaying = false;
   final animationDuration = const Duration(milliseconds: 300);
-  bool isShowingIsland = false;
+  bool isShowingIsland = false, backed = false;
   final telephony = Telephony.instance;
   String message = "";
   int userPoints = 0,
@@ -68,12 +69,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       taskPending = 0,
       taskBusiness = 0,
       taskPersonal = 0;
+  RewardedAd? rewardedAd;
 
   @override
   void initState() {
     _scrollController = ScrollController();
     tabController = TabController(
-      length: 4,
+      length: 3,
       vsync: this,
     );
     getUserDetails();
@@ -90,13 +92,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       request: const AdRequest(),
     );
     bannerAd!.load();
-    assetsAudioPlayer.open(
-      Audio("assets/audios/song1.mp3"),
-      autoStart: false,
-      showNotification: false,
-      volume: 50,
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-7050103229809241/3148880623",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          // print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
     );
-    if (Platform.isAndroid) checkCallStatus();
+
+    // assetsAudioPlayer.open(
+    //   Audio("assets/audios/song1.mp3"),
+    //   autoStart: false,
+    //   showNotification: false,
+    //   volume: 50,
+    // );
+    // if (Platform.isAndroid) checkCallStatus();
 
     super.initState();
   }
@@ -128,17 +143,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // print(profileType);
   }
 
-  void checkCallStatus() async {
-    final callState = await telephony.callState;
-
-    if (callState == CallState.RINGING) {
-      // Incoming call
-    } else if (callState == CallState.OFFHOOK) {
-      // Active call
-    } else {
-      // No call
-    }
-  }
+  // void checkCallStatus() async {
+  //   final callState = await telephony.callState;
+  //
+  //   if (callState == CallState.RINGING) {
+  //     // Incoming call
+  //   } else if (callState == CallState.OFFHOOK) {
+  //     // Active call
+  //   } else {
+  //     // No call
+  //   }
+  // }
 
   Future<void> refresh() async {
     http.Response response = await http.get(
@@ -163,96 +178,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setState(() {});
       }
     }
-
-    // http.Response responseTaskDone = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseTaskDoneJson =
-    //     jsonDecode(responseTaskDone.body);
-    //
-    // if (responseTaskDone.statusCode == 200) {
-    //   if (responseTaskDoneJson["success"]) {
-    //     taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskCount = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseTaskCountJson =
-    //     jsonDecode(responseTaskCount.body);
-    //
-    // if (responseTaskCount.statusCode == 200) {
-    //   if (responseTaskCountJson["success"]) {
-    //     taskCount = responseTaskCountJson[Keys.data]["taskCount"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskDelete = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonDelete =
-    //     jsonDecode(responseTaskDelete.body);
-    //
-    // if (responseTaskDelete.statusCode == 200) {
-    //   if (responseJsonDelete["success"]) {
-    //     taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
-    //   }
-    // }
-    //
-    // http.Response responsetaskPending = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskPending =
-    //     jsonDecode(responsetaskPending.body);
-    //
-    // if (responsetaskPending.statusCode == 200) {
-    //   if (responseJsonTaskPending["success"]) {
-    //     taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskBusiness = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskBusiness =
-    //     jsonDecode(responseTaskBusiness.body);
-    //
-    // if (responseTaskBusiness.statusCode == 200) {
-    //   if (responseJsonTaskBusiness["success"]) {
-    //     taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskPersonal = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskPersonal =
-    //     jsonDecode(responseTaskPersonal.body);
-    //
-    // if (responseTaskPersonal.statusCode == 200) {
-    //   if (responseJsonTaskPersonal["success"]) {
-    //     taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
-    //   }
-    // }
   }
 
   Future<void> initValues() async {
@@ -279,108 +204,79 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setState(() {});
       }
     }
-
-    // http.Response responseTaskDone = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDone/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseTaskDoneJson =
-    //     jsonDecode(responseTaskDone.body);
-    //
-    // if (responseTaskDone.statusCode == 200) {
-    //   if (responseTaskDoneJson["success"]) {
-    //     taskDone = responseTaskDoneJson[Keys.data]["taskDone"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskCount = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskCount/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseTaskCountJson =
-    //     jsonDecode(responseTaskCount.body);
-    //
-    // if (responseTaskCount.statusCode == 200) {
-    //   if (responseTaskCountJson["success"]) {
-    //     taskCount = responseTaskCountJson[Keys.data]["taskCount"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskDelete = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskDelete/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonDelete =
-    //     jsonDecode(responseTaskDelete.body);
-    //
-    // if (responseTaskDelete.statusCode == 200) {
-    //   if (responseJsonDelete["success"]) {
-    //     taskDelete = responseJsonDelete[Keys.data]["taskDelete"];
-    //   }
-    // }
-    //
-    // http.Response responsetaskPending = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPending/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskPending =
-    //     jsonDecode(responsetaskPending.body);
-    //
-    // if (responsetaskPending.statusCode == 200) {
-    //   if (responseJsonTaskPending["success"]) {
-    //     taskPending = responseJsonTaskPending[Keys.data]["taskPending"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskBusiness = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskBusiness/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskBusiness =
-    //     jsonDecode(responseTaskBusiness.body);
-    //
-    // if (responseTaskBusiness.statusCode == 200) {
-    //   if (responseJsonTaskBusiness["success"]) {
-    //     taskBusiness = responseJsonTaskBusiness[Keys.data]["taskBusiness"];
-    //   }
-    // }
-    //
-    // http.Response responseTaskPersonal = await http
-    //     .get(Uri.parse("${Keys.apiTasksBaseUrl}/taskPersonal/$uid"), headers: {
-    //   'content-Type': 'application/json',
-    //   'authorization': 'Bearer $token',
-    // });
-    //
-    // Map<String, dynamic> responseJsonTaskPersonal =
-    //     jsonDecode(responseTaskPersonal.body);
-    //
-    // if (responseTaskPersonal.statusCode == 200) {
-    //   if (responseJsonTaskPersonal["success"]) {
-    //     taskPersonal = responseJsonTaskPersonal[Keys.data]["taskPersonal"];
-    //   }
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
+      debugShowCheckedModeBanner: false,
+      home: WillPopScope(
+        onWillPop: (() async {
+          log("bcked");
+
+          await rewardedAd?.show(
+            onUserEarnedReward: ((ad, point) {}),
+          );
+
+          rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
+            onAdClicked: ((ad) {}),
+            onAdDismissedFullScreenContent: ((ad) {
+              // print("ad dismissed");
+              SystemNavigator.pop();
+            }),
+            onAdFailedToShowFullScreenContent: ((ad, err) {
+              ad.dispose();
+              // print("ad error $err");
+            }),
+            onAdImpression: ((ad) {}),
+            onAdShowedFullScreenContent: ((ad) {
+              // print("ad shown ${ad.responseInfo}");
+            }),
+            onAdWillDismissFullScreenContent: ((ad) {
+              SystemNavigator.pop();
+            }),
+          );
+
+          return false;
+        }),
+        child: Scaffold(
           bottomNavigationBar: (isBannerAdLoaded)
               ? CustomHomeScreenBottomNavBarWithBannerAd(bannerAd: bannerAd)
               : null,
-          floatingActionButton: const CustomFloatingActionButton(),
+          floatingActionButton: GlassmorphicContainer(
+            margin: const EdgeInsets.only(
+              right: 10,
+            ),
+            width: 50,
+            height: 50,
+            borderRadius: 40,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 2,
+            blur: 4,
+            borderGradient: AppColors.customGlassIconButtonBorderGradient,
+            child: Center(
+              child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (nextPageContext) {
+                        return const NewTaskScreen();
+                      },
+                    ),
+                  ).then((value) {
+                    refresh();
+                    setState(() {});
+                  });
+                },
+                icon: const Icon(
+                  Icons.add,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+          ),
           backgroundColor: AppColors.mainColor,
           body: RefreshIndicator(
             displacement: 5,
@@ -411,6 +307,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     taskPersonal: taskPersonal,
                     token: token,
                     uid: uid,
+                    // refresh: refresh(),
                   ),
                 ),
                 Positioned(
@@ -612,7 +509,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
 

@@ -777,6 +777,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                             context: allAppProvidersContext,
                                           );
                                           allAppProvidersProvider
+                                              .selectedTypeFunc("Personal");
+                                          allAppProvidersProvider
                                               .newTaskUploadLoadingFunc(false);
                                           Navigator.pop(context);
                                         } else {

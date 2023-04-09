@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -36,12 +38,14 @@ Future main() async {
 
   await [
     Permission.audio,
-    Permission.notification,
     Permission.storage,
   ].request();
 
   bool signStatus = await StorageServices.getSignStatus();
+  log(signStatus.toString());
+
   if (!signStatus) {
+    await Permission.notification.request();
     await Permission.accessNotificationPolicy.request();
   }
 
