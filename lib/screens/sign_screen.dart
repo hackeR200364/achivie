@@ -4,14 +4,15 @@ import 'dart:io';
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+// import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+// import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:task_app/Utils/snackbar_utils.dart';
 import 'package:task_app/models/profession_model.dart';
@@ -43,7 +44,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool visibility = true;
   bool visibility2 = true;
   int signPage = 0;
-  PackageInfo? packageInfo;
+  // PackageInfo? packageInfo;
   String resetToken = "", uid = "";
   File? selectedImage;
   String _value = "0";
@@ -137,9 +138,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   //   );
   // }
 
-  void getAppDetails() async {
-    packageInfo = await PackageInfo.fromPlatform();
-  }
+  // void getAppDetails() async {
+  //   packageInfo = await PackageInfo.fromPlatform();
+  // }
 
   @override
   void initState() {
@@ -150,7 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passConfirmController = TextEditingController();
     _desController = TextEditingController();
     _otpController = TextEditingController();
-    getAppDetails();
+    // getAppDetails();
 
     super.initState();
   }
@@ -249,7 +250,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           height: (signPage == 0)
                               ? 870
                               : (signPage == 4)
-                                  ? 310
+                                  ? 350
                                   : 420,
                           borderRadius: 15,
                           linearGradient:
@@ -1110,6 +1111,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
                                               }
+
+                                              if (response.statusCode == 404) {
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message: responseJson[
+                                                        Keys.message],
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+                                              }
                                             } else {
                                               allAppProvidersProvider
                                                   .isLoadingFunc(false);
@@ -1646,6 +1667,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     isPassConfirmField: false,
                                     icon: Icons.password,
                                     pageIndex: 4,
+                                    maxLen: 8,
                                   ),
                                 ),
                               if (signPage == 4)
@@ -1733,6 +1755,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     setState(() {
                                                       signPage = 1;
                                                     });
+                                                    _otpController.clear();
                                                     allAppProvidersProvider
                                                         .isLoadingFunc(false);
                                                     ScaffoldMessenger.of(
@@ -1839,6 +1862,100 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ),
                                         ),
                                 ),
+                              if (signPage == 4)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Any problem with OTP?",
+                                      style: TextStyle(
+                                        color:
+                                            AppColors.blackLow.withOpacity(0.5),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: (() async {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(true);
+                                        _otpController.clear();
+                                        http.Response response =
+                                            await http.post(
+                                          Uri.parse(
+                                              "${Keys.apiUsersBaseUrl}/resendOTP/${_emailController.text.trim()}/${_emailController.text.trim().split('@')[0]}/$verificationToken"),
+                                          headers: {
+                                            "content-type": "application/json",
+                                            // 'Authorization':
+                                            //     'Bearer $token',
+                                          },
+                                        );
+
+                                        log(response.body);
+
+                                        if (response.statusCode == 200) {
+                                          Map<String, dynamic> responseJson =
+                                              jsonDecode(response.body);
+                                          log(responseJson.toString());
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
+
+                                          if (responseJson["success"]) {
+                                            verificationToken = responseJson[
+                                                "verificationToken"];
+                                            otp = responseJson["otp"];
+                                            setState(() {});
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            _otpController.clear();
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    responseJson["message"],
+                                                context: allAppProvidersContext,
+                                              ),
+                                            );
+                                          } else {
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    responseJson["message"],
+                                                context: allAppProvidersContext,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
+                                          ScaffoldMessenger.of(
+                                                  allAppProvidersContext)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: response.statusCode
+                                                  .toString(),
+                                              context: allAppProvidersContext,
+                                            ),
+                                          );
+                                        }
+                                      }),
+                                      child: const Text(
+                                        "Resend it",
+                                        style: TextStyle(
+                                          color: AppColors.backgroundColour,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -1859,7 +1976,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 }
 
 class AuthTextField extends StatefulWidget {
-  const AuthTextField({
+  AuthTextField({
     super.key,
     required this.controller,
     required this.hintText,
@@ -1869,6 +1986,7 @@ class AuthTextField extends StatefulWidget {
     required this.isPassConfirmField,
     required this.icon,
     required this.pageIndex,
+    this.maxLen,
     // required this.formKey,
   });
   final TextEditingController controller;
@@ -1877,6 +1995,8 @@ class AuthTextField extends StatefulWidget {
   final bool isPassField, isPassConfirmField, isEmailField;
   final IconData icon;
   final int pageIndex;
+  int? maxLen;
+
   // GlobalKey<FormState> formKey;
 
   @override
@@ -1928,6 +2048,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
         bottom: 10,
       ),
       child: TextFormField(
+        maxLength: widget.maxLen,
         enableInteractiveSelection:
             (widget.isPassField || widget.isPassConfirmField) ? false : true,
         decoration: InputDecoration(
@@ -2088,6 +2209,7 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
       child: Consumer<AllAppProviders>(
         builder: (allAppContext, allAppProvider, allAppChild) {
           return TextFormField(
+            textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               counterText: "",
               suffixText: (widget.desField != null && widget.desField == true)

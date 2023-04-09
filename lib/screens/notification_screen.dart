@@ -2,13 +2,46 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:lottie/lottie.dart';
 import 'package:task_app/styles.dart';
 
 import '../widgets/email_us_screen_widgets.dart';
 
-class NotificationScreen extends StatelessWidget {
+class NotificationScreen extends StatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  BannerAd? bannerAd;
+  bool isBannerAdLoaded = false;
+
+  @override
+  void initState() {
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-7050103229809241/9957831559",
+      listener: BannerAdListener(
+        onAdLoaded: ((ad) {
+          setState(() {
+            isBannerAdLoaded = true;
+          });
+        }),
+      ),
+      request: const AdRequest(),
+    );
+    bannerAd!.load();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    bannerAd?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +62,16 @@ class NotificationScreen extends StatelessWidget {
             heading: "Notifications",
           ),
         ),
+        bottomNavigationBar: (isBannerAdLoaded)
+            ? Container(
+                color: AppColors.mainColor,
+                width: MediaQuery.of(context).size.width,
+                height: bannerAd!.size.height.toDouble(),
+                child: AdWidget(
+                  ad: bannerAd!,
+                ),
+              )
+            : null,
         body: FutureBuilder(
           future: AwesomeNotifications().listScheduledNotifications(),
           builder: (BuildContext notificationContext,

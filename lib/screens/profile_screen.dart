@@ -6,7 +6,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,10 +32,17 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String name = "", email = "", profilePic = "", profession = "", des = "";
+  BannerAd? bannerAd;
+  RewardedAd? rewardedAd;
+  RewardedAd? rewardedAd2;
+  NativeAd? nativeAd;
+  bool isBannerAdLoaded = false;
+  bool isNativeAdLoaded = false;
 
   bool phoneVisibility = false;
   bool desVisibility = false;
   bool skillVisibility = false;
+  bool emailVisibility = true;
   int rate = 0;
   // int totalPending = 0;
   // int totalDone = 5;
@@ -63,6 +72,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _keySkillController = TextEditingController();
     getDetails();
     completionRate();
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: "ca-app-pub-7050103229809241/8475560629",
+      listener: BannerAdListener(
+        onAdLoaded: ((ad) {
+          setState(() {
+            isBannerAdLoaded = true;
+          });
+        }),
+      ),
+      request: const AdRequest(),
+    );
+    bannerAd!.load();
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-7050103229809241/4189665409",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          // print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
+    );
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-7050103229809241/9189381656",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd2 = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          // print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
+    );
+    nativeAd = NativeAd(
+      adUnitId: "ca-app-pub-7050103229809241/9680336245",
+      factoryId: "listTile",
+      listener: NativeAdListener(
+        onAdLoaded: ((ad) {
+          setState(() {
+            isNativeAdLoaded = true;
+          });
+        }),
+        onAdFailedToLoad: ((ad, err) {
+          nativeAd?.dispose();
+        }),
+      ),
+      request: const AdRequest(),
+    );
+    nativeAd!.load();
+
     super.initState();
   }
 
@@ -70,6 +133,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     _phoneController.dispose();
     _desController.dispose();
+    bannerAd?.dispose();
+    nativeAd?.dispose();
+    rewardedAd?.dispose();
+    rewardedAd2?.dispose();
     super.dispose();
   }
 
@@ -124,10 +191,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }),
           ),
           title: const CustomAppBarTitle(
-            heading: "Profile progress",
+            heading: "Profile Progress",
           ),
         ),
         backgroundColor: AppColors.mainColor,
+        bottomNavigationBar: (isBannerAdLoaded)
+            ? Container(
+                color: AppColors.mainColor,
+                width: MediaQuery.of(context).size.width,
+                height: bannerAd!.size.height.toDouble(),
+                child: AdWidget(
+                  ad: bannerAd!,
+                ),
+              )
+            : null,
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
@@ -244,7 +321,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                               ],
                             ),
-                          if (profilePic.isEmpty) Container(),
+                          if (profilePic.isEmpty)
+                            const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
+                            ),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,30 +374,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                               ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.email,
-                                    color: AppColors.grey,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text(
-                                    email,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      overflow: TextOverflow.clip,
-                                      color:
-                                          AppColors.blackLow.withOpacity(0.5),
+                              if (emailVisibility)
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                              if (emailVisibility)
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.email,
+                                      color: AppColors.grey,
+                                      size: 20,
                                     ),
-                                  ),
-                                ],
-                              ),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      email,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        overflow: TextOverflow.clip,
+                                        color:
+                                            AppColors.blackLow.withOpacity(0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               if (phoneVisibility)
                                 const SizedBox(
                                   height: 5,
@@ -475,12 +559,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 GestureDetector(
                   onTap: (() {
                     setState(() {
-                      phoneVisibility = !phoneVisibility;
+                      emailVisibility = !emailVisibility;
                     });
                   }),
                   child: GlassmorphicContainer(
                     margin: const EdgeInsets.only(
                       top: 30,
+                      bottom: 15,
+                      left: 30,
+                      right: 30,
+                    ),
+                    width: size.width,
+                    height: 35,
+                    borderRadius: 20,
+                    linearGradient: AppColors.customGlassIconButtonGradient,
+                    border: 2,
+                    blur: 3,
+                    borderGradient:
+                        AppColors.customGlassIconButtonBorderGradient,
+                    child: Center(
+                      child: (emailVisibility)
+                          ? Text(
+                              "Hide Email",
+                              style: AppColors.subHeadingTextStyle,
+                            )
+                          : Text(
+                              "Show Email",
+                              style: AppColors.subHeadingTextStyle,
+                            ),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: (() {
+                    setState(() {
+                      phoneVisibility = !phoneVisibility;
+                    });
+                  }),
+                  child: GlassmorphicContainer(
+                    margin: const EdgeInsets.only(
+                      top: 10,
                       bottom: 15,
                       left: 30,
                       right: 30,
@@ -835,8 +953,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       }
 
-                      final visitingCard =
-                          await _screenshotController.capture();
+                      allAppProvider.isLoadingFunc(true);
+
+                      await rewardedAd?.show(
+                        onUserEarnedReward: ((ad, point) {}),
+                      );
+
+                      rewardedAd?.fullScreenContentCallback =
+                          FullScreenContentCallback(
+                        onAdClicked: ((ad) {}),
+                        onAdDismissedFullScreenContent: ((ad) async {
+                          // print("ad dismissed");
+                          log(ad.adUnitId.toString());
+                          final visitingCard =
+                              await _screenshotController.capture();
+                          final directory = await getTemporaryDirectory();
+                          final path =
+                              "${directory.path}/achivie_visiting_card.png";
+                          File(path).writeAsBytesSync(visitingCard!);
+                          const link = "https://achivie.com";
+
+                          await Share.shareFiles(
+                            [path],
+                            text:
+                                "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
+                          ).then((value) {
+                            ScaffoldMessenger.of(allAppContext).showSnackBar(
+                              AppSnackbar().customizedAppSnackbar(
+                                message:
+                                    "Your progress card was shared successfully",
+                                context: allAppContext,
+                              ),
+                            );
+                            Navigator.pop(context);
+                          });
+                        }),
+                        onAdFailedToShowFullScreenContent: ((ad, err) {
+                          ad.dispose();
+                          // print("ad error $err");
+                        }),
+                        onAdImpression: ((ad) {}),
+                        onAdShowedFullScreenContent: ((ad) {
+                          // print("ad shown ${ad.responseInfo}");
+                        }),
+                        onAdWillDismissFullScreenContent: ((ad) async {
+                          log(ad.adUnitId.toString());
+                          final visitingCard =
+                              await _screenshotController.capture();
+                          final directory = await getTemporaryDirectory();
+                          final path =
+                              "${directory.path}/achivie_visiting_card.png";
+                          File(path).writeAsBytesSync(visitingCard!);
+                          const link = "https://achivie.com";
+
+                          await Share.shareFiles(
+                            [path],
+                            text:
+                                "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
+                          ).then((value) {
+                            ScaffoldMessenger.of(allAppContext).showSnackBar(
+                              AppSnackbar().customizedAppSnackbar(
+                                message:
+                                    "Your progress card was shared successfully",
+                                context: allAppContext,
+                              ),
+                            );
+
+                            Navigator.pop(context);
+                          });
+                        }),
+                      );
+
+                      allAppProvider.isLoadingFunc(false);
 
                       // final date = DateTime.now()
                       //     .toIso8601String()
@@ -848,23 +1036,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       //         visitingCard!,
                       //         name: "achivie_visiting_card_$date");
 
-                      final directory = await getTemporaryDirectory();
-                      final path =
-                          "${directory.path}/achivie_visiting_card.png";
-                      File(path).writeAsBytesSync(visitingCard!);
-
                       // XFile file = XFile.fromData(visitingCard!);
                       // final image = XFile(path);
                       // image.(visitingCard!);
-
-                      const link =
-                          "https://play.google.com/store/apps/details?id=com.apnatime&ref=w&utm_source=Apna+Main+Website&utm_medium=Internal+Navigation&utm_campaign=Internal+Navigation&_height=900&_width=1440&_branch_match_id=1165740843525340250&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXz9FLLMhL1EvO189yci02cXRPz6hMso/PSM1MzyixtTQwUIsvz0wpybA1NDExAABv9FuFNQAAAA%3D%3D&pli=1";
-
-                      await Share.shareFiles(
-                        [path],
-                        text:
-                            "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
-                      );
                     }),
                     child: GlassmorphicContainer(
                       margin: const EdgeInsets.only(
@@ -882,10 +1056,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderGradient:
                           AppColors.customGlassIconButtonBorderGradient,
                       child: Center(
-                        child: Text(
-                          "Share Your Progress",
-                          style: AppColors.subHeadingTextStyle,
-                        ),
+                        child: (allAppProvider.isLoading)
+                            ? Lottie.asset("assets/loading-animation.json")
+                            : Text(
+                                "Share Your Progress",
+                                style: AppColors.subHeadingTextStyle,
+                              ),
                       ),
                     ),
                   );
@@ -1029,25 +1205,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   return GestureDetector(
                     onTap: (() async {
                       allAppProvider.isLoadingFunc(true);
-                      // final visitingCard =
-                      //     await _screenshotController.capture();
 
-                      // final date = DateTime.now()
-                      //     .toIso8601String()
-                      //     .replaceAll(".", "-")
-                      //     .replaceAll(":", "-");
-
-                      // final savedFile = await ImageGallerySaver.saveImage(
-                      //   visitingCard!,
-                      //   name: "achivie_visiting_card_$date",
-                      //   quality: 100,
-                      //   isReturnImagePathOfIOS: true,
-                      // );
-
-                      AppSnackbar().customizedAppSnackbar(
-                        message: "Your progress card was saved successfully",
-                        context: context,
+                      await rewardedAd2?.show(
+                        onUserEarnedReward: ((ad, point) {}),
                       );
+
+                      rewardedAd2?.fullScreenContentCallback =
+                          FullScreenContentCallback(
+                        onAdClicked: ((ad) {}),
+                        onAdDismissedFullScreenContent: ((ad) async {
+                          // print("ad dismissed");
+                          final visitingCard =
+                              await _screenshotController.capture();
+
+                          final date = DateTime.now()
+                              .toIso8601String()
+                              .replaceAll(".", "-")
+                              .replaceAll(":", "-");
+
+                          await ImageGallerySaver.saveImage(
+                            visitingCard!,
+                            name: "achivie_visiting_card_$date",
+                            quality: 100,
+                            isReturnImagePathOfIOS: true,
+                          );
+
+                          ScaffoldMessenger.of(allAppContext).showSnackBar(
+                            AppSnackbar().customizedAppSnackbar(
+                              message:
+                                  "Your progress card was saved successfully",
+                              context: allAppContext,
+                            ),
+                          );
+                        }),
+                        onAdFailedToShowFullScreenContent: ((ad, err) {
+                          ad.dispose();
+                          // print("ad error $err");
+                        }),
+                        onAdImpression: ((ad) {}),
+                        onAdShowedFullScreenContent: ((ad) {
+                          // print("ad shown ${ad.responseInfo}");
+                        }),
+                        onAdWillDismissFullScreenContent: ((ad) async {
+                          final visitingCard =
+                              await _screenshotController.capture();
+
+                          final date = DateTime.now()
+                              .toIso8601String()
+                              .replaceAll(".", "-")
+                              .replaceAll(":", "-");
+
+                          await ImageGallerySaver.saveImage(
+                            visitingCard!,
+                            name: "achivie_visiting_card_$date",
+                            quality: 100,
+                            isReturnImagePathOfIOS: true,
+                          );
+
+                          ScaffoldMessenger.of(allAppContext).showSnackBar(
+                            AppSnackbar().customizedAppSnackbar(
+                              message:
+                                  "Your progress card was saved successfully",
+                              context: allAppContext,
+                            ),
+                          );
+                        }),
+                      );
+
+                      log("saved");
+
                       allAppProvider.isLoadingFunc(false);
                     }),
                     child: GlassmorphicContainer(
@@ -1076,6 +1302,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   );
                 }),
+                if (isNativeAdLoaded)
+                  NativeAdContainer(
+                    size: MediaQuery.of(context).size,
+                    nativeAd: nativeAd!,
+                  ),
               ],
             ),
           ),
