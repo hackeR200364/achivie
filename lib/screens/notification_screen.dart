@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:lottie/lottie.dart';
-import 'package:task_app/styles.dart';
 
+import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
 
 class NotificationScreen extends StatefulWidget {

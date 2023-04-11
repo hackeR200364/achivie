@@ -1,12 +1,13 @@
+import 'package:achivie/screens/send_sms_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
-import 'package:task_app/screens/email_us_screen.dart';
-import 'package:task_app/screens/home_screen.dart';
-import 'package:task_app/screens/info_screen.dart';
-import 'package:task_app/screens/menu_screen.dart';
-import 'package:task_app/screens/send_sms_screen.dart';
-import 'package:task_app/styles.dart';
+
+import '../styles.dart';
+import 'email_us_screen.dart';
+import 'home_screen.dart';
+import 'info_screen.dart';
+import 'menu_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);

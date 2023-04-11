@@ -15,12 +15,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:task_app/Utils/snackbar_utils.dart';
-import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/services/keys.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
 
+import '../Utils/snackbar_utils.dart';
+import '../providers/app_providers.dart';
+import '../services/keys.dart';
+import '../services/shared_preferences.dart';
+import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
 
 class ProfileScreen extends StatefulWidget {

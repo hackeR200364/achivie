@@ -2,15 +2,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/config.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
 
+import '../services/shared_preferences.dart';
+import '../styles.dart';
 import '../widgets/menu_screen_widgets.dart';
 
 class MenuScreen extends StatefulWidget {
   final ValueSetter setIndex;
   int selectedIndex = 0;
   ZoomDrawerController zoomDrawerController;
+
   MenuScreen({
     super.key,
     required this.setIndex,

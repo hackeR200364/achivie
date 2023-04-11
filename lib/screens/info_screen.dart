@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:task_app/styles.dart';
-import 'package:task_app/widgets/menu_screen_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../Utils/custom_glass_icon.dart';
 import '../models/info_list_model.dart';
+import '../styles.dart';
+import '../widgets/menu_screen_widgets.dart';
 
 class InfoScreen extends StatefulWidget {
   const InfoScreen({Key? key}) : super(key: key);
@@ -325,7 +325,7 @@ class InfoPageSocialsWidget extends StatelessWidget {
             onTap: (() async {
               await launchUrl(
                 Uri.parse(
-                  "https://www.linkedin.com/in/rupam-karmakar-411157212/",
+                  "https://achivie.com",
                 ),
                 mode: LaunchMode.externalNonBrowserApplication,
               );

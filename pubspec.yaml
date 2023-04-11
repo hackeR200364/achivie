@@ -1,5 +1,5 @@
-name: task_app
-description: A new Flutter project.
+name: achivie
+description: Say goodbye to endless to-do lists and boost your productivity with Achivie. Streamline your workflow and conquer your schedule with ease.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -79,6 +79,7 @@ dependencies:
   share_plus:
   path_provider:
   image_picker:
+  change_app_package_name:
 #  pinput:
 
 dev_dependencies:

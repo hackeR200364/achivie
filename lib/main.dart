@@ -1,5 +1,12 @@
 import 'dart:developer';
 
+import 'package:achivie/providers/app_providers.dart';
+import 'package:achivie/providers/song_playing_provider.dart';
+import 'package:achivie/providers/user_details_providers.dart';
+import 'package:achivie/screens/splash_screen.dart';
+import 'package:achivie/services/keys.dart';
+import 'package:achivie/services/shared_preferences.dart';
+import 'package:achivie/styles.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +16,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/providers/song_playing_provider.dart';
-import 'package:task_app/providers/user_details_providers.dart';
-import 'package:task_app/screens/splash_screen.dart';
-import 'package:task_app/services/keys.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
 
 Future main() async {
   FlutterNativeSplash.preserve(
