@@ -1,11 +1,11 @@
+import 'package:achivie/screens/sign_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:task_app/Utils/snackbar_utils.dart';
-import 'package:task_app/screens/sign_screen.dart';
-import 'package:task_app/styles.dart';
 
+import '../Utils/snackbar_utils.dart';
 import '../services/shared_preferences.dart';
+import '../styles.dart';
 import 'main_screen.dart';
 
 class PermissionDeniedScreen extends StatefulWidget {

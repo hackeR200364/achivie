@@ -7,13 +7,13 @@ import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/screens/profile_screen.dart';
-import 'package:task_app/screens/sign_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/app_providers.dart';
 import '../providers/user_details_providers.dart';
 import '../screens/menu_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/sign_screen.dart';
 import '../services/notification_services.dart';
 import '../services/shared_preferences.dart';
 import '../styles.dart';

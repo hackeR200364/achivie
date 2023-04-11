@@ -14,14 +14,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 // import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/Utils/snackbar_utils.dart';
-import 'package:task_app/models/profession_model.dart';
-import 'package:task_app/providers/app_providers.dart';
-import 'package:task_app/screens/main_screen.dart';
-import 'package:task_app/services/keys.dart';
-import 'package:task_app/styles.dart';
 
+import '../Utils/snackbar_utils.dart';
+import '../models/profession_model.dart';
+import '../providers/app_providers.dart';
+import '../services/keys.dart';
 import '../services/shared_preferences.dart';
+import '../styles.dart';
+import 'main_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);

@@ -12,15 +12,15 @@ import 'package:interval_time_picker/interval_time_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/Utils/custom_glass_icon.dart';
-import 'package:task_app/Utils/custom_text_field_utils.dart';
-import 'package:task_app/Utils/snackbar_utils.dart';
-import 'package:task_app/services/notification_services.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
 
+import '../Utils/custom_glass_icon.dart';
+import '../Utils/custom_text_field_utils.dart';
+import '../Utils/snackbar_utils.dart';
 import '../providers/app_providers.dart';
 import '../services/keys.dart';
+import '../services/notification_services.dart';
+import '../services/shared_preferences.dart';
+import '../styles.dart';
 
 class NewTaskScreen extends StatefulWidget {
   const NewTaskScreen({

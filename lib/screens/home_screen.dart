@@ -12,17 +12,17 @@ import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/Utils/custom_glass_icon.dart';
-import 'package:task_app/providers/song_playing_provider.dart';
-import 'package:task_app/screens/notification_screen.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
-import 'package:task_app/widgets/email_us_screen_widgets.dart';
 import 'package:telephony/telephony.dart';
 
+import '../Utils/custom_glass_icon.dart';
+import '../providers/song_playing_provider.dart';
 import '../services/keys.dart';
+import '../services/shared_preferences.dart';
+import '../styles.dart';
+import '../widgets/email_us_screen_widgets.dart';
 import '../widgets/home_screen_widgets.dart';
 import 'new_task_screen.dart';
+import 'notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({

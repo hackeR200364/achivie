@@ -1,13 +1,14 @@
 import 'dart:async';
 
+import 'package:achivie/screens/permission_denied_screen.dart';
+import 'package:achivie/screens/sign_screen.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:task_app/screens/main_screen.dart';
-import 'package:task_app/screens/permission_denied_screen.dart';
-import 'package:task_app/screens/sign_screen.dart';
-import 'package:task_app/services/shared_preferences.dart';
-import 'package:task_app/styles.dart';
+
+import '../services/shared_preferences.dart';
+import '../styles.dart';
+import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);

@@ -1,4 +1,4 @@
-package com.example.task_app
+package com.achivie.achivie
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

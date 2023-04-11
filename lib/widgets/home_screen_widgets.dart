@@ -16,13 +16,13 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
-import 'package:task_app/screens/profile_screen.dart';
 
 import '../Utils/snackbar_utils.dart';
 import '../providers/app_providers.dart';
 import '../providers/user_details_providers.dart';
 import '../screens/home_screen.dart';
 import '../screens/new_task_screen.dart';
+import '../screens/profile_screen.dart';
 import '../services/keys.dart';
 import '../services/notification_services.dart';
 import '../styles.dart';
