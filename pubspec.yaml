@@ -80,6 +80,7 @@ dependencies:
   path_provider:
   image_picker:
   change_app_package_name:
+  rename: any
 #  pinput:
 
 dev_dependencies:
