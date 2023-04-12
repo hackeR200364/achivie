@@ -1872,32 +1872,17 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                 );
                                 NotificationServices()
                                     .createScheduledTaskNotification(
-                                  title: snapshotList[listIndex][Keys.taskName],
-                                  body:
-                                      "${snapshotList[listIndex][Keys.taskName]}\n${snapshotList[listIndex][Keys.taskDes]}",
-                                  id: snapshotList[listIndex]
-                                      [Keys.notificationID],
-                                  payload: "",
-                                  dateTime: taskSavedDate,
-                                );
+                                      title: snapshotList[listIndex]
+                                          [Keys.taskName],
+                                      body:
+                                          "${snapshotList[listIndex][Keys.taskName]}\n${snapshotList[listIndex][Keys.taskDes]}",
+                                      id: snapshotList[listIndex]
+                                          [Keys.notificationID],
+                                      payload: "",
+                                      dateTime: taskSavedDate,
+                                    )
+                                    .then((value) {});
                               }
-
-                              showDialog(
-                                context: streamContext,
-                                builder: (BuildContext unDoneContext) {
-                                  Future.delayed(
-                                    const Duration(
-                                      seconds: 2,
-                                    ),
-                                    (() {
-                                      Navigator.pop(unDoneContext);
-                                    }),
-                                  );
-                                  return const TaskUnDoneDialogChild();
-                                },
-                              ).then((value) async {
-                                // await widget.refresh;
-                              });
 
                               NotificationServices()
                                   .createScheduledTaskNotification(
@@ -1908,7 +1893,25 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     [Keys.notificationID],
                                 payload: snapshotList[listIndex][Keys.taskName],
                                 dateTime: taskSavedDate,
-                              );
+                              )
+                                  .then((value) {
+                                showDialog(
+                                  context: streamContext,
+                                  builder: (BuildContext unDoneContext) {
+                                    Future.delayed(
+                                      const Duration(
+                                        seconds: 2,
+                                      ),
+                                      (() {
+                                        Navigator.pop(unDoneContext);
+                                      }),
+                                    );
+                                    return const TaskUnDoneDialogChild();
+                                  },
+                                ).then((value) async {
+                                  // await widget.refresh;
+                                });
+                              });
                             } else {
                               AppSnackbar().customizedAppSnackbar(
                                 message: unDoneResponseJson["message"],
@@ -1969,32 +1972,33 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                     .cancelTaskScheduledNotification(
                                   id: snapshotList[listIndex]
                                       [Keys.notificationID],
-                                );
+                                )
+                                    .then((value) {
+                                  showDialog(
+                                    context: streamContext,
+                                    builder: (BuildContext doneContext) {
+                                      Future.delayed(
+                                        const Duration(
+                                          seconds: 2,
+                                        ),
+                                        (() {
+                                          Navigator.pop(doneContext);
+                                          // widget.refresh;
+                                        }),
+                                      );
+                                      return TaskDialog(
+                                        animation:
+                                            "assets/success-done-animation.json",
+                                        headMessage: "Congratulations",
+                                        subMessage: "You completed your task",
+                                        subMessageBottomDivision: 5,
+                                      );
+                                    },
+                                  ).then((value) async {
+                                    // await widget.refresh;
+                                  });
+                                });
                               }
-
-                              showDialog(
-                                context: streamContext,
-                                builder: (BuildContext doneContext) {
-                                  Future.delayed(
-                                    const Duration(
-                                      seconds: 2,
-                                    ),
-                                    (() {
-                                      Navigator.pop(doneContext);
-                                      // widget.refresh;
-                                    }),
-                                  );
-                                  return TaskDialog(
-                                    animation:
-                                        "assets/success-done-animation.json",
-                                    headMessage: "Congratulations",
-                                    subMessage: "You completed your task",
-                                    subMessageBottomDivision: 5,
-                                  );
-                                },
-                              ).then((value) async {
-                                // await widget.refresh;
-                              });
                             } else {
                               AppSnackbar().customizedAppSnackbar(
                                 message: doneResponseJson["message"],
@@ -2194,30 +2198,31 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                   payload: snapshotList[listIndex]
                                       [Keys.taskDes],
                                   dateTime: taskSavedDate,
-                                );
-
-                                showDialog(
-                                  context: streamContext,
-                                  builder: (BuildContext undoContext) {
-                                    Future.delayed(
-                                      const Duration(
-                                        seconds: 2,
-                                      ),
-                                      (() {
-                                        Navigator.pop(undoContext);
-                                        // widget.refresh;
-                                      }),
-                                    );
-                                    return TaskDialog(
-                                      animation:
-                                          "assets/success-done-animation.json",
-                                      headMessage: "Woohooo...!",
-                                      subMessage:
-                                          "Your this message is brought back as pending",
-                                      subMessageBottomDivision: 6,
-                                    );
-                                  },
-                                );
+                                )
+                                    .then((value) {
+                                  return showDialog(
+                                    context: streamContext,
+                                    builder: (BuildContext undoContext) {
+                                      Future.delayed(
+                                        const Duration(
+                                          seconds: 2,
+                                        ),
+                                        (() {
+                                          Navigator.pop(undoContext);
+                                          // widget.refresh;
+                                        }),
+                                      );
+                                      return TaskDialog(
+                                        animation:
+                                            "assets/success-done-animation.json",
+                                        headMessage: "Woohooo...!",
+                                        subMessage:
+                                            "Your this message is brought back as pending",
+                                        subMessageBottomDivision: 6,
+                                      );
+                                    },
+                                  );
+                                });
                               } else {
                                 AppSnackbar().customizedAppSnackbar(
                                   message: undoResponseJson["message"],
@@ -2304,28 +2309,30 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                   .cancelTaskScheduledNotification(
                                 id: snapshotList[listIndex]
                                     [Keys.notificationID],
-                              );
-
-                              showDialog(
-                                context: streamContext,
-                                builder: (BuildContext deleteContext) {
-                                  Future.delayed(
-                                    const Duration(
-                                      seconds: 2,
-                                    ),
-                                    (() {
-                                      Navigator.pop(deleteContext);
-                                    }),
-                                  );
-                                  return TaskDialog(
-                                    animation: "assets/deleted-animation.json",
-                                    headMessage: "Deleted!",
-                                    subMessage: "Your this task is deleted",
-                                    subMessageBottomDivision: 5,
-                                  );
-                                },
-                              ).then((value) {
-                                // widget.refresh;
+                              )
+                                  .then((value) {
+                                return showDialog(
+                                  context: streamContext,
+                                  builder: (BuildContext deleteContext) {
+                                    Future.delayed(
+                                      const Duration(
+                                        seconds: 2,
+                                      ),
+                                      (() {
+                                        Navigator.pop(deleteContext);
+                                      }),
+                                    );
+                                    return TaskDialog(
+                                      animation:
+                                          "assets/deleted-animation.json",
+                                      headMessage: "Deleted!",
+                                      subMessage: "Your this task is deleted",
+                                      subMessageBottomDivision: 5,
+                                    );
+                                  },
+                                ).then((value) {
+                                  // widget.refresh;
+                                });
                               });
                             } else {
                               AppSnackbar().customizedAppSnackbar(

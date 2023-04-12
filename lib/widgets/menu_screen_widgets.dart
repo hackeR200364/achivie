@@ -195,7 +195,7 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (logoutContext) => SignUpScreen(),
+            builder: (logoutContext) => const SignUpScreen(),
           ),
         );
       }),
@@ -258,8 +258,6 @@ class MenuScreenSocialSecondRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double spacerWidth = MediaQuery.of(context).size.width / 15;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

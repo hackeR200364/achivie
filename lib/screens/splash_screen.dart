@@ -122,7 +122,7 @@ class _SplashScreenState extends State<SplashScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              "assets/logo.png",
+              "assets/logo-first-splash.png",
               scale: 1,
               height: MediaQuery.of(context).size.height / 3,
               opacity: _animation,

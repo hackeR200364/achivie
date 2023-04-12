@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,11 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     usrPoints();
+    Timer.periodic(const Duration(seconds: 15), (timer) async {
+      points = await StorageServices.getUsrPoints();
+      log("time started");
+      // setState(() {});
+    });
     super.initState();
   }
 
