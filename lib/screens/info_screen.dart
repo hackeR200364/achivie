@@ -295,10 +295,10 @@ class InfoScreenMainGlassContainerChild extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const MenuScreenSocialFirstRow(),
-        // const SizedBox(
-        //   height: 15,
-        // ),
-        // const MenuScreenSocialSecondRow(),
+        const SizedBox(
+          height: 15,
+        ),
+        const MenuScreenSocialSecondRow(),
         SizedBox(
           height: MediaQuery.of(context).size.height / 20,
         ),
@@ -332,20 +332,20 @@ class InfoPageSocialsWidget extends StatelessWidget {
             }),
             title: "Visit Website",
           ),
-          const SizedBox(
-            height: 20,
-          ),
-          MenuScreenExtraButton(
-            onTap: (() async {
-              await launchUrl(
-                Uri.parse(
-                  "https://github.com/hackeR200364/task_app",
-                ),
-                mode: LaunchMode.externalNonBrowserApplication,
-              );
-            }),
-            title: "GitHub Repository",
-          ),
+          // const SizedBox(
+          //   height: 20,
+          // ),
+          // MenuScreenExtraButton(
+          //   onTap: (() async {
+          //     await launchUrl(
+          //       Uri.parse(
+          //         "https://github.com/hackeR200364/task_app",
+          //       ),
+          //       mode: LaunchMode.externalNonBrowserApplication,
+          //     );
+          //   }),
+          //   title: "GitHub Repository",
+          // ),
         ],
       ),
     );
