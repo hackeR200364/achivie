@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -93,6 +94,8 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
         CustomBottomSubmitButton(
           title: "Send Email",
           onTap: (() async {
+            HapticFeedback.mediumImpact();
+
             widget.subjectFocusNode.unfocus();
             widget.bodyFocusNode.unfocus();
             if (widget._subjectController.text.isNotEmpty &&

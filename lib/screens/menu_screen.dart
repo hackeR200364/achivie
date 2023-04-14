@@ -42,7 +42,7 @@ class _MenuScreenState extends State<MenuScreen> {
   void reassemble() {
     super.reassemble();
     usrPoints();
-    log("message");
+    // log("message");
   }
 
   usrPoints() async {

@@ -38,6 +38,7 @@ class Keys {
   static const String deleteStatus = "Deleted";
   static const String notDeleteStatus = "Deleted";
   static const String notificationID = "notificationID";
+  static const String schedule = "schedule";
   static const String tasksInstantChannelKey = "tasks_instant_channel";
   static const String tasksInstantChannelName = "Tasks_Instant";
   static const String tasksInstantChannelDes = "Instant Tasks Notifications";
