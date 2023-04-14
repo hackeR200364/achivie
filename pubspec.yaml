@@ -68,7 +68,7 @@ dependencies:
   telephony:
   smooth_page_indicator:
   nowplaying:
-#  flutter_local_notifications: ^13.0.0
+  flutter_local_notifications: ^13.0.0
   flutter_marquee:
 #  app_settings:
   flutter_native_splash:

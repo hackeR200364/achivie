@@ -1085,26 +1085,33 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    // log((size.width / 40).round().toString());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // if (userDetailsProviderProvider.userName.trim().split(" ").length < 3)
-        //   Center(
-        //     child: Text(
-        //       userDetailsProviderProvider.userName,
-        //       style: AppColors.headingTextStyle,
-        //     ),
-        //   ),
-        // if (userDetailsProviderProvider.userName.trim().split(" ").length > 2)
-        SizedBox(
-          height: 41 / 2.2,
-          child: flutter_marquee.Marquee(
-            textStyle: AppColors.headingTextStyle,
-            str: userDetailsProviderProvider.userName,
-            containerWidth: MediaQuery.of(context).size.width,
+        if (userDetailsProviderProvider.userName.trim().length <
+            (size.width / 40).round())
+          Center(
+            child: Text(
+              userDetailsProviderProvider.userName.trim(),
+              style: AppColors.headingTextStyle,
+            ),
           ),
-        ),
+        if (userDetailsProviderProvider.userName.trim().length >
+            (size.width / 40).round())
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            // height: 41 / 2.3,
+            child: Center(
+              child: flutter_marquee.Marquee(
+                textStyle: AppColors.headingTextStyle,
+                str: userDetailsProviderProvider.userName.trim(),
+                containerWidth: MediaQuery.of(context).size.width,
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -528,7 +528,6 @@ class MenuScreenProfileContainer extends StatelessWidget {
         return InkWell(
           onTap: (() {
             HapticFeedback.mediumImpact();
-
             ZoomDrawer.of(context)!.toggle();
             Navigator.push(
               _,
@@ -569,28 +568,33 @@ class MenuScreenProfileContainerChildColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+
     // log(MediaQuery.of(context).size.width.toString());
     return Center(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // if (name.trim().split(" ").length < 2)
-          //   Center(
-          //     child: Text(
-          //       "namehhhhhhggggg",
-          //       style: AppColors.headingTextStyle,
-          //     ),
-          //   ),
-          // if (name.trim().split(" ").length > 1)
-          SizedBox(
-            height: 41 / 2,
-            child: flutter_marquee.Marquee(
-              textStyle: AppColors.headingTextStyle,
-              str: name,
-              containerWidth: MediaQuery.of(context).size.width,
+          if (name.trim().length < (size.width / 40).round())
+            Center(
+              child: Text(
+                name.trim(),
+                style: AppColors.headingTextStyle,
+              ),
             ),
-          ),
+          if (name.trim().length > (size.width / 40).round())
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              // height: 41 / 2.3,
+              child: Center(
+                child: flutter_marquee.Marquee(
+                  textStyle: AppColors.headingTextStyle,
+                  str: name.trim(),
+                  containerWidth: MediaQuery.of(context).size.width,
+                ),
+              ),
+            ),
           const SizedBox(
             height: 2,
           ),
