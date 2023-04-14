@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_marquee/flutter_marquee.dart' as flutter_marquee;
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:marquee/marquee.dart';
 import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -121,6 +122,8 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MenuScreenExtraButton(
       onTap: (() {
+        HapticFeedback.lightImpact();
+
         allAppProvider.isLoadingFunc(false);
         const CircularProgressIndicator(
           color: AppColors.backgroundColour,
@@ -170,6 +173,8 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: (() async {
+        HapticFeedback.lightImpact();
+
         await NotificationServices().cancelTasksNotification();
 
         StorageServices.setUsrName("");
@@ -229,6 +234,8 @@ class MenuScreenLogoutBottomSheetCancelButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: (() {
+        HapticFeedback.heavyImpact();
+
         Navigator.pop(googleSignInContext);
       }),
       child: Container(
@@ -328,6 +335,21 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
             );
           }),
         ),
+        SizedBox(
+          width: spacerWidth,
+        ),
+        MenuScreenSocialMediaButton(
+          icon: "assets/social-icons/linkedIn-logo.png",
+          onPressed: (() async {
+            await launchUrl(
+              Uri.parse(
+                "https://www.linkedin.com/in/rupam-karmakar-411157212/",
+              ),
+              mode: LaunchMode.externalNonBrowserApplication,
+            );
+          }),
+        ),
+
         // SizedBox(
         //   width: spacerWidth,
         // ),
@@ -505,6 +527,8 @@ class MenuScreenProfileContainer extends StatelessWidget {
         );
         return InkWell(
           onTap: (() {
+            HapticFeedback.mediumImpact();
+
             ZoomDrawer.of(context)!.toggle();
             Navigator.push(
               _,
@@ -545,30 +569,28 @@ class MenuScreenProfileContainerChildColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // log(MediaQuery.of(context).size.width.toString());
     return Center(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (name.trim().split(" ").length < 2)
-            Center(
-              child: Text(
-                name,
-                style: AppColors.headingTextStyle,
-              ),
+          // if (name.trim().split(" ").length < 2)
+          //   Center(
+          //     child: Text(
+          //       "namehhhhhhggggg",
+          //       style: AppColors.headingTextStyle,
+          //     ),
+          //   ),
+          // if (name.trim().split(" ").length > 1)
+          SizedBox(
+            height: 41 / 2,
+            child: flutter_marquee.Marquee(
+              textStyle: AppColors.headingTextStyle,
+              str: name,
+              containerWidth: MediaQuery.of(context).size.width,
             ),
-          if (name.trim().split(" ").length > 1)
-            SizedBox(
-              height: 41 / 2,
-              child: Marquee(
-                fadingEdgeStartFraction: 0.2,
-                fadingEdgeEndFraction: 0.2,
-                velocity: 50,
-                blankSpace: 1,
-                text: name.padLeft(30),
-                style: AppColors.headingTextStyle,
-              ),
-            ),
+          ),
           const SizedBox(
             height: 2,
           ),

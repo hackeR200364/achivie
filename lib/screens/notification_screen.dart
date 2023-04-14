@@ -1,8 +1,12 @@
+import 'dart:convert';
+
+import 'package:achivie/services/keys.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 import '../styles.dart';
@@ -43,8 +47,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.dispose();
   }
 
+  String formattedTime(
+    int year,
+    int month,
+    int day,
+    int hour,
+    int minute,
+  ) =>
+      DateFormat.Hm().format(
+        DateTime(
+          year,
+          month,
+          day,
+          hour,
+          minute,
+        ),
+      );
+
+  String formattedDate(
+    int year,
+    int month,
+    int day,
+  ) =>
+      DateFormat("dd/MM/yyyy").format(
+        DateTime(
+          year,
+          month,
+          day,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -86,6 +121,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (BuildContext context, int index) {
                   NotificationModel notification = snapshot.data![index];
+                  var response = jsonDecode(snapshot.data![index].toString());
+                  // log(snapshot.data![index].toString());
+                  // log(response.toString());
                   return Container(
                     margin: const EdgeInsets.only(
                       bottom: 20,
@@ -129,7 +167,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               width: 15,
                             ),
                             SizedBox(
-                              width: MediaQuery.of(context).size.width / 2,
+                              width: MediaQuery.of(context).size.width / 2.5,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -143,7 +181,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     ),
                                   ),
                                   const SizedBox(
-                                    height: 10,
+                                    height: 5,
                                   ),
                                   Text(
                                     notification.content!.body!,
@@ -157,6 +195,38 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             ),
                           ],
                         ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              formattedTime(
+                                response[Keys.schedule]["year"],
+                                response[Keys.schedule]["month"],
+                                response[Keys.schedule]["day"],
+                                response[Keys.schedule]["hour"],
+                                response[Keys.schedule]["minute"],
+                              ),
+                              style: TextStyle(
+                                color: AppColors.white.withOpacity(0.6),
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              formattedDate(
+                                response[Keys.schedule]["year"],
+                                response[Keys.schedule]["month"],
+                                response[Keys.schedule]["day"],
+                              ),
+                              style: TextStyle(
+                                color: AppColors.white.withOpacity(0.6),
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   );

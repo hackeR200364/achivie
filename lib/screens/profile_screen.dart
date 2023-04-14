@@ -532,11 +532,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 children: const [
                                   CircleAvatar(
                                     radius: 10,
-                                    backgroundImage:
-                                        AssetImage("assets/logo.png"),
+                                    backgroundImage: AssetImage(
+                                        "assets/logo-first-splash.png"),
                                   ),
                                   SizedBox(
-                                    width: 10,
+                                    width: 7,
                                   ),
                                   Center(
                                     child: Text(

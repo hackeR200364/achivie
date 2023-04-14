@@ -116,4 +116,10 @@ class AllAppProviders extends ChangeNotifier {
     points = await StorageServices.getUsrPoints();
     notifyListeners();
   }
+
+  bool isImageSelected = false;
+  void isImageSelectedFunc(bool selected) {
+    isImageSelected = selected;
+    notifyListeners();
+  }
 }

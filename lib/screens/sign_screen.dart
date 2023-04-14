@@ -43,6 +43,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late TextEditingController _otpController;
   bool visibility = true;
   bool visibility2 = true;
+  bool selected = false;
+  bool signUpPressed = false;
   int signPage = 0;
   // PackageInfo? packageInfo;
   String resetToken = "", uid = "";
@@ -262,7 +264,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: Column(
                             children: [
                               //SIGN UP
-                              if (signPage == 0)
+                              if (signPage == 0 &&
+                                  selected == true &&
+                                  selectedImage != null)
                                 GestureDetector(
                                   onTap: (() async {
                                     try {
@@ -290,23 +294,108 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             radius: 50,
                                           ),
                                         )
-                                      : Container(
-                                          margin:
-                                              const EdgeInsets.only(top: 20),
-                                          height: 100,
-                                          width: 100,
-                                          decoration: const BoxDecoration(
+                                      : Container(),
+                                ),
+                              if (signPage == 0 &&
+                                  selected == false &&
+                                  selectedImage == null)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 30,
+                                    left: 15,
+                                    right: 15,
+                                    bottom: 10,
+                                  ),
+                                  child: Consumer<AllAppProviders>(
+                                    builder: (allAppContext, allAppProvider,
+                                        allAppChild) {
+                                      return TextFormField(
+                                        onTap: (() async {
+                                          try {
+                                            final image = await ImagePicker()
+                                                .pickImage(
+                                                    source:
+                                                        ImageSource.gallery);
+                                            if (image == null) return;
+
+                                            final imageTemp = File(image.path);
+                                            selectedImage = imageTemp;
+                                            selected = true;
+                                            signUpPressed = false;
+
+                                            setState(() {});
+                                          } on PlatformException catch (e) {
+                                            log(e.toString());
+                                          }
+                                        }),
+                                        textCapitalization:
+                                            TextCapitalization.words,
+                                        decoration: InputDecoration(
+                                          counterText: "",
+                                          prefixIcon: Icon(
+                                            Icons.image,
                                             color: AppColors.white,
-                                            shape: BoxShape.circle,
                                           ),
-                                          child: const Center(
-                                            child: Icon(
-                                              Icons.person,
-                                              size: 70,
-                                              color: AppColors.backgroundColour,
+                                          prefixStyle: const TextStyle(
+                                            color: AppColors.white,
+                                            fontSize: 16,
+                                          ),
+                                          hintText: "Choose Profile Picture",
+                                          hintStyle: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.5),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Colors.white,
+                                              width: 1.0,
                                             ),
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              width: 1,
+                                              color: AppColors.white,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                          ),
+                                          border: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              width: 1,
+                                              color: AppColors.white,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                          ),
+                                          contentPadding: const EdgeInsets.only(
+                                            left: 15,
+                                            right: 15,
                                           ),
                                         ),
+                                        readOnly: true,
+                                        cursorColor: AppColors.white,
+                                        style: const TextStyle(
+                                          color: AppColors.white,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              if (signPage == 0 && signUpPressed == true)
+                                SizedBox(
+                                  width: size.width,
+                                  child: Center(
+                                    child: Text(
+                                      "Please select your profile picture.",
+                                      style: TextStyle(
+                                        color: AppColors.red,
+                                        fontSize: 15,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                  ),
                                 ),
 
                               if (signPage == 0)
@@ -326,7 +415,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   icon: Icons.description,
                                   controller: _desController,
                                   hintText: "Your Short Description",
-                                  maxWords: 100,
+                                  maxWords: 50,
                                   desField: true,
                                 ),
                               if (signPage == 0)
@@ -506,191 +595,187 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                         .trim()) &&
                                                 _desController
                                                     .text.isNotEmpty &&
-                                                selectedImage != null &&
                                                 profession.isNotEmpty &&
                                                 _value.isNotEmpty &&
                                                 _value != "0") {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
-                                                // allAppProvidersProvider
-                                                //     .isLoadingFunc(true);
-                                                // http.Response response =
-                                                //     await http.post(
-                                                //   Uri.parse(
-                                                //       "${Keys.apiUsersBaseUrl}/create"),
-                                                //   headers: {
-                                                //     "content-type":
-                                                //         "application/json",
-                                                //   },
-                                                //   body: jsonEncode({
-                                                //     "usrFirstName":
-                                                //         _firstNameController
-                                                //             .text
-                                                //             .trim(),
-                                                //     "usrLastName":
-                                                //         _lastNameController.text
-                                                //             .trim(),
-                                                //     "usrPassword":
-                                                //         _passController.text
-                                                //             .trim(),
-                                                //     "usrEmail": _emailController
-                                                //         .text
-                                                //         .trim(),
-                                                //     "uid": _emailController.text
-                                                //         .trim()
-                                                //         .split('@')[0],
-                                                //   }),
-                                                // );
+                                                if (selected == true) {
+                                                  var request =
+                                                      http.MultipartRequest(
+                                                    'POST',
+                                                    Uri.parse(
+                                                        "${Keys.apiUsersBaseUrl}/create"),
+                                                  );
 
-                                                var request =
-                                                    http.MultipartRequest(
-                                                  'POST',
-                                                  Uri.parse(
-                                                      "${Keys.apiUsersBaseUrl}/create"),
-                                                );
+                                                  var fileStream =
+                                                      http.ByteStream(
+                                                          selectedImage!
+                                                              .openRead());
+                                                  var length =
+                                                      await selectedImage!
+                                                          .length();
+                                                  var multipartFile =
+                                                      http.MultipartFile(
+                                                    Keys.usrProfilePic,
+                                                    fileStream,
+                                                    length,
+                                                    filename: selectedImage!
+                                                        .path
+                                                        .split('/')
+                                                        .last,
+                                                  );
 
-                                                var fileStream =
-                                                    http.ByteStream(
-                                                        selectedImage!
-                                                            .openRead());
-                                                var length =
-                                                    await selectedImage!
-                                                        .length();
-                                                var multipartFile =
-                                                    http.MultipartFile(
-                                                  Keys.usrProfilePic,
-                                                  fileStream,
-                                                  length,
-                                                  filename: selectedImage!.path
-                                                      .split('/')
-                                                      .last,
-                                                );
+                                                  request.files
+                                                      .add(multipartFile);
 
-                                                request.files
-                                                    .add(multipartFile);
+                                                  request.headers[
+                                                          "content-type"] =
+                                                      "multipart/form-data";
 
-                                                request.headers[
-                                                        "content-type"] =
-                                                    "multipart/form-data";
+                                                  request.fields[
+                                                          Keys.usrFirstName] =
+                                                      _firstNameController.text
+                                                          .trim();
+                                                  request.fields[
+                                                          Keys.usrLastName] =
+                                                      _lastNameController.text
+                                                          .trim();
+                                                  request.fields[
+                                                          Keys.usrPassword] =
+                                                      _passController.text
+                                                          .trim();
+                                                  request.fields[
+                                                          Keys.usrEmail] =
+                                                      _emailController.text
+                                                          .trim();
+                                                  request.fields[Keys.uid] =
+                                                      _emailController.text
+                                                          .trim()
+                                                          .split('@')[0];
+                                                  request.fields[
+                                                          Keys.usrDescription] =
+                                                      _desController.text
+                                                          .trim();
+                                                  request.fields[
+                                                          Keys.usrProfession] =
+                                                      profession;
 
-                                                request.fields[
-                                                        Keys.usrFirstName] =
-                                                    _firstNameController.text
-                                                        .trim();
-                                                request.fields[
-                                                        Keys.usrLastName] =
-                                                    _lastNameController.text
-                                                        .trim();
-                                                request.fields[
-                                                        Keys.usrPassword] =
-                                                    _passController.text.trim();
-                                                request.fields[Keys.usrEmail] =
-                                                    _emailController.text
-                                                        .trim();
-                                                request.fields[Keys.uid] =
-                                                    _emailController.text
-                                                        .trim()
-                                                        .split('@')[0];
-                                                request.fields[
-                                                        Keys.usrDescription] =
-                                                    _desController.text.trim();
-                                                request.fields[
-                                                        Keys.usrProfession] =
-                                                    profession;
+                                                  http.Response response =
+                                                      await http.Response
+                                                          .fromStream(
+                                                              await request
+                                                                  .send());
 
-                                                http.Response response =
-                                                    await http.Response
-                                                        .fromStream(
-                                                            await request
-                                                                .send());
+                                                  Map<String, dynamic>
+                                                      responseJson =
+                                                      await json.decode(
+                                                          response.body);
 
-                                                Map<String, dynamic>
-                                                    responseJson = await json
-                                                        .decode(response.body);
+                                                  log(responseJson.toString());
 
-                                                log(responseJson.toString());
-
-                                                if (response.statusCode ==
-                                                    200) {
-                                                  // log(response.stream
-                                                  //     .bytesToString()
-                                                  //     .toString());
-                                                  StorageServices.setSignInType(
-                                                      Keys.email);
-
-                                                  if (responseJson["success"]) {
-                                                    StorageServices.setUsrName(
-                                                        "${responseJson[Keys.data][0][Keys.usrFirstName]}${responseJson[Keys.data][0][Keys.usrLastName]}");
-
-                                                    StorageServices.setUID(
-                                                        responseJson[Keys.data]
-                                                            [0][Keys.uid]);
-
-                                                    StorageServices.setUsrEmail(
-                                                        responseJson[Keys.data]
-                                                            [0][Keys.usrEmail]);
-
-                                                    StorageServices.setUsrToken(
-                                                        responseJson[
-                                                            Keys.token]);
-
+                                                  if (response.statusCode ==
+                                                      200) {
+                                                    // log(response.stream
+                                                    //     .bytesToString()
+                                                    //     .toString());
                                                     StorageServices
-                                                        .setUsrDescription(
+                                                        .setSignInType(
+                                                            Keys.email);
+
+                                                    if (responseJson[
+                                                        "success"]) {
+                                                      StorageServices.setUsrName(
+                                                          "${responseJson[Keys.data][0][Keys.usrFirstName]}${responseJson[Keys.data][0][Keys.usrLastName]}");
+
+                                                      StorageServices.setUID(
+                                                          responseJson[
+                                                                  Keys.data][0]
+                                                              [Keys.uid]);
+
+                                                      StorageServices.setUsrEmail(
+                                                          responseJson[
+                                                                  Keys.data][0]
+                                                              [Keys.usrEmail]);
+
+                                                      StorageServices
+                                                          .setUsrToken(
+                                                              responseJson[
+                                                                  Keys.token]);
+
+                                                      StorageServices.setUsrDescription(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][0][Keys
+                                                              .usrDescription]);
+
+                                                      StorageServices.setUsrProfilePic(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][0][Keys
+                                                              .usrProfilePic]);
+
+                                                      StorageServices.setUsrProfession(
+                                                          responseJson[
+                                                              Keys
+                                                                  .data][0][Keys
+                                                              .usrProfession]);
+
+                                                      ScaffoldMessenger.of(
+                                                              allAppProvidersContext)
+                                                          .showSnackBar(
+                                                        AppSnackbar()
+                                                            .customizedAppSnackbar(
+                                                          message: responseJson[
+                                                              Keys.message],
+                                                          context: context,
+                                                        ),
+                                                      );
+                                                      String signInType =
+                                                          await StorageServices
+                                                              .getUsrSignInType();
+
+                                                      if (signInType ==
+                                                          Keys.email) {
+                                                        _passController.clear();
+                                                        _firstNameController
+                                                            .clear();
+                                                        _lastNameController
+                                                            .clear();
+                                                        _passConfirmController
+                                                            .clear();
+                                                        _desController.clear();
+                                                        _value = "0";
+                                                        selectedImage = null;
+                                                        verificationToken =
                                                             responseJson[
-                                                                Keys
-                                                                    .data][0][Keys
-                                                                .usrDescription]);
+                                                                "token"];
+                                                        otp =
+                                                            responseJson["otp"];
+                                                        selectedImage = null;
+                                                        selected = false;
+                                                        setState(() {
+                                                          signPage = 4;
+                                                        });
+                                                      }
 
-                                                    StorageServices
-                                                        .setUsrProfilePic(
-                                                            responseJson[
-                                                                Keys
-                                                                    .data][0][Keys
-                                                                .usrProfilePic]);
-
-                                                    StorageServices
-                                                        .setUsrProfession(
-                                                            responseJson[
-                                                                Keys
-                                                                    .data][0][Keys
-                                                                .usrProfession]);
-
-                                                    ScaffoldMessenger.of(
-                                                            allAppProvidersContext)
-                                                        .showSnackBar(
-                                                      AppSnackbar()
-                                                          .customizedAppSnackbar(
-                                                        message: responseJson[
-                                                            Keys.message],
-                                                        context: context,
-                                                      ),
-                                                    );
-                                                    String signInType =
-                                                        await StorageServices
-                                                            .getUsrSignInType();
-
-                                                    if (signInType ==
-                                                        Keys.email) {
-                                                      _passController.clear();
-                                                      _firstNameController
-                                                          .clear();
-                                                      _lastNameController
-                                                          .clear();
-                                                      _passConfirmController
-                                                          .clear();
-                                                      _desController.clear();
-                                                      _value = "0";
-                                                      selectedImage = null;
-                                                      verificationToken =
-                                                          responseJson["token"];
-                                                      otp = responseJson["otp"];
-                                                      setState(() {
-                                                        signPage = 4;
-                                                      });
+                                                      allAppProvidersProvider
+                                                          .isLoadingFunc(false);
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              allAppProvidersContext)
+                                                          .showSnackBar(
+                                                        AppSnackbar()
+                                                            .customizedAppSnackbar(
+                                                          message: responseJson[
+                                                              Keys.message],
+                                                          context:
+                                                              allAppProvidersContext,
+                                                        ),
+                                                      );
+                                                      allAppProvidersProvider
+                                                          .isLoadingFunc(false);
                                                     }
-
-                                                    allAppProvidersProvider
-                                                        .isLoadingFunc(false);
                                                   } else {
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
@@ -707,19 +792,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                         .isLoadingFunc(false);
                                                   }
                                                 } else {
+                                                  signUpPressed = true;
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(
                                                     AppSnackbar()
                                                         .customizedAppSnackbar(
-                                                      message: responseJson[
-                                                          Keys.message],
-                                                      context:
-                                                          allAppProvidersContext,
+                                                      message:
+                                                          "Please choose your profile picture",
+                                                      context: context,
                                                     ),
                                                   );
-                                                  allAppProvidersProvider
-                                                      .isLoadingFunc(false);
                                                 }
                                               } else {
                                                 allAppProvidersProvider
@@ -1266,6 +1351,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         _desController.clear();
                                         _value = "0";
                                         selectedImage = null;
+                                        selected = false;
                                         setState(() {
                                           signPage = 1;
                                         });
@@ -2020,16 +2106,17 @@ class _AuthTextFieldState extends State<AuthTextField> {
         if (input.length < 8) {
           return "Password should contain minimum 8 characters";
         }
-        if (!RegExp(r'^(?=.*[A-Z])\w+').hasMatch(input)) {
+        if (!RegExp(r'^(?=.*[A-Z])[\w#]+').hasMatch(input)) {
           return "Password should contain minimum 1 Uppercase character";
         }
-        if (!RegExp(r'^(?=.*[a-z])\w+').hasMatch(input)) {
+        if (!RegExp(r'^(?=.*[a-z])[\w#]+').hasMatch(input)) {
           return "Password should contain minimum 1 Lowercase character";
         }
-        if (!RegExp(r'^(?=.*[0-9])\w+').hasMatch(input)) {
+        if (!RegExp(r'^(?=.*[0-9])[\w#]+').hasMatch(input)) {
           return "Password should contain minimum 1 numeric";
         }
-        if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])\w+').hasMatch(input)) {
+        if (!RegExp(r'^(?=.*[@#₹_&-+()/*:;!?~`|$^=.,])[\w#]+')
+            .hasMatch(input)) {
           return "Password should contain minimum 1 special character";
         }
       }

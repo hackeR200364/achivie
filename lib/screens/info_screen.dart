@@ -295,10 +295,10 @@ class InfoScreenMainGlassContainerChild extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const MenuScreenSocialFirstRow(),
-        const SizedBox(
-          height: 15,
-        ),
-        const MenuScreenSocialSecondRow(),
+        // const SizedBox(
+        //   height: 15,
+        // ),
+        // const MenuScreenSocialSecondRow(),
         SizedBox(
           height: MediaQuery.of(context).size.height / 20,
         ),

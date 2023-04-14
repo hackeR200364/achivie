@@ -5,6 +5,7 @@ import 'dart:io';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
@@ -70,7 +71,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       taskDone = 0;
   NotificationServices notificationServices = NotificationServices();
   BannerAd? bannerAd;
-  RewardedAd? rewardedAd;
+  RewardedAd? rewardedAd, rewardedAd2;
   FocusNode? nameFocusNode;
   FocusNode? desFocusNode;
   FocusNode? notiFocusNode;
@@ -160,6 +161,18 @@ class _NewTaskScreenState extends State<NewTaskScreen>
         }),
       ),
     );
+    RewardedAd.load(
+      adUnitId: "ca-app-pub-7050103229809241/8622630782",
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: ((onAdLoaded) {
+          rewardedAd2 = onAdLoaded;
+        }),
+        onAdFailedToLoad: ((onAdFailedToLoad) {
+          // print("Failed: ${onAdFailedToLoad.message}");
+        }),
+      ),
+    );
     super.initState();
   }
 
@@ -173,85 +186,6 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     super.dispose();
   }
 
-  // Future<String> usrToken() async => ;
-
-  // Future<void> updatePoints({required int points}) async {
-  //   String email = await StorageServices.getUserEmail();
-  //
-  //   DocumentSnapshot userDoc = await users.doc(email).get();
-  //
-  //   if (!userDoc.data().toString().contains(Keys.userPoints)) {
-  //     await users.doc(email).set(
-  //       {
-  //         Keys.userPoints: 0,
-  //       },
-  //       SetOptions(
-  //         merge: true,
-  //       ),
-  //     );
-  //   }
-  //   await users.doc(email).update(
-  //     {
-  //       Keys.userPoints: await userDoc[Keys.userPoints] + points,
-  //     },
-  //   );
-  // }
-
-  // Future<void> addTask({
-  //   required String type,
-  //   required String name,
-  //   required String date,
-  //   required String des,
-  //   required String notify,
-  //   required String time,
-  //   required BuildContext context,
-  // }) async
-
-  // Future<void> updateUserDetails({
-  //   required AllAppProviders loadingProvider,
-  //   required int updateTaskCount,
-  //   required String taskType,
-  // }) async {
-  //   CollectionReference users = firestore.collection("users");
-  //   String email = await StorageServices.getUserEmail();
-  //
-  //   DocumentSnapshot userDoc = await users.doc(email).get();
-  //
-  //   await users.doc(email).update(
-  //     {
-  //       Keys.taskCount: userDoc[Keys.taskCount] + 1,
-  //     },
-  //   );
-  //   await users.doc(email).update(
-  //     {
-  //       Keys.taskPending: userDoc[Keys.taskPending] + 1,
-  //     },
-  //   );
-  //
-  //   String newTaskType =
-  //       (taskType == "Business") ? Keys.taskBusiness : Keys.taskPersonal;
-  //   await users.doc(email).update(
-  //     {
-  //       newTaskType: (newTaskType == Keys.taskBusiness)
-  //           ? userDoc[Keys.taskBusiness] + 1
-  //           : userDoc[Keys.taskPersonal] + 1,
-  //     },
-  //   );
-  //
-  //   await users.doc(email).update(
-  //     {
-  //       Keys.taskDone: userDoc[Keys.taskDone],
-  //     },
-  //   ).whenComplete(() {
-  //     return AwesomeDialog(
-  //       context: context,
-  //       dialogType: DialogType.success,
-  //       title: "Hurray",
-  //       desc: "Your next goal is stored successfully",
-  //     ).show();
-  //   });
-  // }
-
   void taskDetails() {
     if (widget.taskName != null &&
         widget.taskDes != null &&
@@ -261,7 +195,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       _taskNameController.text = widget.taskName!;
       _descriptionController.text = widget.taskDes!;
       _notificationController.text = widget.taskNoti!;
-
+      log(widget.taskType!);
       updateTask = true;
     }
   }
@@ -286,6 +220,12 @@ class _NewTaskScreenState extends State<NewTaskScreen>
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          secondary: AppColors.transparent,
+          // secondary: AppColors.backgroundColour.withOpacity(0.4),
+        ),
+      ),
       home: Scaffold(
         key: _scaffoldKey,
         backgroundColor: AppColors.mainColor,
@@ -436,7 +376,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                               }
 
                               return Container(
-                                padding: const EdgeInsets.only(top: 5),
+                                // padding: const EdgeInsets.only(top: 5),
                                 decoration: BoxDecoration(
                                   color: AppColors.backgroundColour,
                                   borderRadius: BorderRadius.circular(20),
@@ -449,6 +389,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                   onSelectedItemChanged: (value) {
                                     allAppProvidersProvider
                                         .selectedTypeFunc(taskType[value]);
+                                    HapticFeedback.heavyImpact();
                                     // print(AllAppProvidersProvider.selectedType);
                                     // print(taskType[value]);
                                   },
@@ -665,12 +606,13 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                 Container(
                   width: MediaQuery.of(context).size.width,
                   decoration: BoxDecoration(
-                      color: AppColors.backgroundColour,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(
-                          MediaQuery.of(context).size.width / 3,
-                        ),
-                      )),
+                    color: AppColors.backgroundColour,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(
+                        MediaQuery.of(context).size.width / 3,
+                      ),
+                    ),
+                  ),
                   child: Padding(
                     padding: EdgeInsets.only(
                       left: MediaQuery.of(context).size.width / 6,
@@ -686,6 +628,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                           onTap: (allAppProvidersProvider.newTaskUploadLoading)
                               ? null
                               : (() async {
+                                  HapticFeedback.mediumImpact();
+
                                   nameFocusNode!.unfocus();
                                   desFocusNode!.unfocus();
                                   notiFocusNode!.unfocus();
@@ -697,6 +641,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         .newTaskUploadLoadingFunc(true);
                                     token = await StorageServices.getUsrToken();
                                     uid = await StorageServices.getUID();
+
+                                    log(token);
 
                                     if (!updateTask) {
                                       http.Response response = await http.post(
@@ -802,124 +748,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                       allAppProvidersProvider
                                           .newTaskUploadLoadingFunc(false);
                                     } else {
-                                      // DocumentSnapshot taskDoc =
-                                      //     await FirebaseFirestore.instance
-                                      //         .collection("users")
-                                      //         .doc(widget.userEmail)
-                                      //         .collection("tasks")
-                                      //         .doc(widget.taskDoc)
-                                      //         .get();
-                                      // final taskDocRefUpdate = FirebaseFirestore
-                                      //     .instance
-                                      //     .collection("users")
-                                      //     .doc(widget.userEmail)
-                                      //     .collection("tasks")
-                                      //     .doc(widget.taskDoc);
-                                      //
-                                      // DocumentSnapshot userDoc =
-                                      //     await FirebaseFirestore.instance
-                                      //         .collection("users")
-                                      //         .doc(widget.userEmail)
-                                      //         .get();
-                                      //
-                                      // final userDocRefUpdate = FirebaseFirestore
-                                      //     .instance
-                                      //     .collection("users")
-                                      //     .doc(widget.userEmail);
-                                      //
-                                      // if (taskDoc[Keys.taskStatus] !=
-                                      //     "Pending") {
-                                      //   if (taskDoc[Keys.taskStatus] ==
-                                      //       "Deleted") {
-                                      //     userDocRefUpdate.update(
-                                      //       {
-                                      //         Keys.taskDelete:
-                                      //             userDoc[Keys.taskDelete] - 1,
-                                      //       },
-                                      //     );
-                                      //
-                                      //     if (taskDoc[Keys.taskType] ==
-                                      //         "Business") {
-                                      //       userDocRefUpdate.update(
-                                      //         {
-                                      //           Keys.taskBusiness:
-                                      //               userDoc[Keys.taskBusiness] +
-                                      //                   1,
-                                      //         },
-                                      //       );
-                                      //     }
-                                      //     if (taskDoc[Keys.taskType] ==
-                                      //         "Personal") {
-                                      //       userDocRefUpdate.update(
-                                      //         {
-                                      //           Keys.taskPersonal:
-                                      //               userDoc[Keys.taskPersonal] +
-                                      //                   1,
-                                      //         },
-                                      //       );
-                                      //     }
-                                      //   }
-                                      //   if (taskDoc[Keys.taskStatus] ==
-                                      //       "Completed") {
-                                      //     userDocRefUpdate.update({
-                                      //       Keys.taskDone:
-                                      //           userDoc[Keys.taskDone] - 1,
-                                      //     });
-                                      //   }
-                                      //   userDocRefUpdate.update({
-                                      //     Keys.taskPending:
-                                      //         userDoc[Keys.taskPending] + 1,
-                                      //   });
-                                      // }
-                                      //
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskDate:
-                                      //         allAppProvidersProvider.dateText,
-                                      //   },
-                                      // );
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskTime:
-                                      //         allAppProvidersProvider.timeText,
-                                      //   },
-                                      // );
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskDes: _descriptionController
-                                      //         .text
-                                      //         .trim(),
-                                      //   },
-                                      // );
-                                      //
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskName:
-                                      //         _taskNameController.text.trim(),
-                                      //   },
-                                      // );
-                                      //
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskNotification:
-                                      //         _notificationController.text
-                                      //             .trim(),
-                                      //   },
-                                      // );
-                                      //
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskType: allAppProvidersProvider
-                                      //         .selectedType,
-                                      //   },
-                                      // );
-                                      //
-                                      // taskDocRefUpdate.update(
-                                      //   {
-                                      //     Keys.taskStatus: "Pending",
-                                      //   },
-                                      // );
-
+                                      log(widget.taskType!);
                                       http.Response response = await http.post(
                                         Uri.parse(
                                             "${Keys.apiTasksBaseUrl}/updateTask"),
@@ -949,16 +778,20 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         }),
                                       );
 
+                                      log(response.statusCode.toString());
+
                                       if (response.statusCode == 200) {
                                         Map<String, dynamic> responseJson =
                                             jsonDecode(response.body);
                                         log(responseJson.toString());
                                         if (responseJson["success"]) {
-                                          await rewardedAd?.show(
+                                          log("message");
+
+                                          await rewardedAd2?.show(
                                             onUserEarnedReward:
                                                 ((ad, point) {}),
                                           );
-                                          rewardedAd
+                                          rewardedAd2
                                                   ?.fullScreenContentCallback =
                                               FullScreenContentCallback(
                                             onAdClicked: ((ad) {}),
@@ -1032,6 +865,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                           ),
                                         );
                                       }
+                                      allAppProvidersProvider
+                                          .newTaskUploadLoadingFunc(false);
                                     }
 
                                     allAppProvidersProvider
@@ -1048,6 +883,8 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                       ),
                                     );
                                   }
+                                  allAppProvidersProvider
+                                      .newTaskUploadLoadingFunc(false);
                                 }),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(

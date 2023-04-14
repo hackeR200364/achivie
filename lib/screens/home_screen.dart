@@ -4,12 +4,12 @@ import 'dart:developer';
 // import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_marquee/flutter_marquee.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
-import 'package:marquee/marquee.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
 import 'package:telephony/telephony.dart';
@@ -210,6 +210,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          secondary: AppColors.transparent,
+
+          // secondary: AppColors.backgroundColour.withOpacity(0.4),
+        ),
+      ),
       debugShowCheckedModeBanner: false,
       home: WillPopScope(
         onWillPop: (() async {
@@ -258,6 +265,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Center(
               child: IconButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
+
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -621,40 +630,34 @@ class HomeAppBarSongTittleAndArtist extends StatelessWidget {
             const SizedBox(
               height: 3,
             ),
-            if (title.trim().split(" ").length < 2)
-              Text(
-                title,
-                style: AppColors.headingTextStyle,
+            // if (title.trim().split(" ").length < 2)
+            // Text(
+            //   title,
+            //   style: AppColors.headingTextStyle,
+            // ),
+            // if (title.trim().split(" ").length > 1)
+            SizedBox(
+              height: 41 / 2.2,
+              child: Marquee(
+                textStyle: AppColors.headingTextStyle,
+                str: title,
+                containerWidth: MediaQuery.of(context).size.width,
               ),
-            if (title.trim().split(" ").length > 1)
-              SizedBox(
-                height: 41 / 2.2,
-                child: Marquee(
-                  fadingEdgeStartFraction: 0.3,
-                  fadingEdgeEndFraction: 0.3,
-                  velocity: 50,
-                  blankSpace: 1,
-                  text: title.padLeft(30),
-                  style: AppColors.headingTextStyle,
-                ),
+            ),
+            // if (artist.trim().split(" ").length < 3)
+            //   Text(
+            //     artist,
+            //     style: AppColors.subHeadingTextStyle,
+            //   ),
+            // if (artist.trim().split(" ").length > 2)
+            SizedBox(
+              height: 41 / 2.2,
+              child: Marquee(
+                textStyle: AppColors.subHeadingTextStyle,
+                str: artist,
+                containerWidth: MediaQuery.of(context).size.width,
               ),
-            if (artist.trim().split(" ").length < 3)
-              Text(
-                artist,
-                style: AppColors.subHeadingTextStyle,
-              ),
-            if (artist.trim().split(" ").length > 2)
-              SizedBox(
-                height: 41 / 2.2,
-                child: Marquee(
-                  fadingEdgeStartFraction: 0.3,
-                  fadingEdgeEndFraction: 0.3,
-                  blankSpace: 10,
-                  velocity: 30,
-                  text: artist.padLeft(10),
-                  style: AppColors.subHeadingTextStyle,
-                ),
-              ),
+            ),
           ],
         ),
       ),

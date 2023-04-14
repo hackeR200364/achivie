@@ -7,6 +7,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_marquee/flutter_marquee.dart' as flutter_marquee;
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:glassmorphism/glassmorphism.dart';
@@ -14,7 +15,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils/snackbar_utils.dart';
@@ -660,8 +660,12 @@ class CustomHomeScreenTabBarHeadList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: TabBar(
+        onTap: ((index) {
+          HapticFeedback.heavyImpact();
+        }),
         enableFeedback: true,
         splashBorderRadius: BorderRadius.circular(50),
+        splashFactory: NoSplash.splashFactory,
         physics: AppColors.scrollPhysics,
         isScrollable: true,
         indicatorSize: TabBarIndicatorSize.label,
@@ -862,7 +866,13 @@ class HomeScreenTaskTypePickerContainerConsumerDesign extends StatelessWidget {
       child: CupertinoPicker(
         backgroundColor: AppColors.transparent,
         itemExtent: 23,
+        magnification: 1.1,
+        selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+          background: AppColors.backgroundColour.withOpacity(0.4),
+        ),
         onSelectedItemChanged: (value) {
+          HapticFeedback.heavyImpact();
+
           allAppProvidersProvider.selectedTypeFunc(taskType[value]);
           // print(AllAppProvidersProvider.selectedType);
           // print(taskType[value]);
@@ -1079,25 +1089,22 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (userDetailsProviderProvider.userName.trim().split(" ").length < 3)
-          Center(
-            child: Text(
-              userDetailsProviderProvider.userName,
-              style: AppColors.headingTextStyle,
-            ),
+        // if (userDetailsProviderProvider.userName.trim().split(" ").length < 3)
+        //   Center(
+        //     child: Text(
+        //       userDetailsProviderProvider.userName,
+        //       style: AppColors.headingTextStyle,
+        //     ),
+        //   ),
+        // if (userDetailsProviderProvider.userName.trim().split(" ").length > 2)
+        SizedBox(
+          height: 41 / 2.2,
+          child: flutter_marquee.Marquee(
+            textStyle: AppColors.headingTextStyle,
+            str: userDetailsProviderProvider.userName,
+            containerWidth: MediaQuery.of(context).size.width,
           ),
-        if (userDetailsProviderProvider.userName.trim().split(" ").length > 2)
-          SizedBox(
-            height: 41,
-            child: Marquee(
-              fadingEdgeStartFraction: 0.2,
-              fadingEdgeEndFraction: 0.2,
-              velocity: 50,
-              blankSpace: 1,
-              text: userDetailsProviderProvider.userName.padLeft(30),
-              style: AppColors.headingTextStyle,
-            ),
-          ),
+        ),
       ],
     );
   }
@@ -1438,284 +1445,6 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
   void initState() {
     super.initState();
   }
-
-  // void updateTasks({
-  //   required String taskDocID,
-  //   required String status,
-  //   required String firestoreEmail,
-  //   required int taskSavedYear,
-  //   required int taskSavedDay,
-  //   required int taskSavedHour,
-  //   required int taskSavedMonth,
-  //   required int taskSavedMinute,
-  // }) async {
-  //   final taskDocUpdate = FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .collection("tasks")
-  //       .doc(taskDocID);
-  //
-  //   DocumentSnapshot taskDocRef = await taskDocUpdate.get();
-  //
-  //   DateTime taskSavedDate = DateTime(
-  //     taskSavedYear,
-  //     taskSavedMonth,
-  //     taskSavedDay,
-  //     taskSavedHour,
-  //     taskSavedMinute,
-  //   );
-  //
-  //   DateTime date = DateTime.now();
-  //
-  //   DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .get();
-  //
-  //   final userDocUpdate =
-  //       FirebaseFirestore.instance.collection("users").doc(firestoreEmail);
-  //
-  //   if (status == "Pending") {
-  //     taskDocUpdate.update(
-  //       {
-  //         Keys.taskStatus: "Completed",
-  //       },
-  //     );
-  //
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskDone: userDoc[Keys.taskDone] + 1,
-  //       },
-  //     );
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskPending: userDoc[Keys.taskPending] - 1,
-  //       },
-  //     );
-  //
-  //     if (taskSavedDate.difference(date).inMinutes > 0) {
-  //       NotificationServices().cancelTaskScheduledNotification(
-  //         id: taskDocRef[Keys.notificationID],
-  //       );
-  //     }
-  //   } else if (status == "Completed") {
-  //     taskDocUpdate.update(
-  //       {
-  //         Keys.taskStatus: "Pending",
-  //       },
-  //     );
-  //
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskPending: userDoc[Keys.taskPending] + 1,
-  //       },
-  //     );
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskDone: userDoc[Keys.taskDone] - 1,
-  //       },
-  //     );
-  //
-  //     if (taskSavedDate.difference(date).inMinutes > 0) {
-  //       NotificationServices().createScheduledTaskNotification(
-  //         title: taskDocRef[Keys.taskNotification],
-  //         body: "${taskDocRef[Keys.taskName]}\n${taskDocRef[Keys.taskDes]}",
-  //         id: taskDocRef[Keys.notificationID],
-  //         payload: taskDocRef[Keys.taskName],
-  //         dateTime: taskSavedDate,
-  //       );
-  //     }
-  //   }
-  // }
-
-  // void deleteTasks({
-  //   required String taskDocID,
-  //   required String status,
-  //   required String firestoreEmail,
-  //   required int taskSavedYear,
-  //   required int taskSavedDay,
-  //   required int taskSavedHour,
-  //   required int taskSavedMonth,
-  //   required int taskSavedMinute,
-  // }) async {
-  //   DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .get();
-  //   DocumentSnapshot taskDoc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .collection("tasks")
-  //       .doc(taskDocID)
-  //       .get();
-  //
-  //   final userDocUpdate =
-  //       FirebaseFirestore.instance.collection("users").doc(firestoreEmail);
-  //
-  //   final taskDocUpdate = FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .collection("tasks")
-  //       .doc(taskDocID);
-  //
-  //   DateTime taskSavedDate = DateTime(
-  //     taskSavedYear,
-  //     taskSavedMonth,
-  //     taskSavedDay,
-  //     taskSavedHour,
-  //     taskSavedMinute,
-  //   );
-  //
-  //   DateTime date = DateTime.now();
-  //
-  //   if (status == "Pending") {
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskPending: userDoc[Keys.taskPending] - 1,
-  //       },
-  //     );
-  //
-  //     if (taskDoc[Keys.taskType] == "Business") {
-  //       userDocUpdate.update(
-  //         {
-  //           Keys.taskBusiness: userDoc[Keys.taskBusiness] - 1,
-  //         },
-  //       );
-  //     } else if (taskDoc[Keys.taskType] == "Personal") {
-  //       userDocUpdate.update(
-  //         {
-  //           Keys.taskPersonal: userDoc[Keys.taskPersonal] - 1,
-  //         },
-  //       );
-  //     }
-  //   } else if (status == "Completed") {
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskDone: userDoc[Keys.taskDone] - 1,
-  //       },
-  //     );
-  //
-  //     if (taskDoc[Keys.taskType] == "Business") {
-  //       userDocUpdate.update(
-  //         {
-  //           Keys.taskBusiness: userDoc[Keys.taskBusiness] - 1,
-  //         },
-  //       );
-  //     } else if (taskDoc[Keys.taskType] == "Personal") {
-  //       userDocUpdate.update(
-  //         {
-  //           Keys.taskPersonal: userDoc[Keys.taskPersonal] - 1,
-  //         },
-  //       );
-  //     }
-  //
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskDelete: userDoc[Keys.taskDelete] - 1,
-  //       },
-  //     );
-  //   }
-  //
-  //   taskDocUpdate.update(
-  //     {
-  //       Keys.taskStatus: Keys.deleteStatus,
-  //     },
-  //   );
-  //
-  //   userDocUpdate.update(
-  //     {
-  //       Keys.taskDelete: userDoc[Keys.taskDelete] + 1,
-  //     },
-  //   );
-  //
-  //   if (taskSavedDate.difference(date).inMinutes > 0) {
-  //     NotificationServices().cancelTaskScheduledNotification(
-  //       id: taskDoc[Keys.notificationID],
-  //     );
-  //   }
-  // }
-
-  // void undoTasks({
-  //   required String taskDocID,
-  //   required String status,
-  //   required String firestoreEmail,
-  //   required int taskSavedYear,
-  //   required int taskSavedDay,
-  //   required int taskSavedHour,
-  //   required int taskSavedMonth,
-  //   required int taskSavedMinute,
-  // }) async {
-  //   DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .get();
-  //   DocumentSnapshot taskDoc = await FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .collection("tasks")
-  //       .doc(taskDocID)
-  //       .get();
-  //
-  //   DateTime taskSavedDate = DateTime(
-  //     taskSavedYear,
-  //     taskSavedMonth,
-  //     taskSavedDay,
-  //     taskSavedHour,
-  //     taskSavedMinute,
-  //   );
-  //
-  //   DateTime date = DateTime.now();
-  //
-  //   final userDocUpdate =
-  //       FirebaseFirestore.instance.collection("users").doc(firestoreEmail);
-  //
-  //   final taskDocUpdate = FirebaseFirestore.instance
-  //       .collection("users")
-  //       .doc(firestoreEmail)
-  //       .collection("tasks")
-  //       .doc(taskDocID);
-  //
-  //   userDocUpdate.update(
-  //     {
-  //       Keys.taskPending: userDoc[Keys.taskPending] + 1,
-  //     },
-  //   );
-  //   userDocUpdate.update(
-  //     {
-  //       Keys.taskDelete: userDoc[Keys.taskDelete] - 1,
-  //     },
-  //   );
-  //
-  //   if (taskDoc[Keys.taskType] == "Business") {
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskBusiness: userDoc[Keys.taskBusiness] + 1,
-  //       },
-  //     );
-  //   } else if (taskDoc[Keys.taskType] == "Personal") {
-  //     userDocUpdate.update(
-  //       {
-  //         Keys.taskPersonal: userDoc[Keys.taskPersonal] + 1,
-  //       },
-  //     );
-  //   }
-  //
-  //   taskDocUpdate.update(
-  //     {
-  //       Keys.taskStatus: "Pending",
-  //     },
-  //   );
-  //
-  //   if (taskSavedDate.difference(date).inMinutes > 0) {
-  //     NotificationServices().createScheduledTaskNotification(
-  //       id: taskDoc[Keys.notificationID],
-  //       title: taskDoc[Keys.taskNotification],
-  //       body: "${taskDoc[Keys.taskName]}\n${taskDoc[Keys.taskDes]}",
-  //       payload: taskDoc[Keys.taskDes],
-  //       dateTime: taskSavedDate,
-  //     );
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
