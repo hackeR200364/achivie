@@ -335,20 +335,20 @@ class MenuScreenSocialFirstRow extends StatelessWidget {
             );
           }),
         ),
-        SizedBox(
-          width: spacerWidth,
-        ),
-        MenuScreenSocialMediaButton(
-          icon: "assets/social-icons/linkedIn-logo.png",
-          onPressed: (() async {
-            await launchUrl(
-              Uri.parse(
-                "https://www.linkedin.com/in/rupam-karmakar-411157212/",
-              ),
-              mode: LaunchMode.externalNonBrowserApplication,
-            );
-          }),
-        ),
+        // SizedBox(
+        //   width: spacerWidth,
+        // ),
+        // MenuScreenSocialMediaButton(
+        //   icon: "assets/social-icons/linkedIn-logo.png",
+        //   onPressed: (() async {
+        //     await launchUrl(
+        //       Uri.parse(
+        //         "https://www.linkedin.com/in/rupam-karmakar-411157212/",
+        //       ),
+        //       mode: LaunchMode.externalNonBrowserApplication,
+        //     );
+        //   }),
+        // ),
 
         // SizedBox(
         //   width: spacerWidth,
