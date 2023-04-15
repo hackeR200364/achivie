@@ -41,6 +41,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late TextEditingController _passController;
   late TextEditingController _passConfirmController;
   late TextEditingController _otpController;
+  late TextEditingController _othersProfessionController;
   bool visibility = true;
   bool visibility2 = true;
   bool selected = false;
@@ -72,7 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ),
     ProfessionModel(
       id: "4",
-      label: "Working Professional",
+      label: "IT-Employee",
     ),
     ProfessionModel(
       id: "5",
@@ -92,7 +93,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ),
     ProfessionModel(
       id: "9",
-      label: "Programmer",
+      label: "Developer",
     ),
     ProfessionModel(
       id: "10",
@@ -104,19 +105,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ),
     ProfessionModel(
       id: "12",
-      label: "Tutor",
+      label: "Govt-Employee",
     ),
     ProfessionModel(
       id: "13",
-      label: "Professor",
+      label: "Private-Employee",
     ),
     ProfessionModel(
       id: "14",
-      label: "Doctor",
+      label: "Professor",
     ),
     ProfessionModel(
       id: "15",
+      label: "Doctor",
+    ),
+    ProfessionModel(
+      id: "16",
       label: "Engineer",
+    ),
+    ProfessionModel(
+      id: "17",
+      label: "Others",
     ),
   ];
   // final signUpFormKey = GlobalKey<FormState>();
@@ -153,6 +162,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passConfirmController = TextEditingController();
     _desController = TextEditingController();
     _otpController = TextEditingController();
+    _othersProfessionController = TextEditingController();
     // getAppDetails();
 
     super.initState();
@@ -196,7 +206,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   fit: BoxFit.fill,
                   width: MediaQuery.of(context).size.width,
                   height: (signPage == 0)
-                      ? 1180
+                      ? (profession == "Others")
+                          ? 1280
+                          : 1180
                       : (signPage == 4)
                           ? size.height
                           : (size.height < 700)
@@ -208,7 +220,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: (signPage == 0)
-                      ? 1180
+                      ? (profession == "Others")
+                          ? 1280
+                          : 1180
                       : (signPage == 4)
                           ? size.height
                           : (size.height < 700)
@@ -250,7 +264,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         GlassmorphicContainer(
                           width: size.width,
                           height: (signPage == 0)
-                              ? 870
+                              ? (profession == "Others")
+                                  ? 920
+                                  : (selected)
+                                      ? 870
+                                      : 800
                               : (signPage == 4)
                                   ? 350
                                   : 420,
@@ -393,6 +411,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         color: AppColors.red,
                                         fontSize: 15,
                                         letterSpacing: 1,
+                                        overflow: TextOverflow.clip,
                                       ),
                                     ),
                                   ),
@@ -506,6 +525,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     ),
                                   ),
                                 ),
+                              if (signPage == 0 && profession == "Others")
+                                AuthNameTextField(
+                                  controller: _othersProfessionController,
+                                  hintText: "Enter your Profession",
+                                  icon: Icons.work_outline,
+                                ),
                               if (signPage == 0)
                                 AuthTextField(
                                     icon: Icons.email_outlined,
@@ -576,16 +601,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             allAppProvidersProvider
                                                 .isLoadingFunc(true);
 
-                                            if (_emailController
-                                                    .text.isNotEmpty &&
-                                                _passController
-                                                    .text.isNotEmpty &&
-                                                _passConfirmController
-                                                    .text.isNotEmpty &&
-                                                _firstNameController
-                                                    .text.isNotEmpty &&
-                                                _lastNameController
-                                                    .text.isNotEmpty &&
+                                            if (_emailController.text
+                                                    .trim()
+                                                    .isNotEmpty &&
+                                                _passController.text
+                                                    .trim()
+                                                    .isNotEmpty &&
+                                                _passConfirmController.text
+                                                    .trim()
+                                                    .isNotEmpty &&
+                                                _firstNameController.text
+                                                    .trim()
+                                                    .isNotEmpty &&
+                                                _lastNameController.text
+                                                    .trim()
+                                                    .isNotEmpty &&
                                                 _firstNameController.text
                                                         .trim() !=
                                                     _lastNameController.text
@@ -601,6 +631,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               if (_passController.text ==
                                                   _passConfirmController.text) {
                                                 if (selected == true) {
+                                                  if (profession == "Others") {
+                                                    if (_othersProfessionController
+                                                        .text.isNotEmpty) {
+                                                      profession =
+                                                          _othersProfessionController
+                                                              .text
+                                                              .replaceAll(
+                                                                  " ", "\n");
+                                                    } else {
+                                                      allAppProvidersProvider
+                                                          .isLoadingFunc(false);
+                                                      ScaffoldMessenger.of(
+                                                              allAppProvidersContext)
+                                                          .showSnackBar(
+                                                        AppSnackbar()
+                                                            .customizedAppSnackbar(
+                                                          message:
+                                                              "Please enter your profession",
+                                                          context:
+                                                              allAppProvidersContext,
+                                                        ),
+                                                      );
+                                                      return;
+                                                    }
+                                                  }
+
                                                   var request =
                                                       http.MultipartRequest(
                                                     'POST',
@@ -776,6 +832,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       allAppProvidersProvider
                                                           .isLoadingFunc(false);
                                                     }
+                                                  }
+                                                  if (response.statusCode ==
+                                                      501) {
+                                                    selected = false;
+                                                    selectedImage = null;
+                                                    _firstNameController
+                                                        .clear();
+                                                    _lastNameController.clear();
+                                                    _desController.clear();
+                                                    profession = "";
+                                                    _value = "0";
+                                                    _emailController.clear();
+                                                    _passController.clear();
+                                                    _passConfirmController
+                                                        .clear();
+                                                    setState(() {
+                                                      signPage = 1;
+                                                    });
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message: responseJson[
+                                                            Keys.message],
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
                                                   } else {
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
@@ -2296,7 +2383,7 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
       child: Consumer<AllAppProviders>(
         builder: (allAppContext, allAppProvider, allAppChild) {
           return TextFormField(
-            textCapitalization: TextCapitalization.words,
+            textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
               counterText: "",
               suffixText: (widget.desField != null && widget.desField == true)
