@@ -832,8 +832,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                       allAppProvidersProvider
                                                           .isLoadingFunc(false);
                                                     }
-                                                  }
-                                                  if (response.statusCode ==
+                                                  } else if (response
+                                                          .statusCode ==
                                                       501) {
                                                     selected = false;
                                                     selectedImage = null;
