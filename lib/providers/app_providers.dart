@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 
 import '../services/shared_preferences.dart';
@@ -121,5 +122,13 @@ class AllAppProviders extends ChangeNotifier {
   void isImageSelectedFunc(bool selected) {
     isImageSelected = selected;
     notifyListeners();
+  }
+
+  int notificationCount = 0;
+  void notificationCountFunc() async {
+    await AwesomeNotifications().listScheduledNotifications().then((value) {
+      notificationCount = value.length;
+      notifyListeners();
+    });
   }
 }

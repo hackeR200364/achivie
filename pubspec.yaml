@@ -80,6 +80,8 @@ dependencies:
   path_provider:
   image_picker:
   change_app_package_name:
+  pull_to_refresh:
+  badges:
 #  rename: any
 #  pinput:
 

@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:badges/badges.dart' as badges;
 // import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -68,8 +71,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       taskDelete = 0,
       taskPending = 0,
       taskBusiness = 0,
-      taskPersonal = 0;
+      taskPersonal = 0,
+      notificationCount = 0;
   RewardedAd? rewardedAd;
+  bool activeConnection = false;
 
   @override
   void initState() {
@@ -128,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     uid = await StorageServices.getUID();
     token = await StorageServices.getUsrToken();
 
-    await initValues();
+    await refresh();
     // Future.delayed(
     //   const Duration(
     //     milliseconds: 700,
@@ -137,9 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     //
     //   }),
     // );
-    setState(() {
-      pageLoading = false;
-    });
+
     // print(profileType);
   }
 
@@ -156,6 +159,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // }
 
   Future<void> refresh() async {
+    // setState(() {
+    //   pageLoading = true;
+    // });
     http.Response response = await http.get(
       Uri.parse("${Keys.apiUsersBaseUrl}/taskRecords/$uid"),
       headers: {
@@ -178,33 +184,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         setState(() {});
       }
     }
+
+    await AwesomeNotifications().listScheduledNotifications().then((value) {
+      setState(() {
+        notificationCount = value.length;
+        // pageLoading = false;
+      });
+    });
   }
 
-  Future<void> initValues() async {
-    http.Response response = await http.get(
-      Uri.parse("${Keys.apiUsersBaseUrl}/taskRecords/$uid"),
-      headers: {
-        'content-Type': 'application/json',
-        'authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> responseJson = jsonDecode(response.body);
-
-      if (responseJson["success"]) {
-        StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
-        taskDone = responseJson[Keys.data][Keys.taskDone];
-        taskDelete = responseJson[Keys.data][Keys.taskDelete];
-        taskPending = responseJson[Keys.data][Keys.taskPending];
-        taskBusiness = responseJson[Keys.data][Keys.taskBusiness];
-        taskPersonal = responseJson[Keys.data][Keys.taskPersonal];
-        taskCount = responseJson[Keys.data][Keys.taskCount];
-        log(responseJson[Keys.data][Keys.usrPoints].toString());
-        setState(() {});
+  Future checkUserConnection() async {
+    try {
+      final result = await InternetAddress.lookup('achivie.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        setState(() {
+          activeConnection = true;
+        });
       }
+    } on SocketException catch (_) {
+      setState(() {
+        activeConnection = false;
+      });
     }
   }
+  // Future<void> initValues() async {
+  //   http.Response response = await http.get(
+  //     Uri.parse("${Keys.apiUsersBaseUrl}/taskRecords/$uid"),
+  //     headers: {
+  //       'content-Type': 'application/json',
+  //       'authorization': 'Bearer $token',
+  //     },
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     Map<String, dynamic> responseJson = jsonDecode(response.body);
+  //
+  //     if (responseJson["success"]) {
+  //       StorageServices.setUsrPoints(responseJson[Keys.data][Keys.usrPoints]);
+  //       taskDone = responseJson[Keys.data][Keys.taskDone];
+  //       taskDelete = responseJson[Keys.data][Keys.taskDelete];
+  //       taskPending = responseJson[Keys.data][Keys.taskPending];
+  //       taskBusiness = responseJson[Keys.data][Keys.taskBusiness];
+  //       taskPersonal = responseJson[Keys.data][Keys.taskPersonal];
+  //       taskCount = responseJson[Keys.data][Keys.taskCount];
+  //       log(responseJson[Keys.data][Keys.usrPoints].toString());
+  //       setState(() {});
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +240,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch().copyWith(
           secondary: AppColors.transparent,
-
           // secondary: AppColors.backgroundColour.withOpacity(0.4),
         ),
       ),
@@ -276,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ).then((value) {
                     refresh();
-                    setState(() {});
+                    // setState(() {});
                   });
                 },
                 icon: const Icon(
@@ -297,6 +323,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: Stack(
               children: [
                 SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   child: CustomHomeScreenContainerWithConnectivityWidget(
                     taskType: taskType,
                     tabController: tabController,
@@ -322,17 +349,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Positioned(
                   top: 45,
                   right: 15,
-                  child: CustomGlassIconButton(
-                    onPressed: (() {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (notificationContext) =>
-                              const NotificationScreen(),
+                  child: badges.Badge(
+                    position: badges.BadgePosition.topEnd(
+                      end: -6,
+                    ),
+                    showBadge: (notificationCount != 0) ? true : false,
+                    badgeContent: Center(
+                      child: Text(
+                        notificationCount.toString(),
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    }),
-                    icon: Icons.notifications,
+                      ),
+                    ),
+                    badgeAnimation: const badges.BadgeAnimation.slide(),
+                    child: CustomGlassIconButton(
+                      onPressed: (() {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (notificationContext) =>
+                                const NotificationScreen(),
+                          ),
+                        );
+                      }),
+                      icon: Icons.notifications,
+                    ),
                   ),
                 ),
                 Positioned(
@@ -499,6 +542,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     },
                   ),
                 ),
+                // ListView(),
                 // if (pageLoading)
                 //   Positioned(
                 //     child: Container(
