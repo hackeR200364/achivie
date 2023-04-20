@@ -1087,12 +1087,13 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     // log((size.width / 40).round().toString());
+    // log(userDetailsProviderProvider.userName.trim().length.toString());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (userDetailsProviderProvider.userName.trim().length <
-            (size.width / 40).round())
+            (size.width / 35).round())
           Center(
             child: Text(
               userDetailsProviderProvider.userName.trim(),
@@ -1100,7 +1101,7 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
             ),
           ),
         if (userDetailsProviderProvider.userName.trim().length >
-            (size.width / 40).round())
+            (size.width / 35).round())
           SizedBox(
             width: MediaQuery.of(context).size.width,
             // height: 41 / 2.3,

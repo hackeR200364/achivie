@@ -156,7 +156,7 @@ class _InfoScreenState extends State<InfoScreen> with TickerProviderStateMixin {
               infoList: infoList,
             ),
           ),
-          if (pageLoading) const LoadingWidget(),
+          // if (pageLoading) const LoadingWidget(),
         ],
       ),
     );

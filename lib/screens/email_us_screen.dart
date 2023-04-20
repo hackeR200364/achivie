@@ -125,22 +125,22 @@ class _EmailUSScreenState extends State<EmailUSScreen> {
               rewardedAd: rewardedAd,
             ),
           ),
-          if (pageLoading)
-            Positioned(
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                decoration: const BoxDecoration(
-                  color: AppColors.mainColor,
-                ),
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
-            ),
+          // if (pageLoading)
+          //   Positioned(
+          //     child: Container(
+          //       width: MediaQuery.of(context).size.width,
+          //       height: MediaQuery.of(context).size.height,
+          //       decoration: const BoxDecoration(
+          //         color: AppColors.mainColor,
+          //       ),
+          //       child: const Center(
+          //         child: CircularProgressIndicator(
+          //           strokeWidth: 2,
+          //           color: AppColors.white,
+          //         ),
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );

@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> responseJson = jsonDecode(response.body);
-      log(responseJson.toString());
+      // log(responseJson.toString());
       if (responseJson["success"]) {
         rate = responseJson["completionRate"];
         setState(() {});
@@ -176,8 +176,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    log(email.length.toString());
     Size size = MediaQuery.of(context).size;
-    log((size.height / 3).toString());
+    log((size.height / 25).round().toString());
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -331,18 +332,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      color: AppColors.blackLow,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 20,
-                                      letterSpacing: 2,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: AppColors.blackLow,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                  letterSpacing: 2,
+                                ),
                               ),
                               const SizedBox(
                                 height: 5,
@@ -381,21 +378,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (emailVisibility)
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.email,
-                                      color: AppColors.grey,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(
-                                      width: 5,
-                                    ),
-                                    Text(
-                                      email,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        overflow: TextOverflow.clip,
-                                        color:
-                                            AppColors.blackLow.withOpacity(0.5),
+                                    if (email.length >
+                                        (size.height / 25).round())
+                                      const Icon(
+                                        Icons.email,
+                                        color: AppColors.grey,
+                                        size: 20,
+                                      ),
+                                    if (email.length >
+                                        (size.height / 25).round())
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
+                                    SizedBox(
+                                      width: (email.length >
+                                              (size.height / 20).round())
+                                          ? size.width / 2.5
+                                          : null,
+                                      child: Text(
+                                        email,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          overflow: TextOverflow.clip,
+                                          color: AppColors.blackLow
+                                              .withOpacity(0.5),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -533,7 +540,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   CircleAvatar(
                                     radius: 10,
                                     backgroundImage: AssetImage(
-                                        "assets/logo-first-splash.png"),
+                                      "assets/logo-first-splash.png",
+                                    ),
                                   ),
                                   SizedBox(
                                     width: 7,

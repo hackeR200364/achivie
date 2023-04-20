@@ -246,8 +246,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugShowCheckedModeBanner: false,
       home: WillPopScope(
         onWillPop: (() async {
-          log("bcked");
-
           await rewardedAd?.show(
             onUserEarnedReward: ((ad, point) {}),
           );
