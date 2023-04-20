@@ -576,14 +576,14 @@ class MenuScreenProfileContainerChildColumn extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (name.trim().length < (size.width / 40).round())
+          if (name.trim().length < (size.width / 35).round())
             Center(
               child: Text(
                 name.trim(),
                 style: AppColors.headingTextStyle,
               ),
             ),
-          if (name.trim().length > (size.width / 40).round())
+          if (name.trim().length > (size.width / 35).round())
             SizedBox(
               width: MediaQuery.of(context).size.width,
               // height: 41 / 2.3,
