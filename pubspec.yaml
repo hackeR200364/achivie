@@ -82,6 +82,11 @@ dependencies:
   change_app_package_name:
   pull_to_refresh:
   badges:
+  carousel_slider:
+  readmore:
+  like_button:
+  google_nav_bar:
+  full_screen_image:
 #  rename: any
 #  pinput:
 
