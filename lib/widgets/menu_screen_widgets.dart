@@ -69,9 +69,9 @@ class MenuScreenMainColumn extends StatelessWidget {
           widget: widget,
           points: points,
         ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height / 2.4,
-        ),
+        // SizedBox(
+        //   height: MediaQuery.of(context).size.height / 2.4,
+        // ),
         Padding(
           padding: const EdgeInsets.only(
             left: 10,
@@ -400,6 +400,14 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           zoomDrawerController: zoomDrawerController,
         ),
         MenuListItem(
+          title: "News",
+          icon: Icons.newspaper,
+          index: 3,
+          selectedIndex: widget.selectedIndex,
+          setIndex: widget.setIndex,
+          zoomDrawerController: zoomDrawerController,
+        ),
+        MenuListItem(
           title: "Info",
           icon: Icons.info,
           index: 1,
@@ -415,6 +423,7 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           setIndex: widget.setIndex,
           zoomDrawerController: zoomDrawerController,
         ),
+
         // if (Platform.isAndroid)
         //   MenuListItem(
         //     title: "Send SMS",
