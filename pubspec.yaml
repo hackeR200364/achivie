@@ -87,6 +87,9 @@ dependencies:
   like_button:
   google_nav_bar:
   full_screen_image:
+  geolocator:
+  geocoding:
+  mobile_number:
 #  rename: any
 #  pinput:
 

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:achivie/providers/app_providers.dart';
+import 'package:achivie/providers/news_searching_provider.dart';
 import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
 import 'package:achivie/screens/splash_screen.dart';
@@ -102,6 +103,9 @@ Future main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => SongPlayingProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => NewsSearchingProvider(),
         ),
       ],
       child: StreamProvider.value(

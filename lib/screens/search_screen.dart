@@ -1,12 +1,17 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:achivie/providers/news_searching_provider.dart';
+import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:like_button/like_button.dart';
+import 'package:provider/provider.dart';
 
 import '../Utils/custom_text_field_utils.dart';
+import '../models/news_category_model.dart';
 import '../widgets/email_us_screen_widgets.dart';
+import '../widgets/news_bloc_profile_widgets.dart';
 import 'news_details_screen.dart';
 import 'news_screen.dart';
 
@@ -19,11 +24,38 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen>
     with TickerProviderStateMixin {
+  List<NewsCategoryModel> newsCategory = <NewsCategoryModel>[
+    NewsCategoryModel(
+      category: "All",
+      index: 0,
+    ),
+    NewsCategoryModel(
+      category: "Health",
+      index: 1,
+    ),
+    NewsCategoryModel(
+      category: "Technology",
+      index: 2,
+    ),
+    NewsCategoryModel(
+      category: "Finance",
+      index: 3,
+    ),
+    NewsCategoryModel(
+      category: "Arts",
+      index: 4,
+    ),
+    NewsCategoryModel(
+      category: "Sports",
+      index: 5,
+    ),
+  ];
   late TextEditingController _searchController;
   late TextEditingController commentController;
   late TabController _tabController;
   bool followed = false, saved = false;
-  int likeCount = 1000000;
+  int likeCount = 1000000, _hintIndex = 0;
+  Timer? timer;
 
   @override
   void initState() {
@@ -33,13 +65,29 @@ class _SearchScreenState extends State<SearchScreen>
       length: 3,
       vsync: this,
     );
+    _startTimer();
     super.initState();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    timer?.cancel();
+
     super.dispose();
+  }
+
+  void _startTimer() {
+    if (timer != null && timer!.isActive) return;
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      setState(() {
+        _hintIndex = (_hintIndex + 1) % newsCategory.length;
+      });
+    });
+  }
+
+  Future<void> refresh() async {
+    log("refreshing");
   }
 
   @override
@@ -73,1369 +121,873 @@ class _SearchScreenState extends State<SearchScreen>
       //   ),
       // ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(top: 15, left: 10),
-                  child: CustomAppBarLeading(
-                    onPressed: (() {
-                      Navigator.pop(context);
-                      // print(isPlaying);
-                    }),
-                    icon: Icons.arrow_back_ios_rounded,
+        child: RefreshIndicator(
+          onRefresh: refresh,
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                leading: Container(),
+                backgroundColor: AppColors.mainColor,
+                elevation: 0,
+                pinned: true,
+                flexibleSpace: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 40,
+                  margin: const EdgeInsets.only(
+                    top: 10,
+                    left: 10,
+                    right: 10,
                   ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: 20,
-                      left: 15,
-                      right: 15,
-                      bottom: 10,
-                    ),
-                    child: TextFormField(
-                      textInputAction: TextInputAction.search,
-                      textCapitalization: TextCapitalization.sentences,
-                      scrollPhysics: AppColors.scrollPhysics,
-                      decoration: InputDecoration(
-                        errorStyle: const TextStyle(
-                          overflow: TextOverflow.clip,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: AppColors.white.withOpacity(0.6),
-                        ),
-                        prefixStyle: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 16,
-                        ),
-                        hintText: "Please what you want to search",
-                        hintStyle: TextStyle(
-                          color: AppColors.white.withOpacity(0.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: Colors.white,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            width: 1,
-                            color: AppColors.white,
-                          ),
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            width: 1,
-                            color: AppColors.white,
-                          ),
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        contentPadding: const EdgeInsets.only(
-                          left: 15,
-                          right: 15,
-                        ),
-                      ),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: _searchController,
-                      keyboardType: TextInputType.text,
-                      cursorColor: AppColors.white,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                      ),
-                      onFieldSubmitted: ((String query) {
-                        log(query);
-                      }),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: 35,
-              child: TabBar(
-                enableFeedback: true,
-                splashBorderRadius: BorderRadius.circular(50),
-                splashFactory: NoSplash.splashFactory,
-                physics: AppColors.scrollPhysics,
-                indicatorSize: TabBarIndicatorSize.label,
-                indicator: BoxDecoration(
-                  color: AppColors.backgroundColour,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                labelColor: AppColors.white,
-                labelStyle: const TextStyle(
-                  // color: AppColors.grey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-                unselectedLabelColor: AppColors.backgroundColour,
-                controller: _tabController,
-                tabs: const [
-                  CustomSearchNewsabBar(
-                    label: "Top News",
-                  ),
-                  CustomSearchNewsabBar(
-                    label: "Accounts",
-                  ),
-                  CustomSearchNewsabBar(
-                    label: "All News",
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  ListView.separated(
-                    itemBuilder: ((topNewsContext, topNewsIndex) {
-                      return GestureDetector(
-                        onTap: (() {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (newsDetailsScreenContext) =>
-                                  NewsDetailsScreen(
-                                contentID: "",
-                              ),
-                            ),
-                          );
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomAppBarLeading(
+                        onPressed: (() {
+                          Navigator.pop(context);
+                          // print(isPlaying);
                         }),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                          padding: EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 15,
-                            bottom: 15,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.backgroundColour.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(
-                                        radius: 25,
-                                        backgroundImage: NetworkImage(
-                                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 8,
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                2.5,
-                                        child: Text(
-                                          "Rupam Karma jkdsncdsj kncdnmzcnkar ",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.white
-                                                .withOpacity(0.8),
-                                            overflow: TextOverflow.visible,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: (() {
-                                      setState(() {
-                                        followed = !followed;
-                                      });
-                                    }),
-                                    child: AnimatedContainer(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                      width:
-                                          MediaQuery.of(context).size.width / 3,
-                                      decoration: BoxDecoration(
-                                        color: (followed == true)
-                                            ? AppColors.red
-                                            : AppColors.backgroundColour,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      duration: Duration(milliseconds: 400),
-                                      child: Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              (followed == true)
-                                                  ? Icons.sentiment_dissatisfied
-                                                  : Icons
-                                                      .emoji_emotions_outlined,
-                                              color: AppColors.white,
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text(
-                                              (followed == true)
-                                                  ? "Unfollow"
-                                                  : "Follow",
-                                              style: TextStyle(
-                                                color: AppColors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                ],
+                        icon: Icons.arrow_back_ios_rounded,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: Consumer<NewsSearchingProvider>(
+                          builder: (newsSearchingContext, newsSearchingProvider,
+                              newsSearchingChild) {
+                            return AnimatedContainer(
+                              duration: Duration(
+                                milliseconds: 100,
                               ),
-                              const SizedBox(
-                                height: 25,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.only(
-                                      left: 15,
-                                      right: 15,
-                                      top: 5,
-                                      bottom: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: AppColors.backgroundColour,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Finance",
-                                      style: TextStyle(
-                                        color: AppColors.backgroundColour,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                              child: TextFormField(
+                                textInputAction: TextInputAction.search,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                scrollPhysics: AppColors.scrollPhysics,
+                                decoration: InputDecoration(
+                                  errorStyle: const TextStyle(
+                                    overflow: TextOverflow.clip,
                                   ),
-                                  SizedBox(
-                                    height: 15,
+                                  prefixIcon: Icon(
+                                    Icons.search,
+                                    color: AppColors.white.withOpacity(0.6),
                                   ),
-                                  Text(
-                                    "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                                    style: TextStyle(
+                                  prefixStyle: const TextStyle(
+                                    color: AppColors.white,
+                                    fontSize: 16,
+                                  ),
+                                  hintText:
+                                      " Search ${newsCategory[_hintIndex].category}",
+                                  hintStyle: TextStyle(
+                                    color: AppColors.white.withOpacity(0.5),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 1.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(15.0),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 1,
                                       color: AppColors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
                                     ),
+                                    borderRadius: BorderRadius.circular(15.0),
                                   ),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                  Text(
-                                    "Monday, 26 September 2022",
-                                    style: TextStyle(
-                                      color: AppColors.white.withOpacity(0.4),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      width: 1,
+                                      color: AppColors.white,
                                     ),
+                                    borderRadius: BorderRadius.circular(15.0),
                                   ),
-                                  SizedBox(
-                                    height: 15,
+                                  contentPadding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
                                   ),
-                                  Container(
-                                    height: 200,
-                                    width: MediaQuery.of(context).size.width,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(
-                                          "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 25,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        LikeButton(
-                                          onTap: ((liked) async {
-                                            if (likeCount < 100000)
-                                              return false;
-                                          }),
-                                          likeCount: likeCount,
-                                          isLiked: true,
-                                          circleColor: const CircleColor(
-                                            start: AppColors.gold,
-                                            end: AppColors.orange,
-                                          ),
-                                          bubblesColor: BubblesColor(
-                                            dotPrimaryColor: AppColors.gold,
-                                            dotSecondaryColor: AppColors.orange,
-                                          ),
-                                          countBuilder: (int? count,
-                                              bool isLiked, String text) {
-                                            var color = isLiked
-                                                ? AppColors.gold
-                                                : AppColors.white;
-                                            Widget result;
-                                            if (count == 0) {
-                                              result = Text(
-                                                "Like",
-                                                style: TextStyle(color: color),
-                                              );
-                                            } else {
-                                              result = Text(
-                                                NumberFormat.compact()
-                                                    .format(count),
-                                                style: TextStyle(color: color),
-                                              );
-                                            }
-                                            return result;
-                                          },
-                                          likeCountAnimationType:
-                                              likeCount < 1000
-                                                  ? LikeCountAnimationType.part
-                                                  : LikeCountAnimationType.none,
-                                          likeCountPadding:
-                                              const EdgeInsets.only(left: 5.0),
-                                          likeBuilder: (bool isLiked) {
-                                            return Icon(
-                                              isLiked
-                                                  ? Icons.thumb_up
-                                                  : Icons.thumb_up_off_alt,
-                                              color: isLiked
-                                                  ? AppColors.goldDark
-                                                  : AppColors.white,
-                                              size: 25,
-                                            );
-                                          },
-                                        ),
-                                        // ReactBtn(
-                                        //   head: NumberFormat.compact()
-                                        //       .format(10000000)
-                                        //       .toString(),
-                                        //   icon: Icons.thumb_up_off_alt,
-                                        //   onPressed: (() {}),
-                                        // ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        ReactBtn(
-                                          head: NumberFormat.compact()
-                                              .format(10000000)
-                                              .toString(),
-                                          icon: Icons.comment_outlined,
-                                          onPressed: (() {
-                                            showModalBottomSheet(
-                                              backgroundColor:
-                                                  AppColors.mainColor,
-                                              context: context,
-                                              isScrollControlled: true,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(10),
-                                                  topRight: Radius.circular(10),
-                                                ),
-                                              ),
-                                              builder: (commentModelContext) =>
-                                                  Container(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height -
-                                                    50,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                    10,
-                                                  ),
-                                                ),
-                                                child: Stack(
-                                                  children: [
-                                                    Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                            top: 15,
-                                                            left: 15,
-                                                          ),
-                                                          child: Row(
-                                                            children: [
-                                                              CustomAppBarLeading(
-                                                                onPressed: (() {
-                                                                  Navigator.pop(
-                                                                      commentModelContext);
-                                                                  // print(isPlaying);
-                                                                }),
-                                                                icon: Icons
-                                                                    .arrow_back_ios_new,
-                                                              ),
-                                                              SizedBox(
-                                                                width: 15,
-                                                              ),
-                                                              Text(
-                                                                "Comments",
-                                                                style:
-                                                                    TextStyle(
-                                                                  color:
-                                                                      AppColors
-                                                                          .white,
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      2,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          height: 70,
-                                                          width: MediaQuery.of(
-                                                                  context)
-                                                              .size
-                                                              .width,
-                                                          child:
-                                                              CustomTextField(
-                                                            controller:
-                                                                commentController,
-                                                            hintText:
-                                                                "Comment as blockUID",
-                                                            keyboard:
-                                                                TextInputType
-                                                                    .text,
-                                                            isPassField: false,
-                                                            isEmailField: false,
-                                                            isPassConfirmField:
-                                                                false,
-                                                            icon: Icons.comment,
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          height: (MediaQuery.of(
-                                                                          context)
-                                                                      .viewInsets
-                                                                      .bottom <
-                                                                  200)
-                                                              ? MediaQuery.of(
-                                                                          commentModelContext)
-                                                                      .size
-                                                                      .height -
-                                                                  200
-                                                              : MediaQuery.of(
-                                                                          context)
-                                                                      .viewInsets
-                                                                      .bottom -
-                                                                  70,
-                                                          margin:
-                                                              EdgeInsets.only(
-                                                            top: 15,
-                                                          ),
-                                                          child: ListView
-                                                              .separated(
-                                                            itemCount: 10,
-                                                            reverse: true,
-                                                            itemBuilder:
-                                                                ((commentsModalContext,
-                                                                    commentsModalIndex) {
-                                                              return Container(
-                                                                width: MediaQuery.of(
-                                                                        commentModelContext)
-                                                                    .size
-                                                                    .width,
-                                                                margin: EdgeInsets
-                                                                    .symmetric(
-                                                                        horizontal:
-                                                                            15),
-                                                                child: Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    const CircleAvatar(
-                                                                      radius:
-                                                                          25,
-                                                                      backgroundImage:
-                                                                          NetworkImage(
-                                                                        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                              .only(
-                                                                          left:
-                                                                              10),
-                                                                      child:
-                                                                          Column(
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(
-                                                                                "blocUID $commentsModalIndex ",
-                                                                                style: TextStyle(
-                                                                                  color: AppColors.white,
-                                                                                  fontSize: 13,
-                                                                                ),
-                                                                              ),
-                                                                              SizedBox(
-                                                                                width: 6,
-                                                                              ),
-                                                                              Text(
-                                                                                "1h",
-                                                                                style: TextStyle(
-                                                                                  color: AppColors.white.withOpacity(0.6),
-                                                                                  fontSize: 12,
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                5,
-                                                                          ),
-                                                                          Text(
-                                                                            "comment",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              color: AppColors.white,
-                                                                              fontSize: 13,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    )
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            }),
-                                                            separatorBuilder: ((_,
-                                                                separatedModalIndex) {
-                                                              return SizedBox(
-                                                                height: 16,
-                                                              );
-                                                            }),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          }),
-                                        ),
-                                      ],
-                                    ),
-                                    // ReactBtn(
-                                    //   head: NumberFormat.compact()
-                                    //       .format(10000000)
-                                    //       .toString(),
-                                    //   icon: Icons.send_outlined,
-                                    //   onPressed: (() {}),
-                                    // ),
-                                    GestureDetector(
-                                      onTap: (() {
-                                        setState(() {
-                                          saved = !saved;
-                                        });
-                                      }),
-                                      child: AnimatedContainer(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 8,
-                                        ),
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                3,
-                                        decoration: BoxDecoration(
-                                          color: (saved == true)
-                                              ? AppColors.white
-                                                  .withOpacity(0.35)
-                                              : AppColors.white
-                                                  .withOpacity(0.25),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        duration: Duration(milliseconds: 500),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              (saved == true)
-                                                  ? Icons.bookmark
-                                                  : Icons
-                                                      .bookmark_border_outlined,
-                                              color: AppColors.white,
-                                            ),
-                                            SizedBox(
-                                              width: 5,
-                                            ),
-                                            Center(
-                                              child: Text(
-                                                (saved == true)
-                                                    ? "Saved"
-                                                    : "Save",
-                                                style: TextStyle(
-                                                  color: AppColors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  ],
                                 ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                controller: _searchController,
+                                keyboardType: TextInputType.text,
+                                cursorColor: AppColors.white,
+                                style: const TextStyle(
+                                  color: AppColors.white,
+                                ),
+                                onFieldSubmitted: ((String query) {
+                                  // log(query);
+                                  newsSearchingProvider.queryFunc(query);
+                                }),
+                                onChanged: ((String query) {
+                                  log(query);
+                                  newsSearchingProvider.queryFunc(query);
+                                }),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    }),
-                    separatorBuilder:
-                        ((topNewsSeparatorContext, topNewsSeparatorIndex) {
-                      return SizedBox(
-                        height: 20,
-                      );
-                    }),
-                    itemCount: 10,
+                      ),
+                    ],
                   ),
-                  ListView.separated(
-                    itemBuilder: ((topNewsContext, topNewsIndex) {
-                      return Container(
-                        width: MediaQuery.of(topNewsContext).size.width,
-                        margin: EdgeInsets.only(
-                          top: 10,
-                          bottom: 10,
-                          left: 12,
-                          right: 12,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const CircleAvatar(
-                                  radius: 25,
-                                  backgroundImage: NetworkImage(
-                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width / 2.5,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Rupam Karmajksdf sdfsd dsncdsjkncdnmzcnkar",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              AppColors.white.withOpacity(0.8),
-                                          overflow: TextOverflow.visible,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 5,
-                                      ),
-                                      Text(
-                                        "${NumberFormat.compact().format(10000000).toString()} Followers",
-                                        style: TextStyle(
-                                          color:
-                                              AppColors.white.withOpacity(0.4),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            GestureDetector(
+                ),
+              ),
+              SliverAppBar(
+                leading: Container(),
+                backgroundColor: AppColors.mainColor,
+                elevation: 0,
+                pinned: true,
+                flexibleSpace: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 35,
+                  margin: const EdgeInsets.only(
+                    top: 10,
+                  ),
+                  child: TabBar(
+                    enableFeedback: true,
+                    splashBorderRadius: BorderRadius.circular(50),
+                    splashFactory: NoSplash.splashFactory,
+                    physics: AppColors.scrollPhysics,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    indicator: BoxDecoration(
+                      color: AppColors.backgroundColour,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    labelColor: AppColors.white,
+                    labelStyle: const TextStyle(
+                      // color: AppColors.grey,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    unselectedLabelColor: AppColors.backgroundColour,
+                    controller: _tabController,
+                    tabs: const [
+                      CustomSearchNewsTabBar(
+                        label: "Top News",
+                      ),
+                      CustomSearchNewsTabBar(
+                        label: "Accounts",
+                      ),
+                      CustomSearchNewsTabBar(
+                        label: "All News",
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverFillRemaining(
+                child: Consumer<NewsSearchingProvider>(
+                  builder:
+                      (newsSearchCtx, newsSearchProvider, newsSearchChild) {
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        ListView.separated(
+                          itemBuilder: ((topNewsContext, topNewsIndex) {
+                            return GestureDetector(
                               onTap: (() {
-                                setState(() {
-                                  followed = !followed;
-                                });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (newsDetailsScreenContext) =>
+                                        const NewsDetailsScreen(
+                                      contentID: "",
+                                    ),
+                                  ),
+                                );
                               }),
-                              child: AnimatedContainer(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
+                              child: Container(
+                                width: MediaQuery.of(context).size.width,
+                                margin: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 2,
                                 ),
-                                width: MediaQuery.of(context).size.width / 3.5,
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 15,
+                                  bottom: 15,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: (followed == true)
-                                      ? AppColors.red
-                                      : AppColors.backgroundColour,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: AppColors.backgroundColour
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                                duration: Duration(milliseconds: 400),
-                                child: Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        (followed == true)
-                                            ? Icons.sentiment_dissatisfied
-                                            : Icons.emoji_emotions_outlined,
-                                        color: AppColors.white,
-                                      ),
-                                      SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        (followed == true)
-                                            ? "Unfollow"
-                                            : "Follow",
-                                        style: TextStyle(
-                                          color: AppColors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    }),
-                    separatorBuilder:
-                        ((topNewsSeparatorContext, topNewsSeparatorIndex) {
-                      return SizedBox(
-                        height: 10,
-                      );
-                    }),
-                    itemCount: 10,
-                  ),
-                  ListView.separated(
-                    itemBuilder: ((topNewsContext, topNewsIndex) {
-                      return GestureDetector(
-                        onTap: (() {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (newsDetailsScreenContext) =>
-                                  NewsDetailsScreen(
-                                contentID: "",
-                              ),
-                            ),
-                          );
-                        }),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                          padding: EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                            top: 15,
-                            bottom: 15,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.backgroundColour.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const CircleAvatar(
-                                        radius: 25,
-                                        backgroundImage: NetworkImage(
-                                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 8,
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                2.5,
-                                        child: Text(
-                                          "Rupam Karma jkdsncdsj kncdnmzcnkar ",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.white
-                                                .withOpacity(0.8),
-                                            overflow: TextOverflow.visible,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: (() {
-                                      setState(() {
-                                        followed = !followed;
-                                      });
-                                    }),
-                                    child: AnimatedContainer(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                      width:
-                                          MediaQuery.of(context).size.width / 3,
-                                      decoration: BoxDecoration(
-                                        color: (followed == true)
-                                            ? AppColors.red
-                                            : AppColors.backgroundColour,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      duration: Duration(milliseconds: 400),
-                                      child: Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              (followed == true)
-                                                  ? Icons.sentiment_dissatisfied
-                                                  : Icons
-                                                      .emoji_emotions_outlined,
-                                              color: AppColors.white,
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text(
-                                              (followed == true)
-                                                  ? "Unfollow"
-                                                  : "Follow",
-                                              style: TextStyle(
-                                                color: AppColors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 25,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.only(
-                                      left: 15,
-                                      right: 15,
-                                      top: 5,
-                                      bottom: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: AppColors.backgroundColour,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Finance",
-                                      style: TextStyle(
-                                        color: AppColors.backgroundColour,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                  Text(
-                                    "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                                    style: TextStyle(
-                                      color: AppColors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                  Text(
-                                    "Monday, 26 September 2022",
-                                    style: TextStyle(
-                                      color: AppColors.white.withOpacity(0.4),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                  Container(
-                                    height: 200,
-                                    width: MediaQuery.of(context).size.width,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: NetworkImage(
-                                          "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 25,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                child: Column(
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        LikeButton(
-                                          onTap: ((liked) async {
-                                            if (likeCount < 100000)
-                                              return false;
-                                          }),
-                                          likeCount: likeCount,
-                                          isLiked: true,
-                                          circleColor: const CircleColor(
-                                            start: AppColors.gold,
-                                            end: AppColors.orange,
+                                    BlocDetailsRow(
+                                      followers: 1000000,
+                                      blocName: "Rupam Karmakar",
+                                      blocProfilePic:
+                                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                      followed: followed,
+                                      followedOnTap: (() {}),
+                                      onTap: (() {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (profileDetailsContext) =>
+                                                const ReporterPublicProfile(
+                                              blockUID: "",
+                                            ),
                                           ),
-                                          bubblesColor: BubblesColor(
-                                            dotPrimaryColor: AppColors.gold,
-                                            dotSecondaryColor: AppColors.orange,
-                                          ),
-                                          countBuilder: (int? count,
-                                              bool isLiked, String text) {
-                                            var color = isLiked
-                                                ? AppColors.gold
-                                                : AppColors.white;
-                                            Widget result;
-                                            if (count == 0) {
-                                              result = Text(
-                                                "Like",
-                                                style: TextStyle(color: color),
-                                              );
-                                            } else {
-                                              result = Text(
-                                                NumberFormat.compact()
-                                                    .format(count),
-                                                style: TextStyle(color: color),
-                                              );
-                                            }
-                                            return result;
-                                          },
-                                          likeCountAnimationType:
-                                              likeCount < 1000
-                                                  ? LikeCountAnimationType.part
-                                                  : LikeCountAnimationType.none,
-                                          likeCountPadding:
-                                              const EdgeInsets.only(left: 5.0),
-                                          likeBuilder: (bool isLiked) {
-                                            return Icon(
-                                              isLiked
-                                                  ? Icons.thumb_up
-                                                  : Icons.thumb_up_off_alt,
-                                              color: isLiked
-                                                  ? AppColors.goldDark
-                                                  : AppColors.white,
-                                              size: 25,
-                                            );
-                                          },
-                                        ),
-                                        // ReactBtn(
-                                        //   head: NumberFormat.compact()
-                                        //       .format(10000000)
-                                        //       .toString(),
-                                        //   icon: Icons.thumb_up_off_alt,
-                                        //   onPressed: (() {}),
-                                        // ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        ReactBtn(
-                                          head: NumberFormat.compact()
-                                              .format(10000000)
-                                              .toString(),
-                                          icon: Icons.comment_outlined,
-                                          onPressed: (() {
-                                            showModalBottomSheet(
-                                              backgroundColor:
-                                                  AppColors.mainColor,
-                                              context: context,
-                                              isScrollControlled: true,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(10),
-                                                  topRight: Radius.circular(10),
-                                                ),
+                                        );
+                                      }),
+                                    ),
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    ReportDetailsColumn(
+                                      category: "Finance",
+                                      reportHeading:
+                                          "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally ${newsSearchProvider.query}",
+                                      reportTime: "Monday, 26 September 2022",
+                                      reportPic:
+                                          "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
+                                    ),
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              ReportLikeBtn(
+                                                likeCount: likeCount,
+                                                onTap: ((liked) async {
+                                                  return false;
+                                                }),
                                               ),
-                                              builder: (commentModelContext) =>
-                                                  Container(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height -
-                                                    50,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                    10,
-                                                  ),
-                                                ),
-                                                child: Stack(
-                                                  children: [
-                                                    Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                            top: 15,
-                                                            left: 15,
-                                                          ),
-                                                          child: Row(
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              ReactBtn(
+                                                head: NumberFormat.compact()
+                                                    .format(10000000)
+                                                    .toString(),
+                                                icon: Icons.comment_outlined,
+                                                onPressed: (() {
+                                                  showModalBottomSheet(
+                                                    backgroundColor:
+                                                        AppColors.mainColor,
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        topRight:
+                                                            Radius.circular(10),
+                                                      ),
+                                                    ),
+                                                    builder:
+                                                        (commentModelContext) =>
+                                                            Container(
+                                                      height:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .height -
+                                                              50,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                          10,
+                                                        ),
+                                                      ),
+                                                      child: Stack(
+                                                        children: [
+                                                          Column(
                                                             children: [
-                                                              CustomAppBarLeading(
-                                                                onPressed: (() {
-                                                                  Navigator.pop(
-                                                                      commentModelContext);
-                                                                  // print(isPlaying);
-                                                                }),
-                                                                icon: Icons
-                                                                    .arrow_back_ios_new,
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 15,
+                                                                  left: 15,
+                                                                ),
+                                                                child: Row(
+                                                                  children: [
+                                                                    CustomAppBarLeading(
+                                                                      onPressed:
+                                                                          (() {
+                                                                        Navigator.pop(
+                                                                            commentModelContext);
+                                                                        // print(isPlaying);
+                                                                      }),
+                                                                      icon: Icons
+                                                                          .arrow_back_ios_new,
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 15,
+                                                                    ),
+                                                                    const Text(
+                                                                      "Comments",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: AppColors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            16,
+                                                                        letterSpacing:
+                                                                            2,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
                                                               SizedBox(
-                                                                width: 15,
+                                                                height: 70,
+                                                                width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width,
+                                                                child:
+                                                                    CustomTextField(
+                                                                  controller:
+                                                                      commentController,
+                                                                  hintText:
+                                                                      "Comment as blockUID",
+                                                                  keyboard:
+                                                                      TextInputType
+                                                                          .text,
+                                                                  isPassField:
+                                                                      false,
+                                                                  isEmailField:
+                                                                      false,
+                                                                  isPassConfirmField:
+                                                                      false,
+                                                                  icon: Icons
+                                                                      .comment,
+                                                                ),
                                                               ),
-                                                              Text(
-                                                                "Comments",
-                                                                style:
-                                                                    TextStyle(
-                                                                  color:
-                                                                      AppColors
-                                                                          .white,
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      2,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
+                                                              Container(
+                                                                height: (MediaQuery.of(context)
+                                                                            .viewInsets
+                                                                            .bottom <
+                                                                        200)
+                                                                    ? MediaQuery.of(context)
+                                                                            .size
+                                                                            .height -
+                                                                        210
+                                                                    : MediaQuery.of(context)
+                                                                            .viewInsets
+                                                                            .bottom -
+                                                                        70,
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 15,
+                                                                  bottom: 10,
+                                                                ),
+                                                                child: ListView
+                                                                    .separated(
+                                                                  itemCount: 10,
+                                                                  reverse: true,
+                                                                  itemBuilder:
+                                                                      ((commentsModalContext,
+                                                                          commentsModalIndex) {
+                                                                    return Container(
+                                                                      width: MediaQuery.of(
+                                                                              commentModelContext)
+                                                                          .size
+                                                                          .width,
+                                                                      margin: const EdgeInsets
+                                                                              .symmetric(
+                                                                          horizontal:
+                                                                              15),
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.start,
+                                                                        children: [
+                                                                          const CircleAvatar(
+                                                                            radius:
+                                                                                25,
+                                                                            backgroundImage:
+                                                                                NetworkImage(
+                                                                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                                                            ),
+                                                                          ),
+                                                                          Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.only(left: 10),
+                                                                            child:
+                                                                                Column(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                                                  children: [
+                                                                                    Text(
+                                                                                      "blocUID $commentsModalIndex ",
+                                                                                      style: const TextStyle(
+                                                                                        color: AppColors.white,
+                                                                                        fontSize: 13,
+                                                                                      ),
+                                                                                    ),
+                                                                                    const SizedBox(
+                                                                                      width: 6,
+                                                                                    ),
+                                                                                    Text(
+                                                                                      "1h",
+                                                                                      style: TextStyle(
+                                                                                        color: AppColors.white.withOpacity(0.6),
+                                                                                        fontSize: 12,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  height: 5,
+                                                                                ),
+                                                                                const Text(
+                                                                                  "comment",
+                                                                                  style: TextStyle(
+                                                                                    color: AppColors.white,
+                                                                                    fontSize: 13,
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  }),
+                                                                  separatorBuilder:
+                                                                      ((_,
+                                                                          separatedModalIndex) {
+                                                                    return const SizedBox(
+                                                                      height:
+                                                                          16,
+                                                                    );
+                                                                  }),
                                                                 ),
                                                               ),
                                                             ],
                                                           ),
-                                                        ),
-                                                        SizedBox(
-                                                          height: 70,
-                                                          width: MediaQuery.of(
-                                                                  context)
-                                                              .size
-                                                              .width,
-                                                          child:
-                                                              CustomTextField(
-                                                            controller:
-                                                                commentController,
-                                                            hintText:
-                                                                "Comment as blockUID",
-                                                            keyboard:
-                                                                TextInputType
-                                                                    .text,
-                                                            isPassField: false,
-                                                            isEmailField: false,
-                                                            isPassConfirmField:
-                                                                false,
-                                                            icon: Icons.comment,
-                                                          ),
-                                                        ),
-                                                        Container(
-                                                          height: (MediaQuery.of(
-                                                                          context)
-                                                                      .viewInsets
-                                                                      .bottom <
-                                                                  200)
-                                                              ? MediaQuery.of(
-                                                                          commentModelContext)
-                                                                      .size
-                                                                      .height -
-                                                                  200
-                                                              : MediaQuery.of(
-                                                                          context)
-                                                                      .viewInsets
-                                                                      .bottom -
-                                                                  70,
-                                                          margin:
-                                                              EdgeInsets.only(
-                                                            top: 15,
-                                                          ),
-                                                          child: ListView
-                                                              .separated(
-                                                            itemCount: 10,
-                                                            reverse: true,
-                                                            itemBuilder:
-                                                                ((commentsModalContext,
-                                                                    commentsModalIndex) {
-                                                              return Container(
-                                                                width: MediaQuery.of(
-                                                                        commentModelContext)
-                                                                    .size
-                                                                    .width,
-                                                                margin: EdgeInsets
-                                                                    .symmetric(
-                                                                        horizontal:
-                                                                            15),
-                                                                child: Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    const CircleAvatar(
-                                                                      radius:
-                                                                          25,
-                                                                      backgroundImage:
-                                                                          NetworkImage(
-                                                                        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                                                      ),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets
-                                                                              .only(
-                                                                          left:
-                                                                              10),
-                                                                      child:
-                                                                          Column(
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Row(
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(
-                                                                                "blocUID $commentsModalIndex ",
-                                                                                style: TextStyle(
-                                                                                  color: AppColors.white,
-                                                                                  fontSize: 13,
-                                                                                ),
-                                                                              ),
-                                                                              SizedBox(
-                                                                                width: 6,
-                                                                              ),
-                                                                              Text(
-                                                                                "1h",
-                                                                                style: TextStyle(
-                                                                                  color: AppColors.white.withOpacity(0.6),
-                                                                                  fontSize: 12,
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                          SizedBox(
-                                                                            height:
-                                                                                5,
-                                                                          ),
-                                                                          Text(
-                                                                            "comment",
-                                                                            style:
-                                                                                TextStyle(
-                                                                              color: AppColors.white,
-                                                                              fontSize: 13,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    )
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            }),
-                                                            separatorBuilder: ((_,
-                                                                separatedModalIndex) {
-                                                              return SizedBox(
-                                                                height: 16,
-                                                              );
-                                                            }),
-                                                          ),
-                                                        ),
-                                                      ],
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ],
-                                                ),
+                                                  );
+                                                }),
                                               ),
-                                            );
-                                          }),
-                                        ),
-                                      ],
-                                    ),
-                                    // ReactBtn(
-                                    //   head: NumberFormat.compact()
-                                    //       .format(10000000)
-                                    //       .toString(),
-                                    //   icon: Icons.send_outlined,
-                                    //   onPressed: (() {}),
-                                    // ),
-                                    GestureDetector(
-                                      onTap: (() {
-                                        setState(() {
-                                          saved = !saved;
-                                        });
-                                      }),
-                                      child: AnimatedContainer(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 8,
-                                        ),
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                3,
-                                        decoration: BoxDecoration(
-                                          color: (saved == true)
-                                              ? AppColors.white
-                                                  .withOpacity(0.35)
-                                              : AppColors.white
-                                                  .withOpacity(0.25),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        duration: Duration(milliseconds: 500),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              (saved == true)
-                                                  ? Icons.bookmark
-                                                  : Icons
-                                                      .bookmark_border_outlined,
-                                              color: AppColors.white,
-                                            ),
-                                            SizedBox(
-                                              width: 5,
-                                            ),
-                                            Center(
-                                              child: Text(
-                                                (saved == true)
-                                                    ? "Saved"
-                                                    : "Save",
-                                                style: TextStyle(
-                                                  color: AppColors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                            ],
+                                          ),
+                                          ReportSaveBtn(
+                                            saved: saved,
+                                            onTap: (() {}),
+                                          ),
+                                        ],
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          }),
+                          separatorBuilder: ((topNewsSeparatorContext,
+                              topNewsSeparatorIndex) {
+                            return const SizedBox(
+                              height: 20,
+                            );
+                          }),
+                          itemCount: 10,
                         ),
-                      );
-                    }),
-                    separatorBuilder:
-                        ((topNewsSeparatorContext, topNewsSeparatorIndex) {
-                      return SizedBox(
-                        height: 20,
-                      );
-                    }),
-                    itemCount: 10,
-                  ),
-                ],
-              ),
-            )
-          ],
+                        ListView.separated(
+                          itemBuilder: ((topNewsContext, topNewsIndex) {
+                            return Container(
+                              margin: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              child: BlocDetailsRow(
+                                followers: 10000,
+                                blocName: "Rupam Karmakar",
+                                blocProfilePic:
+                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                radius: 30,
+                                followed: followed,
+                                followedOnTap: (() {
+                                  setState(() {
+                                    followed = !followed;
+                                  });
+                                }),
+                                onTap: (() {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (profileDetailsContext) =>
+                                          const ReporterPublicProfile(
+                                        blockUID: "",
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            );
+                          }),
+                          separatorBuilder: ((topNewsSeparatorContext,
+                              topNewsSeparatorIndex) {
+                            return const SizedBox(
+                              height: 10,
+                            );
+                          }),
+                          itemCount: 10,
+                        ),
+                        ListView.separated(
+                          itemBuilder: ((topNewsContext, topNewsIndex) {
+                            return GestureDetector(
+                              onTap: (() {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (newsDetailsScreenContext) =>
+                                        const NewsDetailsScreen(
+                                      contentID: "",
+                                    ),
+                                  ),
+                                );
+                              }),
+                              child: Container(
+                                width: MediaQuery.of(context).size.width,
+                                margin: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 2,
+                                ),
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                  top: 15,
+                                  bottom: 15,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.backgroundColour
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  children: [
+                                    BlocDetailsRow(
+                                      followers: 1000000,
+                                      blocName: "Rupam Karmakar",
+                                      blocProfilePic:
+                                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                      followed: followed,
+                                      followedOnTap: (() {}),
+                                      onTap: (() {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (profileDetailsContext) =>
+                                                const ReporterPublicProfile(
+                                              blockUID: "",
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    const ReportDetailsColumn(
+                                      category: "Finance",
+                                      reportHeading:
+                                          "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
+                                      reportTime: "Monday, 26 September 2022",
+                                      reportPic:
+                                          "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
+                                    ),
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              ReportLikeBtn(
+                                                likeCount: likeCount,
+                                                onTap: ((liked) async {
+                                                  return false;
+                                                }),
+                                              ),
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              ReactBtn(
+                                                head: NumberFormat.compact()
+                                                    .format(10000000)
+                                                    .toString(),
+                                                icon: Icons.comment_outlined,
+                                                onPressed: (() {
+                                                  showModalBottomSheet(
+                                                    backgroundColor:
+                                                        AppColors.mainColor,
+                                                    context: context,
+                                                    isScrollControlled: true,
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        topRight:
+                                                            Radius.circular(10),
+                                                      ),
+                                                    ),
+                                                    builder:
+                                                        (commentModelContext) =>
+                                                            Container(
+                                                      height:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .height -
+                                                              50,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                          10,
+                                                        ),
+                                                      ),
+                                                      child: Stack(
+                                                        children: [
+                                                          Column(
+                                                            children: [
+                                                              Padding(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 15,
+                                                                  left: 15,
+                                                                ),
+                                                                child: Row(
+                                                                  children: [
+                                                                    CustomAppBarLeading(
+                                                                      onPressed:
+                                                                          (() {
+                                                                        Navigator.pop(
+                                                                            commentModelContext);
+                                                                        // print(isPlaying);
+                                                                      }),
+                                                                      icon: Icons
+                                                                          .arrow_back_ios_new,
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 15,
+                                                                    ),
+                                                                    const Text(
+                                                                      "Comments",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: AppColors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            16,
+                                                                        letterSpacing:
+                                                                            2,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                height: 70,
+                                                                width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width,
+                                                                child:
+                                                                    CustomTextField(
+                                                                  controller:
+                                                                      commentController,
+                                                                  hintText:
+                                                                      "Comment as blockUID",
+                                                                  keyboard:
+                                                                      TextInputType
+                                                                          .text,
+                                                                  isPassField:
+                                                                      false,
+                                                                  isEmailField:
+                                                                      false,
+                                                                  isPassConfirmField:
+                                                                      false,
+                                                                  icon: Icons
+                                                                      .comment,
+                                                                ),
+                                                              ),
+                                                              Container(
+                                                                height: (MediaQuery.of(context)
+                                                                            .viewInsets
+                                                                            .bottom <
+                                                                        200)
+                                                                    ? MediaQuery.of(context)
+                                                                            .size
+                                                                            .height -
+                                                                        210
+                                                                    : MediaQuery.of(context)
+                                                                            .viewInsets
+                                                                            .bottom -
+                                                                        70,
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 15,
+                                                                  bottom: 10,
+                                                                ),
+                                                                child: ListView
+                                                                    .separated(
+                                                                  itemCount: 10,
+                                                                  reverse: true,
+                                                                  itemBuilder:
+                                                                      ((commentsModalContext,
+                                                                          commentsModalIndex) {
+                                                                    return Container(
+                                                                      width: MediaQuery.of(
+                                                                              commentModelContext)
+                                                                          .size
+                                                                          .width,
+                                                                      margin: const EdgeInsets
+                                                                              .symmetric(
+                                                                          horizontal:
+                                                                              15),
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.start,
+                                                                        children: [
+                                                                          const CircleAvatar(
+                                                                            radius:
+                                                                                25,
+                                                                            backgroundImage:
+                                                                                NetworkImage(
+                                                                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                                                            ),
+                                                                          ),
+                                                                          Padding(
+                                                                            padding:
+                                                                                const EdgeInsets.only(left: 10),
+                                                                            child:
+                                                                                Column(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                                                  children: [
+                                                                                    Text(
+                                                                                      "blocUID $commentsModalIndex ",
+                                                                                      style: const TextStyle(
+                                                                                        color: AppColors.white,
+                                                                                        fontSize: 13,
+                                                                                      ),
+                                                                                    ),
+                                                                                    const SizedBox(
+                                                                                      width: 6,
+                                                                                    ),
+                                                                                    Text(
+                                                                                      "1h",
+                                                                                      style: TextStyle(
+                                                                                        color: AppColors.white.withOpacity(0.6),
+                                                                                        fontSize: 12,
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  height: 5,
+                                                                                ),
+                                                                                const Text(
+                                                                                  "comment",
+                                                                                  style: TextStyle(
+                                                                                    color: AppColors.white,
+                                                                                    fontSize: 13,
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  }),
+                                                                  separatorBuilder:
+                                                                      ((_,
+                                                                          separatedModalIndex) {
+                                                                    return const SizedBox(
+                                                                      height:
+                                                                          16,
+                                                                    );
+                                                                  }),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                              ),
+                                            ],
+                                          ),
+                                          ReportSaveBtn(
+                                            saved: saved,
+                                            onTap: (() {}),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                          separatorBuilder: ((topNewsSeparatorContext,
+                              topNewsSeparatorIndex) {
+                            return const SizedBox(
+                              height: 20,
+                            );
+                          }),
+                          itemCount: 10,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class CustomSearchNewsabBar extends StatelessWidget {
-  const CustomSearchNewsabBar({
+class CustomSearchNewsTabBar extends StatelessWidget {
+  const CustomSearchNewsTabBar({
     super.key,
     required this.label,
   });

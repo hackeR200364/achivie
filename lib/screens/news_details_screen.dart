@@ -1,10 +1,10 @@
 import 'package:achivie/screens/image_preview_screen.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
+import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
-import 'package:like_button/like_button.dart';
 
 import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
@@ -75,6 +75,8 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
           padding: EdgeInsets.only(
             bottom: 10,
             top: 10,
+            left: 10,
+            right: 10,
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
@@ -83,47 +85,11 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              LikeButton(
+              ReportLikeBtn(
+                likeCount: likeCount,
                 onTap: ((liked) async {
                   if (likeCount < 100000) return false;
                 }),
-                likeCount: likeCount,
-                isLiked: true,
-                circleColor: const CircleColor(
-                  start: AppColors.gold,
-                  end: AppColors.orange,
-                ),
-                bubblesColor: BubblesColor(
-                  dotPrimaryColor: AppColors.gold,
-                  dotSecondaryColor: AppColors.orange,
-                ),
-                countBuilder: (int? count, bool isLiked, String text) {
-                  var color = isLiked ? AppColors.gold : AppColors.white;
-                  Widget result;
-                  if (count == 0) {
-                    result = Text(
-                      "Like",
-                      style: TextStyle(color: color),
-                    );
-                  } else {
-                    result = Text(
-                      NumberFormat.compact().format(count),
-                      style: TextStyle(color: color),
-                    );
-                  }
-                  return result;
-                },
-                likeCountAnimationType: likeCount < 1000
-                    ? LikeCountAnimationType.part
-                    : LikeCountAnimationType.none,
-                likeCountPadding: const EdgeInsets.only(left: 5.0),
-                likeBuilder: (bool isLiked) {
-                  return Icon(
-                    isLiked ? Icons.thumb_up : Icons.thumb_up_off_alt,
-                    color: isLiked ? AppColors.goldDark : AppColors.white,
-                    size: 25,
-                  );
-                },
               ),
               ReactBtn(
                 head: NumberFormat.compact().format(10000000).toString(),
@@ -139,252 +105,61 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                         topRight: Radius.circular(10),
                       ),
                     ),
-                    builder: (commentModelContext) => Container(
-                      height:
-                          MediaQuery.of(commentModelContext).size.height - 70,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 15,
-                                left: 15,
-                              ),
-                              child: Row(
-                                children: [
-                                  CustomAppBarLeading(
-                                    onPressed: (() {
-                                      Navigator.pop(commentModelContext);
-                                      // print(isPlaying);
-                                    }),
-                                    icon: Icons.arrow_back_ios_new,
-                                  ),
-                                  SizedBox(
-                                    width: 15,
-                                  ),
-                                  Text(
-                                    "Comments",
-                                    style: TextStyle(
-                                      color: AppColors.white,
-                                      fontSize: 16,
-                                      letterSpacing: 2,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView.separated(
-                                itemCount: 10,
-                                reverse: true,
-                                itemBuilder: ((commentsModalContext,
-                                    commentsModalIndex) {
-                                  return Container(
-                                    width: MediaQuery.of(commentModelContext)
-                                        .size
-                                        .width,
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 15),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: [
-                                        const CircleAvatar(
-                                          radius: 25,
-                                          backgroundImage: NetworkImage(
-                                            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "blocUID $commentsModalIndex ",
-                                                    style: TextStyle(
-                                                      color: AppColors.white,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 6,
-                                                  ),
-                                                  Text(
-                                                    "1h",
-                                                    style: TextStyle(
-                                                      color: AppColors.white
-                                                          .withOpacity(0.6),
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                "comment",
-                                                style: TextStyle(
-                                                  color: AppColors.white,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  );
-                                }),
-                                separatorBuilder: ((_, separatedModalIndex) {
-                                  return SizedBox(
-                                    height: 16,
-                                  );
-                                }),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 70,
-                              width:
-                                  MediaQuery.of(commentModelContext).size.width,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 20,
-                                  left: 15,
-                                  right: 15,
-                                  bottom: 10,
-                                ),
-                                child: TextFormField(
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  scrollPhysics: AppColors.scrollPhysics,
-                                  decoration: InputDecoration(
-                                    errorStyle: const TextStyle(
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.comment,
-                                      color: AppColors.white,
-                                    ),
-                                    prefixStyle: const TextStyle(
-                                      color: AppColors.white,
-                                      fontSize: 16,
-                                    ),
-                                    hintText: "Comment as blocUID",
-                                    hintStyle: TextStyle(
-                                      color: AppColors.white.withOpacity(0.5),
-                                    ),
-                                    suffixIcon: IconButton(
-                                      onPressed: (() {
-                                        if (commentController.text
-                                            .trim()
-                                            .isNotEmpty) {
-                                          Navigator.pop(commentModelContext);
-                                        }
-                                      }),
-                                      icon: const Icon(
-                                        Icons.send,
-                                        color: AppColors.white,
-                                      ),
-                                      splashRadius: 20,
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: Colors.white,
-                                        width: 1.0,
-                                      ),
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        width: 1,
-                                        color: AppColors.white,
-                                      ),
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        width: 1,
-                                        color: AppColors.white,
-                                      ),
-                                      borderRadius: BorderRadius.circular(15.0),
-                                    ),
-                                    contentPadding: const EdgeInsets.only(
-                                      left: 15,
-                                      right: 15,
-                                    ),
-                                  ),
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  controller: commentController,
-                                  keyboardType: TextInputType.text,
-                                  cursorColor: AppColors.white,
-                                  style: const TextStyle(
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    builder: (commentModelContext) => CommentModalSheet(
+                      commentController: commentController,
+                      reporterProfilePic:
+                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                      blocUID: 'Rupam Karmakar',
+                      commentTime: '12h',
+                      comment:
+                          "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                      commentModelContext: commentModelContext,
                     ),
                   );
                 }),
               ),
-              GestureDetector(
-                onTap: (() {
-                  setState(() {
-                    saved = !saved;
-                  });
-                }),
-                child: AnimatedContainer(
-                  width: MediaQuery.of(context).size.width / 2.5,
-                  duration: Duration(milliseconds: 400),
-                  decoration: BoxDecoration(
-                    color: (saved == true)
-                        ? AppColors.white.withOpacity(0.35)
-                        : AppColors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        (saved == true)
-                            ? Icons.bookmark
-                            : Icons.bookmark_border_outlined,
-                        color: AppColors.white,
-                      ),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Center(
-                        child: Text(
-                          (saved == true) ? "Saved" : "Save",
-                          style: TextStyle(
-                            color: AppColors.white,
+              Expanded(
+                child: GestureDetector(
+                  onTap: (() {
+                    setState(() {
+                      saved = !saved;
+                    });
+                  }),
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 400),
+                    margin: EdgeInsets.only(
+                      left: 10,
+                      right: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: (saved == true)
+                          ? AppColors.white.withOpacity(0.35)
+                          : AppColors.white.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          (saved == true)
+                              ? Icons.bookmark
+                              : Icons.bookmark_border_outlined,
+                          color: AppColors.white,
+                        ),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Center(
+                          child: Text(
+                            (saved == true) ? "Saved" : "Save",
+                            style: TextStyle(
+                              color: AppColors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -401,110 +176,25 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
+                BlocDetailsRow(
+                  radius: 25,
+                  followers: 1000000,
+                  blocName: "Rupam Karmakar",
+                  blocProfilePic:
+                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                  followed: followed,
+                  followedOnTap: (() {}),
                   onTap: (() {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (profileDetailsContext) =>
-                            ReporterPublicProfile(
+                            const ReporterPublicProfile(
                           blockUID: "",
                         ),
                       ),
                     );
                   }),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 25,
-                            backgroundImage: NetworkImage(
-                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                            ),
-                          ),
-                          SizedBox(
-                            width: 8,
-                          ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width / 2.5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Rupam Karmajkdsncdsjkncdnmzcnkar",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.white.withOpacity(0.8),
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 5,
-                                ),
-                                Text(
-                                  "${NumberFormat.compact().format(10000000).toString()} Followers",
-                                  style: TextStyle(
-                                    color: AppColors.white.withOpacity(0.4),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: (() {
-                          setState(() {
-                            followed = !followed;
-                          });
-                        }),
-                        child: AnimatedContainer(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          width: MediaQuery.of(context).size.width / 3,
-                          decoration: BoxDecoration(
-                            color: (followed == true)
-                                ? AppColors.red
-                                : AppColors.backgroundColour,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          duration: Duration(milliseconds: 400),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  (followed == true)
-                                      ? Icons.sentiment_dissatisfied
-                                      : Icons.emoji_emotions_outlined,
-                                  color: AppColors.white,
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  (followed == true) ? "Unfollow" : "Follow",
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
                 SizedBox(
                   height: 24,
@@ -655,6 +345,336 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class CommentModalSheet extends StatelessWidget {
+  const CommentModalSheet({
+    super.key,
+    required this.commentController,
+    required this.reporterProfilePic,
+    required this.blocUID,
+    required this.commentTime,
+    required this.comment,
+    required this.commentModelContext,
+  });
+
+  final TextEditingController commentController;
+  final BuildContext commentModelContext;
+  final String reporterProfilePic, blocUID, commentTime, comment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(commentModelContext).size.height - 70,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          10,
+        ),
+      ),
+      child: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            backgroundColor: AppColors.mainColor,
+            elevation: 0,
+            pinned: true,
+            leading: SizedBox(),
+            expandedHeight: 60,
+            flexibleSpace: Padding(
+              padding: const EdgeInsets.only(
+                top: 15,
+                left: 15,
+              ),
+              child: CommentTopRow(
+                commentModelContext: commentModelContext,
+              ),
+            ),
+          ),
+          SliverAppBar(
+            backgroundColor: AppColors.mainColor,
+            elevation: 0,
+            pinned: true,
+            leading: SizedBox(),
+            // expandedHeight: 100,
+            flexibleSpace: Container(
+              height: 65,
+              margin: EdgeInsets.only(
+                left: 10,
+                right: 10,
+              ),
+              padding: EdgeInsets.only(
+                top: 10,
+              ),
+              child: CommentTextField(
+                commentController: commentController,
+                commentModelContext: commentModelContext,
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              childCount: 10,
+              (context, index) => ReportCommentList(
+                commentModelContext: commentModelContext,
+                reporterProfilePic: reporterProfilePic,
+                blocUID: blocUID,
+                commentTime: commentTime,
+                comment: comment,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ReportCommentList extends StatelessWidget {
+  const ReportCommentList({
+    super.key,
+    required this.commentModelContext,
+    required this.reporterProfilePic,
+    required this.blocUID,
+    required this.commentTime,
+    required this.comment,
+  });
+
+  final BuildContext commentModelContext;
+  final String reporterProfilePic, blocUID, commentTime, comment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: MediaQuery.of(commentModelContext).size.width,
+      margin: EdgeInsets.only(
+        left: 15,
+        right: 15,
+        top: 10,
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 25,
+                backgroundImage: NetworkImage(
+                  reporterProfilePic,
+                ),
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CommentBlocDetailsTimeRow(
+                      blocUID: blocUID,
+                      commentTime: commentTime,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    CommentDetails(
+                      comment: comment,
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: 1,
+            margin: EdgeInsets.only(
+              top: 10,
+              bottom: 5,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.white.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CommentDetails extends StatelessWidget {
+  const CommentDetails({
+    super.key,
+    required this.comment,
+  });
+
+  final String comment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      comment,
+      style: TextStyle(
+        color: AppColors.white,
+        fontSize: 13,
+      ),
+    );
+  }
+}
+
+class CommentBlocDetailsTimeRow extends StatelessWidget {
+  const CommentBlocDetailsTimeRow({
+    super.key,
+    required this.blocUID,
+    required this.commentTime,
+  });
+
+  final String blocUID, commentTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Text(
+          blocUID,
+          style: TextStyle(
+            color: AppColors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Text(
+          commentTime,
+          style: TextStyle(
+            color: AppColors.white.withOpacity(0.6),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CommentTopRow extends StatelessWidget {
+  const CommentTopRow({
+    super.key,
+    required this.commentModelContext,
+  });
+
+  final BuildContext commentModelContext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CustomAppBarLeading(
+          onPressed: (() {
+            Navigator.pop(commentModelContext);
+            // print(isPlaying);
+          }),
+          icon: Icons.arrow_back_ios_new,
+        ),
+        SizedBox(
+          width: 15,
+        ),
+        Text(
+          "Comments",
+          style: TextStyle(
+            color: AppColors.white,
+            fontSize: 16,
+            letterSpacing: 2,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CommentTextField extends StatelessWidget {
+  const CommentTextField({
+    super.key,
+    required this.commentController,
+    required this.commentModelContext,
+  });
+
+  final TextEditingController commentController;
+  final BuildContext commentModelContext;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      textCapitalization: TextCapitalization.sentences,
+      scrollPhysics: AppColors.scrollPhysics,
+      decoration: InputDecoration(
+        errorStyle: const TextStyle(
+          overflow: TextOverflow.clip,
+        ),
+        prefixIcon: Icon(
+          Icons.comment,
+          color: AppColors.white,
+        ),
+        prefixStyle: const TextStyle(
+          color: AppColors.white,
+          fontSize: 16,
+        ),
+        hintText: "Comment as blocUID",
+        hintStyle: TextStyle(
+          color: AppColors.white.withOpacity(0.5),
+        ),
+        suffixIcon: IconButton(
+          onPressed: (() {
+            if (commentController.text.trim().isNotEmpty) {
+              Navigator.pop(commentModelContext);
+            }
+          }),
+          icon: Center(
+            child: const Icon(
+              Icons.send,
+              color: AppColors.white,
+            ),
+          ),
+          splashRadius: 20,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: Colors.white,
+            width: 1.0,
+          ),
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            width: 1,
+            color: AppColors.white,
+          ),
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        border: OutlineInputBorder(
+          borderSide: const BorderSide(
+            width: 1,
+            color: AppColors.white,
+          ),
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        contentPadding: const EdgeInsets.only(
+          left: 15,
+          right: 15,
+        ),
+      ),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      controller: commentController,
+      keyboardType: TextInputType.text,
+      cursorColor: AppColors.white,
+      style: const TextStyle(
+        color: AppColors.white,
       ),
     );
   }
