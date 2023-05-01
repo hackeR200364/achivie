@@ -11,6 +11,9 @@ class Keys {
   static const String usrFirstName = "usrFirstName";
   static const String usrLastName = "usrLastName";
   static const String usrPoints = "usrPoints";
+  static const String blocUID = "blocUID";
+  static const String hasBloc = "hasBloc";
+  static const String blocDes = "blocDes";
   static const String usrDescription = "usrDescription";
   static const String usrProfession = "usrProfession";
   static const String usrProfilePic = "usrProfilePic";

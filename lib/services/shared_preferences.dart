@@ -68,6 +68,39 @@ class StorageServices {
     pref.setInt(Keys.usrPoints, usrPoints);
   }
 
+  static void setUsrBlocUID(String blocUID) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.blocUID, blocUID);
+  }
+
+  static void setUsrBlocDes(String blocDes) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.blocDes, blocDes);
+  }
+
+  static void setUsrHasBloc(bool hasBloc) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setBool(Keys.hasBloc, hasBloc);
+  }
+
+  static Future<bool> getUsrHasBloc() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    bool? hasBloc = pref.getBool(Keys.hasBloc) ?? false;
+    return hasBloc;
+  }
+
+  static Future<String> getUsrBlocDes() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? blocDes = pref.getString(Keys.blocDes) ?? "";
+    return blocDes;
+  }
+
+  static Future<String> getUsrBlocUID() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? blocUID = pref.getString(Keys.blocUID) ?? "";
+    return blocUID;
+  }
+
   static Future<int> getUsrPoints() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     int? usrPoints = pref.getInt(Keys.usrPoints) ?? 0;

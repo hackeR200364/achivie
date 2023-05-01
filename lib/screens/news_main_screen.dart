@@ -24,6 +24,7 @@ class NewsMainScreen extends StatefulWidget {
 class _NewsMainScreenState extends State<NewsMainScreen> {
   int screenTabIndex = 0;
   String usrName = "";
+  bool hasBloc = false;
   @override
   void initState() {
     getUserDetails();
@@ -32,6 +33,7 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
 
   void getUserDetails() async {
     usrName = await StorageServices.getUsrName();
+    hasBloc = await StorageServices.getUsrHasBloc();
     setState(() {});
   }
 
@@ -174,7 +176,10 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           if (screenTabIndex == 0) NewsScreen(),
           if (screenTabIndex == 1) NewsDiscoverScreen(),
           if (screenTabIndex == 2) NewsSavedScreen(),
-          if (screenTabIndex == 3) NewsBlocProfile(),
+          if (screenTabIndex == 3)
+            NewsBlocProfile(
+              hasBloc: hasBloc,
+            ),
         ],
       ),
     );

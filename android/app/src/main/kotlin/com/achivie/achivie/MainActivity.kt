@@ -1,6 +1,7 @@
 package com.achivie.achivie
 
 import io.flutter.embedding.android.FlutterActivity
+//import io.flutter.app.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 
@@ -22,4 +23,10 @@ class MainActivity: FlutterActivity() {
         // TODO: Unregister the ListTileNativeAdFactory
         GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, "listTile")
     }
+
+//    override
+//    protected fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        MobileNumberPlugin.registerWith(registrarFor("com.amorenew.mobile_number.MobileNumberPlugin()"))
+//    }
 }
