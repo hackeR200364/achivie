@@ -141,7 +141,8 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
             fontSize: 17,
             fontWeight: FontWeight.bold,
           ),
-          msg: "If you logout your, all scheduled reminders will be canceled!",
+          msg:
+              "If you logout your account, all scheduled reminders will be canceled!",
           msgStyle: const TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.w600,
