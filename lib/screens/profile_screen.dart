@@ -1013,7 +1013,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               "${directory.path}/achivie_visiting_card.png";
                           File(path).writeAsBytesSync(visitingCard!);
                           const link = "https://achivie.com";
-
                           await Share.shareFiles(
                             [path],
                             text:

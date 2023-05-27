@@ -40,13 +40,15 @@ class NewsNotificationScreen extends StatelessWidget {
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           top: 10,
           bottom: 10,
           left: 15,
           right: 15,
         ),
         child: ListView.separated(
+          itemCount: 20,
+          physics: AppColors.scrollPhysics,
           itemBuilder: ((notifyItemContext, notifyItemIndex) {
             return GestureDetector(
               onTap: (() {
@@ -85,14 +87,14 @@ class NewsNotificationScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Container(
+                  SizedBox(
                     height: 40,
                     width: MediaQuery.of(notifyItemContext).size.width / 11,
                     child: Image.network(
                       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
                       fit: BoxFit.cover,
                     ),
-                  )
+                  ),
                 ],
               ),
             );
@@ -103,7 +105,6 @@ class NewsNotificationScreen extends StatelessWidget {
               height: 20,
             );
           }),
-          itemCount: 15,
         ),
       ),
     );
