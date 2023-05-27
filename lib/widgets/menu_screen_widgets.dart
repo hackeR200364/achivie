@@ -273,7 +273,7 @@ class MenuScreenSocialSecondRow extends StatelessWidget {
           onPressed: (() async {
             await launchUrl(
               Uri.parse(
-                "https://www.linkedin.com/in/rupam-karmakar-411157212/",
+                "https://www.linkedin.com/company/achivie/",
               ),
               mode: LaunchMode.externalNonBrowserApplication,
             );
@@ -399,14 +399,14 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           setIndex: widget.setIndex,
           zoomDrawerController: zoomDrawerController,
         ),
-        MenuListItem(
-          title: "News",
-          icon: Icons.newspaper,
-          index: 3,
-          selectedIndex: widget.selectedIndex,
-          setIndex: widget.setIndex,
-          zoomDrawerController: zoomDrawerController,
-        ),
+        // MenuListItem(
+        //   title: "News",
+        //   icon: Icons.newspaper,
+        //   index: 3,
+        //   selectedIndex: widget.selectedIndex,
+        //   setIndex: widget.setIndex,
+        //   zoomDrawerController: zoomDrawerController,
+        // ),
         MenuListItem(
           title: "Info",
           icon: Icons.info,

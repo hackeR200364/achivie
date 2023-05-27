@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       taskBusiness = 0,
       taskPersonal = 0,
       notificationCount = 0;
-  RewardedAd? rewardedAd;
+  // RewardedAd? rewardedAd;
   bool activeConnection = false;
 
   @override
@@ -97,18 +97,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       request: const AdRequest(),
     );
     bannerAd!.load();
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-7050103229809241/3148880623",
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: ((onAdLoaded) {
-          rewardedAd = onAdLoaded;
-        }),
-        onAdFailedToLoad: ((onAdFailedToLoad) {
-          // print("Failed: ${onAdFailedToLoad.message}");
-        }),
-      ),
-    );
+    // RewardedAd.load(
+    //   adUnitId: "ca-app-pub-7050103229809241/3148880623",
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: ((onAdLoaded) {
+    //       rewardedAd = onAdLoaded;
+    //     }),
+    //     onAdFailedToLoad: ((onAdFailedToLoad) {
+    //       // print("Failed: ${onAdFailedToLoad.message}");
+    //     }),
+    //   ),
+    // );
 
     // assetsAudioPlayer.open(
     //   Audio("assets/audios/song1.mp3"),
@@ -246,30 +246,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugShowCheckedModeBanner: false,
       home: WillPopScope(
         onWillPop: (() async {
-          await rewardedAd?.show(
-            onUserEarnedReward: ((ad, point) {}),
-          );
+          // await rewardedAd?.show(
+          //   onUserEarnedReward: ((ad, point) {}),
+          // );
 
-          rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
-            onAdClicked: ((ad) {}),
-            onAdDismissedFullScreenContent: ((ad) {
-              // print("ad dismissed");
-              SystemNavigator.pop();
-            }),
-            onAdFailedToShowFullScreenContent: ((ad, err) {
-              ad.dispose();
-              // print("ad error $err");
-            }),
-            onAdImpression: ((ad) {}),
-            onAdShowedFullScreenContent: ((ad) {
-              // print("ad shown ${ad.responseInfo}");
-            }),
-            onAdWillDismissFullScreenContent: ((ad) {
-              SystemNavigator.pop();
-            }),
-          );
+          // rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
+          //   onAdClicked: ((ad) {}),
+          //   onAdDismissedFullScreenContent: ((ad) {
+          //     // print("ad dismissed");
+          //     SystemNavigator.pop();
+          //   }),
+          //   onAdFailedToShowFullScreenContent: ((ad, err) {
+          //     ad.dispose();
+          //     // print("ad error $err");
+          //   }),
+          //   onAdImpression: ((ad) {}),
+          //   onAdShowedFullScreenContent: ((ad) {
+          //     // print("ad shown ${ad.responseInfo}");
+          //   }),
+          //   onAdWillDismissFullScreenContent: ((ad) {
+          //     SystemNavigator.pop();
+          //   }),
+          // );
 
-          return false;
+          return true;
         }),
         child: Scaffold(
           bottomNavigationBar: (isBannerAdLoaded)

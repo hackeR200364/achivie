@@ -71,7 +71,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
       taskDone = 0;
   NotificationServices notificationServices = NotificationServices();
   BannerAd? bannerAd;
-  RewardedAd? rewardedAd, rewardedAd2;
+  // RewardedAd? rewardedAd, rewardedAd2;
   FocusNode? nameFocusNode;
   FocusNode? desFocusNode;
   FocusNode? notiFocusNode;
@@ -149,30 +149,30 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     );
     bannerAd!.load();
 
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-7050103229809241/9285784264",
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: ((onAdLoaded) {
-          rewardedAd = onAdLoaded;
-        }),
-        onAdFailedToLoad: ((onAdFailedToLoad) {
-          // print("Failed: ${onAdFailedToLoad.message}");
-        }),
-      ),
-    );
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-7050103229809241/8622630782",
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: ((onAdLoaded) {
-          rewardedAd2 = onAdLoaded;
-        }),
-        onAdFailedToLoad: ((onAdFailedToLoad) {
-          // print("Failed: ${onAdFailedToLoad.message}");
-        }),
-      ),
-    );
+    // RewardedAd.load(
+    //   adUnitId: "ca-app-pub-7050103229809241/9285784264",
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: ((onAdLoaded) {
+    //       rewardedAd = onAdLoaded;
+    //     }),
+    //     onAdFailedToLoad: ((onAdFailedToLoad) {
+    //       // print("Failed: ${onAdFailedToLoad.message}");
+    //     }),
+    //   ),
+    // );
+    // RewardedAd.load(
+    //   adUnitId: "ca-app-pub-7050103229809241/8622630782",
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: ((onAdLoaded) {
+    //       rewardedAd2 = onAdLoaded;
+    //     }),
+    //     onAdFailedToLoad: ((onAdFailedToLoad) {
+    //       // print("Failed: ${onAdFailedToLoad.message}");
+    //     }),
+    //   ),
+    // );
     super.initState();
   }
 
@@ -692,31 +692,31 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                                 scheduleDateTIme.toString(),
                                           );
 
-                                          await rewardedAd?.show(
-                                            onUserEarnedReward:
-                                                ((ad, point) {}),
-                                          );
+                                          // await rewardedAd?.show(
+                                          //   onUserEarnedReward:
+                                          //       ((ad, point) {}),
+                                          // );
 
-                                          rewardedAd
-                                                  ?.fullScreenContentCallback =
-                                              FullScreenContentCallback(
-                                            onAdClicked: ((ad) {}),
-                                            onAdDismissedFullScreenContent:
-                                                ((ad) {
-                                              // print("ad dismissed");
-                                            }),
-                                            onAdFailedToShowFullScreenContent:
-                                                ((ad, err) {
-                                              ad.dispose();
-                                              // print("ad error $err");
-                                            }),
-                                            onAdImpression: ((ad) {}),
-                                            onAdShowedFullScreenContent: ((ad) {
-                                              // print("ad shown ${ad.responseInfo}");
-                                            }),
-                                            onAdWillDismissFullScreenContent:
-                                                ((ad) {}),
-                                          );
+                                          // rewardedAd
+                                          //         ?.fullScreenContentCallback =
+                                          //     FullScreenContentCallback(
+                                          //   onAdClicked: ((ad) {}),
+                                          //   onAdDismissedFullScreenContent:
+                                          //       ((ad) {
+                                          //     // print("ad dismissed");
+                                          //   }),
+                                          //   onAdFailedToShowFullScreenContent:
+                                          //       ((ad, err) {
+                                          //     ad.dispose();
+                                          //     // print("ad error $err");
+                                          //   }),
+                                          //   onAdImpression: ((ad) {}),
+                                          //   onAdShowedFullScreenContent: ((ad) {
+                                          //     // print("ad shown ${ad.responseInfo}");
+                                          //   }),
+                                          //   onAdWillDismissFullScreenContent:
+                                          //       ((ad) {}),
+                                          // );
 
                                           AppSnackbar().customizedAppSnackbar(
                                             message: responseJson["message"],
@@ -787,30 +787,30 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         if (responseJson["success"]) {
                                           log("message");
 
-                                          await rewardedAd2?.show(
-                                            onUserEarnedReward:
-                                                ((ad, point) {}),
-                                          );
-                                          rewardedAd2
-                                                  ?.fullScreenContentCallback =
-                                              FullScreenContentCallback(
-                                            onAdClicked: ((ad) {}),
-                                            onAdDismissedFullScreenContent:
-                                                ((ad) async {
-                                              // print("ad dismissed");
-                                            }),
-                                            onAdFailedToShowFullScreenContent:
-                                                ((ad, err) {
-                                              ad.dispose();
-                                              // print("ad error $err");
-                                            }),
-                                            onAdImpression: ((ad) {}),
-                                            onAdShowedFullScreenContent: ((ad) {
-                                              // print("ad shown ${ad.responseInfo}");
-                                            }),
-                                            onAdWillDismissFullScreenContent:
-                                                ((ad) {}),
-                                          );
+                                          // await rewardedAd2?.show(
+                                          //   onUserEarnedReward:
+                                          //       ((ad, point) {}),
+                                          // );
+                                          // rewardedAd2
+                                          //         ?.fullScreenContentCallback =
+                                          //     FullScreenContentCallback(
+                                          //   onAdClicked: ((ad) {}),
+                                          //   onAdDismissedFullScreenContent:
+                                          //       ((ad) async {
+                                          //     // print("ad dismissed");
+                                          //   }),
+                                          //   onAdFailedToShowFullScreenContent:
+                                          //       ((ad, err) {
+                                          //     ad.dispose();
+                                          //     // print("ad error $err");
+                                          //   }),
+                                          //   onAdImpression: ((ad) {}),
+                                          //   onAdShowedFullScreenContent: ((ad) {
+                                          //     // print("ad shown ${ad.responseInfo}");
+                                          //   }),
+                                          //   onAdWillDismissFullScreenContent:
+                                          //       ((ad) {}),
+                                          // );
 
                                           await NotificationServices()
                                               .cancelTaskScheduledNotification(
