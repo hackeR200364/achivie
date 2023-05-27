@@ -33,8 +33,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String name = "", email = "", profilePic = "", profession = "", des = "";
   BannerAd? bannerAd;
-  RewardedAd? rewardedAd;
-  RewardedAd? rewardedAd2;
+  // RewardedAd? rewardedAd;
+  // RewardedAd? rewardedAd2;
   NativeAd? nativeAd;
   bool isBannerAdLoaded = false;
   bool isNativeAdLoaded = false;
@@ -85,30 +85,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       request: const AdRequest(),
     );
     bannerAd!.load();
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-7050103229809241/4189665409",
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: ((onAdLoaded) {
-          rewardedAd = onAdLoaded;
-        }),
-        onAdFailedToLoad: ((onAdFailedToLoad) {
-          // print("Failed: ${onAdFailedToLoad.message}");
-        }),
-      ),
-    );
-    RewardedAd.load(
-      adUnitId: "ca-app-pub-7050103229809241/9189381656",
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: ((onAdLoaded) {
-          rewardedAd2 = onAdLoaded;
-        }),
-        onAdFailedToLoad: ((onAdFailedToLoad) {
-          // print("Failed: ${onAdFailedToLoad.message}");
-        }),
-      ),
-    );
+    // RewardedAd.load(
+    //   adUnitId: "ca-app-pub-7050103229809241/4189665409",
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: ((onAdLoaded) {
+    //       rewardedAd = onAdLoaded;
+    //     }),
+    //     onAdFailedToLoad: ((onAdFailedToLoad) {
+    //       // print("Failed: ${onAdFailedToLoad.message}");
+    //     }),
+    //   ),
+    // );
+    // RewardedAd.load(
+    //   adUnitId: "ca-app-pub-7050103229809241/9189381656",
+    //   request: const AdRequest(),
+    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
+    //     onAdLoaded: ((onAdLoaded) {
+    //       rewardedAd2 = onAdLoaded;
+    //     }),
+    //     onAdFailedToLoad: ((onAdFailedToLoad) {
+    //       // print("Failed: ${onAdFailedToLoad.message}");
+    //     }),
+    //   ),
+    // );
     nativeAd = NativeAd(
       adUnitId: "ca-app-pub-7050103229809241/9680336245",
       factoryId: "listTile",
@@ -135,8 +135,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _desController.dispose();
     bannerAd?.dispose();
     nativeAd?.dispose();
-    rewardedAd?.dispose();
-    rewardedAd2?.dispose();
+    // rewardedAd?.dispose();
+    // rewardedAd2?.dispose();
     super.dispose();
   }
 
@@ -963,73 +963,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       allAppProvider.isLoadingFunc(true);
 
-                      await rewardedAd?.show(
-                        onUserEarnedReward: ((ad, point) {}),
-                      );
+                      final visitingCard =
+                          await _screenshotController.capture();
+                      final directory = await getTemporaryDirectory();
+                      final path =
+                          "${directory.path}/achivie_visiting_card.png";
+                      File(path).writeAsBytesSync(visitingCard!);
+                      const link = "https://achivie.com";
 
-                      rewardedAd?.fullScreenContentCallback =
-                          FullScreenContentCallback(
-                        onAdClicked: ((ad) {}),
-                        onAdDismissedFullScreenContent: ((ad) async {
-                          // print("ad dismissed");
-                          log(ad.adUnitId.toString());
-                          final visitingCard =
-                              await _screenshotController.capture();
-                          final directory = await getTemporaryDirectory();
-                          final path =
-                              "${directory.path}/achivie_visiting_card.png";
-                          File(path).writeAsBytesSync(visitingCard!);
-                          const link = "https://achivie.com";
+                      await Share.shareFiles(
+                        [path],
+                        text:
+                            "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
+                      ).then((value) {
+                        // Navigator.pop(context);
+                      });
 
-                          await Share.shareFiles(
-                            [path],
-                            text:
-                                "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
-                          ).then((value) {
-                            ScaffoldMessenger.of(allAppContext).showSnackBar(
-                              AppSnackbar().customizedAppSnackbar(
-                                message:
-                                    "Your progress card was shared successfully",
-                                context: allAppContext,
-                              ),
-                            );
-                            Navigator.pop(context);
-                          });
-                        }),
-                        onAdFailedToShowFullScreenContent: ((ad, err) {
-                          ad.dispose();
-                          // print("ad error $err");
-                        }),
-                        onAdImpression: ((ad) {}),
-                        onAdShowedFullScreenContent: ((ad) {
-                          // print("ad shown ${ad.responseInfo}");
-                        }),
-                        onAdWillDismissFullScreenContent: ((ad) async {
-                          log(ad.adUnitId.toString());
-                          final visitingCard =
-                              await _screenshotController.capture();
-                          final directory = await getTemporaryDirectory();
-                          final path =
-                              "${directory.path}/achivie_visiting_card.png";
-                          File(path).writeAsBytesSync(visitingCard!);
-                          const link = "https://achivie.com";
-                          await Share.shareFiles(
-                            [path],
-                            text:
-                                "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
-                          ).then((value) {
-                            ScaffoldMessenger.of(allAppContext).showSnackBar(
-                              AppSnackbar().customizedAppSnackbar(
-                                message:
-                                    "Your progress card was shared successfully",
-                                context: allAppContext,
-                              ),
-                            );
+                      // ScaffoldMessenger.of(allAppContext).showSnackBar(
+                      //   AppSnackbar().customizedAppSnackbar(
+                      //     message: "Your progress card was shared successfully",
+                      //     context: context,
+                      //   ),
+                      // );
 
-                            Navigator.pop(context);
-                          });
-                        }),
-                      );
+                      // await rewardedAd?.show(
+                      //   onUserEarnedReward: ((ad, point) {}),
+                      // );
+
+                      // rewardedAd?.fullScreenContentCallback =
+                      //     FullScreenContentCallback(
+                      //   onAdClicked: ((ad) {}),
+                      //   onAdDismissedFullScreenContent: ((ad) async {
+                      //     // print("ad dismissed");
+                      //     log(ad.adUnitId.toString());
+                      //     final visitingCard =
+                      //         await _screenshotController.capture();
+                      //     final directory = await getTemporaryDirectory();
+                      //     final path =
+                      //         "${directory.path}/achivie_visiting_card.png";
+                      //     File(path).writeAsBytesSync(visitingCard!);
+                      //     const link = "https://achivie.com";
+                      //
+                      //     await Share.shareFiles(
+                      //       [path],
+                      //       text:
+                      //           "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
+                      //     ).then((value) {
+                      //       ScaffoldMessenger.of(allAppContext).showSnackBar(
+                      //         AppSnackbar().customizedAppSnackbar(
+                      //           message:
+                      //               "Your progress card was shared successfully",
+                      //           context: allAppContext,
+                      //         ),
+                      //       );
+                      //       Navigator.pop(context);
+                      //     });
+                      //   }),
+                      //   onAdFailedToShowFullScreenContent: ((ad, err) {
+                      //     ad.dispose();
+                      //     // print("ad error $err");
+                      //   }),
+                      //   onAdImpression: ((ad) {}),
+                      //   onAdShowedFullScreenContent: ((ad) {
+                      //     // print("ad shown ${ad.responseInfo}");
+                      //   }),
+                      //   onAdWillDismissFullScreenContent: ((ad) async {
+                      //     log(ad.adUnitId.toString());
+                      //     final visitingCard =
+                      //         await _screenshotController.capture();
+                      //     final directory = await getTemporaryDirectory();
+                      //     final path =
+                      //         "${directory.path}/achivie_visiting_card.png";
+                      //     File(path).writeAsBytesSync(visitingCard!);
+                      //     const link = "https://achivie.com";
+                      //     await Share.shareFiles(
+                      //       [path],
+                      //       text:
+                      //           "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
+                      //     ).then((value) {
+                      //       ScaffoldMessenger.of(allAppContext).showSnackBar(
+                      //         AppSnackbar().customizedAppSnackbar(
+                      //           message:
+                      //               "Your progress card was shared successfully",
+                      //           context: allAppContext,
+                      //         ),
+                      //       );
+                      //
+                      //       Navigator.pop(context);
+                      //     });
+                      //   }),
+                      // );
 
                       allAppProvider.isLoadingFunc(false);
 
@@ -1213,71 +1236,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onTap: (() async {
                       allAppProvider.isLoadingFunc(true);
 
-                      await rewardedAd2?.show(
-                        onUserEarnedReward: ((ad, point) {}),
+                      final visitingCard =
+                          await _screenshotController.capture();
+
+                      final date = DateTime.now()
+                          .toIso8601String()
+                          .replaceAll(".", "-")
+                          .replaceAll(":", "-");
+
+                      await ImageGallerySaver.saveImage(
+                        visitingCard!,
+                        name: "achivie_visiting_card_$date",
+                        quality: 100,
+                        isReturnImagePathOfIOS: true,
                       );
 
-                      rewardedAd2?.fullScreenContentCallback =
-                          FullScreenContentCallback(
-                        onAdClicked: ((ad) {}),
-                        onAdDismissedFullScreenContent: ((ad) async {
-                          // print("ad dismissed");
-                          final visitingCard =
-                              await _screenshotController.capture();
-
-                          final date = DateTime.now()
-                              .toIso8601String()
-                              .replaceAll(".", "-")
-                              .replaceAll(":", "-");
-
-                          await ImageGallerySaver.saveImage(
-                            visitingCard!,
-                            name: "achivie_visiting_card_$date",
-                            quality: 100,
-                            isReturnImagePathOfIOS: true,
-                          );
-
-                          ScaffoldMessenger.of(allAppContext).showSnackBar(
-                            AppSnackbar().customizedAppSnackbar(
-                              message:
-                                  "Your progress card was saved successfully",
-                              context: allAppContext,
-                            ),
-                          );
-                        }),
-                        onAdFailedToShowFullScreenContent: ((ad, err) {
-                          ad.dispose();
-                          // print("ad error $err");
-                        }),
-                        onAdImpression: ((ad) {}),
-                        onAdShowedFullScreenContent: ((ad) {
-                          // print("ad shown ${ad.responseInfo}");
-                        }),
-                        onAdWillDismissFullScreenContent: ((ad) async {
-                          final visitingCard =
-                              await _screenshotController.capture();
-
-                          final date = DateTime.now()
-                              .toIso8601String()
-                              .replaceAll(".", "-")
-                              .replaceAll(":", "-");
-
-                          await ImageGallerySaver.saveImage(
-                            visitingCard!,
-                            name: "achivie_visiting_card_$date",
-                            quality: 100,
-                            isReturnImagePathOfIOS: true,
-                          );
-
-                          ScaffoldMessenger.of(allAppContext).showSnackBar(
-                            AppSnackbar().customizedAppSnackbar(
-                              message:
-                                  "Your progress card was saved successfully",
-                              context: allAppContext,
-                            ),
-                          );
-                        }),
+                      ScaffoldMessenger.of(allAppContext).showSnackBar(
+                        AppSnackbar().customizedAppSnackbar(
+                          message: "Your progress card was saved successfully",
+                          context: allAppContext,
+                        ),
                       );
+
+                      // await rewardedAd2?.show(
+                      //   onUserEarnedReward: ((ad, point) {}),
+                      // );
+
+                      // rewardedAd2?.fullScreenContentCallback =
+                      //     FullScreenContentCallback(
+                      //   onAdClicked: ((ad) {}),
+                      //   onAdDismissedFullScreenContent: ((ad) async {
+                      //     // print("ad dismissed");
+                      //     final visitingCard =
+                      //         await _screenshotController.capture();
+                      //
+                      //     final date = DateTime.now()
+                      //         .toIso8601String()
+                      //         .replaceAll(".", "-")
+                      //         .replaceAll(":", "-");
+                      //
+                      //     await ImageGallerySaver.saveImage(
+                      //       visitingCard!,
+                      //       name: "achivie_visiting_card_$date",
+                      //       quality: 100,
+                      //       isReturnImagePathOfIOS: true,
+                      //     );
+                      //
+                      //     ScaffoldMessenger.of(allAppContext).showSnackBar(
+                      //       AppSnackbar().customizedAppSnackbar(
+                      //         message:
+                      //             "Your progress card was saved successfully",
+                      //         context: allAppContext,
+                      //       ),
+                      //     );
+                      //   }),
+                      //   onAdFailedToShowFullScreenContent: ((ad, err) {
+                      //     ad.dispose();
+                      //     // print("ad error $err");
+                      //   }),
+                      //   onAdImpression: ((ad) {}),
+                      //   onAdShowedFullScreenContent: ((ad) {
+                      //     // print("ad shown ${ad.responseInfo}");
+                      //   }),
+                      //   onAdWillDismissFullScreenContent: ((ad) async {
+                      //     final visitingCard =
+                      //         await _screenshotController.capture();
+                      //
+                      //     final date = DateTime.now()
+                      //         .toIso8601String()
+                      //         .replaceAll(".", "-")
+                      //         .replaceAll(":", "-");
+                      //
+                      //     await ImageGallerySaver.saveImage(
+                      //       visitingCard!,
+                      //       name: "achivie_visiting_card_$date",
+                      //       quality: 100,
+                      //       isReturnImagePathOfIOS: true,
+                      //     );
+                      //
+                      //     ScaffoldMessenger.of(allAppContext).showSnackBar(
+                      //       AppSnackbar().customizedAppSnackbar(
+                      //         message:
+                      //             "Your progress card was saved successfully",
+                      //         context: allAppContext,
+                      //       ),
+                      //     );
+                      //   }),
+                      // );
 
                       log("saved");
 

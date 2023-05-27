@@ -21,7 +21,7 @@ class EmailUsScreenColumn extends StatefulWidget {
     required TextEditingController bodyController,
     required this.isNativeAdLoaded,
     required this.nativeAd,
-    required this.rewardedAd,
+    // required this.rewardedAd,
   })  : _subjectController = subjectController,
         _bodyController = bodyController;
 
@@ -32,7 +32,7 @@ class EmailUsScreenColumn extends StatefulWidget {
   final TextEditingController _bodyController;
   final bool isNativeAdLoaded;
   final NativeAd nativeAd;
-  RewardedAd? rewardedAd;
+  // RewardedAd? rewardedAd;
 
   @override
   State<EmailUsScreenColumn> createState() => _EmailUsScreenColumnState();
@@ -104,93 +104,127 @@ class _EmailUsScreenColumnState extends State<EmailUsScreenColumn> {
                 isLoading = true;
               });
 
-              await widget.rewardedAd?.show(
-                onUserEarnedReward: ((ad, point) {}),
+              // await widget.rewardedAd?.show(
+              //   onUserEarnedReward: ((ad, point) {}),
+              // );
+
+              // widget.rewardedAd?.fullScreenContentCallback =
+              //     FullScreenContentCallback(
+              //   onAdClicked: ((ad) {}),
+              //   onAdDismissedFullScreenContent: ((ad) async {
+              //     // print("ad dismissed");
+              //     Email email = Email(
+              //       subject: widget._subjectController.text.trim(),
+              //       body: widget._bodyController.text.trim(),
+              //       recipients: [
+              //         "hello@achivie.com",
+              //       ],
+              //     );
+              //
+              //     String errorRes = "";
+              //     try {
+              //       await FlutterEmailSender.send(email).then((value) {
+              //         ScaffoldMessenger.of(context).showSnackBar(
+              //           AppSnackbar().customizedAppSnackbar(
+              //             message: "Email sent successfully",
+              //             context: context,
+              //           ),
+              //         );
+              //       });
+              //     } catch (error) {
+              //       // print(error);
+              //       errorRes = error.toString();
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         AppSnackbar().customizedAppSnackbar(
+              //           message: "Error $errorRes",
+              //           context: context,
+              //         ),
+              //       );
+              //     }
+              //
+              //     if (!mounted) return;
+              //
+              //     widget._bodyController.clear();
+              //     widget._subjectController.clear();
+              //   }),
+              //   onAdFailedToShowFullScreenContent: ((ad, err) {
+              //     ad.dispose();
+              //     // print("ad error $err");
+              //   }),
+              //   onAdImpression: ((ad) {}),
+              //   onAdShowedFullScreenContent: ((ad) {
+              //     // print("ad shown ${ad.responseInfo}");
+              //   }),
+              //   onAdWillDismissFullScreenContent: ((ad) async {
+              //     Email email = Email(
+              //       subject: widget._subjectController.text.trim(),
+              //       body: widget._bodyController.text.trim(),
+              //       recipients: [
+              //         "hello@achivie.com",
+              //       ],
+              //     );
+              //
+              //     String errorRes = "";
+              //     try {
+              //       await FlutterEmailSender.send(email).then((value) {
+              //         ScaffoldMessenger.of(context).showSnackBar(
+              //           AppSnackbar().customizedAppSnackbar(
+              //             message: "Email sent successfully",
+              //             context: context,
+              //           ),
+              //         );
+              //       });
+              //     } catch (error) {
+              //       // print(error);
+              //       errorRes = error.toString();
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         AppSnackbar().customizedAppSnackbar(
+              //           message: "Error $errorRes",
+              //           context: context,
+              //         ),
+              //       );
+              //     }
+              //
+              //     if (!mounted) return;
+              //
+              //     widget._bodyController.clear();
+              //     widget._subjectController.clear();
+              //   }),
+              // );
+
+              Email email = Email(
+                subject: widget._subjectController.text.trim(),
+                body: widget._bodyController.text.trim(),
+                recipients: [
+                  "hello@achivie.com",
+                ],
               );
 
-              widget.rewardedAd?.fullScreenContentCallback =
-                  FullScreenContentCallback(
-                onAdClicked: ((ad) {}),
-                onAdDismissedFullScreenContent: ((ad) async {
-                  // print("ad dismissed");
-                  Email email = Email(
-                    subject: widget._subjectController.text.trim(),
-                    body: widget._bodyController.text.trim(),
-                    recipients: [
-                      "hello@achivie.com",
-                    ],
+              String errorRes = "";
+              try {
+                await FlutterEmailSender.send(email).then((value) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    AppSnackbar().customizedAppSnackbar(
+                      message: "Email sent successfully",
+                      context: context,
+                    ),
                   );
+                });
+              } catch (error) {
+                // print(error);
+                errorRes = error.toString();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  AppSnackbar().customizedAppSnackbar(
+                    message: "Error $errorRes",
+                    context: context,
+                  ),
+                );
+              }
 
-                  String errorRes = "";
-                  try {
-                    await FlutterEmailSender.send(email).then((value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        AppSnackbar().customizedAppSnackbar(
-                          message: "Email sent successfully",
-                          context: context,
-                        ),
-                      );
-                    });
-                  } catch (error) {
-                    // print(error);
-                    errorRes = error.toString();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackbar().customizedAppSnackbar(
-                        message: "Error $errorRes",
-                        context: context,
-                      ),
-                    );
-                  }
+              if (!mounted) return;
 
-                  if (!mounted) return;
-
-                  widget._bodyController.clear();
-                  widget._subjectController.clear();
-                }),
-                onAdFailedToShowFullScreenContent: ((ad, err) {
-                  ad.dispose();
-                  // print("ad error $err");
-                }),
-                onAdImpression: ((ad) {}),
-                onAdShowedFullScreenContent: ((ad) {
-                  // print("ad shown ${ad.responseInfo}");
-                }),
-                onAdWillDismissFullScreenContent: ((ad) async {
-                  Email email = Email(
-                    subject: widget._subjectController.text.trim(),
-                    body: widget._bodyController.text.trim(),
-                    recipients: [
-                      "hello@achivie.com",
-                    ],
-                  );
-
-                  String errorRes = "";
-                  try {
-                    await FlutterEmailSender.send(email).then((value) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        AppSnackbar().customizedAppSnackbar(
-                          message: "Email sent successfully",
-                          context: context,
-                        ),
-                      );
-                    });
-                  } catch (error) {
-                    // print(error);
-                    errorRes = error.toString();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      AppSnackbar().customizedAppSnackbar(
-                        message: "Error $errorRes",
-                        context: context,
-                      ),
-                    );
-                  }
-
-                  if (!mounted) return;
-
-                  widget._bodyController.clear();
-                  widget._subjectController.clear();
-                }),
-              );
+              widget._bodyController.clear();
+              widget._subjectController.clear();
 
               setState(() {
                 isLoading = false;
