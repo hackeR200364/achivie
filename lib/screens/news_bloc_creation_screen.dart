@@ -41,7 +41,7 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
   String? _currentAddress;
   Position? _currentPosition;
   List<Placemark> screenPlaceMark = [];
-  List<SimCard>? simCards;
+  List<SimCard> simCards = [];
   late TextEditingController _blocNameController, _blockDesController;
 
   @override
@@ -56,9 +56,9 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
     usrName = await StorageServices.getUsrName();
     uid = await StorageServices.getUID();
     usrEmail = await StorageServices.getUsrEmail();
-    await getUserLocation();
     await _handlePhonePermission();
-    simCards = await MobileNumber.getSimCards;
+    await getUserLocation();
+
     setState(() {});
   }
 
@@ -81,6 +81,7 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
     if (permission == LocationPermission.deniedForever) {
       openAppSettings();
     }
+
     return true;
   }
 
@@ -120,14 +121,18 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
   }
 
   Future<void> _handlePhonePermission() async {
-    if (await Permission.phone.isGranted) {
-      return;
-    } else if (await Permission.phone.isRestricted) {
+    if (await Permission.phone.isRestricted) {
       Permission.phone.request();
-    } else if (await Permission.phone.isDenied) {
+    }
+    if (await Permission.phone.isDenied) {
       Permission.phone.request();
-    } else if (await Permission.phone.isPermanentlyDenied) {
+    }
+    if (await Permission.phone.isPermanentlyDenied) {
       openAppSettings();
+    }
+    if (await Permission.phone.isGranted) {
+      simCards = (await MobileNumber.getSimCards)!;
+      setState(() {});
     }
   }
 
@@ -538,7 +543,7 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
                           ),
                           builder: ((modalContext) {
                             return Container(
-                              height: simCards!.length * 100,
+                              height: simCards.length * 100,
                               width: size.width,
                               padding: EdgeInsets.symmetric(
                                 vertical: 15,

@@ -2351,20 +2351,28 @@ class _AuthTextFieldState extends State<AuthTextField> {
 }
 
 class AuthNameTextField extends StatefulWidget {
-  AuthNameTextField({
+  const AuthNameTextField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.icon,
     this.maxWords,
     this.desField,
+    this.maxLines,
+    this.onTap,
+    this.onSubmit,
+    this.onTappedOutSide,
+    this.readOnly,
     // required this.formKey,
   });
   final TextEditingController controller;
   final String hintText;
   final IconData icon;
-  int? maxWords;
-  bool? desField;
+  final int? maxWords, maxLines;
+  final bool? desField, readOnly;
+  final VoidCallback? onTap;
+  final Function(String)? onSubmit;
+  final Function(PointerDownEvent)? onTappedOutSide;
 
   @override
   State<AuthNameTextField> createState() => _AuthNameTextFieldState();
@@ -2384,6 +2392,8 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
         builder: (allAppContext, allAppProvider, allAppChild) {
           return TextFormField(
             textCapitalization: TextCapitalization.sentences,
+            onTap: widget.onTap,
+            readOnly: (widget.readOnly != null) ? true : false,
             decoration: InputDecoration(
               counterText: "",
               suffixText: (widget.desField != null && widget.desField == true)
@@ -2433,8 +2443,11 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
               }
             }),
             maxLength: widget.maxWords,
-            maxLines:
-                (widget.desField != null && widget.desField == true) ? 2 : null,
+            maxLines: (widget.desField != null && widget.desField == true)
+                ? (widget.maxLines == null)
+                    ? 2
+                    : widget.maxLines
+                : null,
             minLines: 1,
             controller: widget.controller,
             keyboardType: (widget.desField != null && widget.desField == true)
@@ -2444,6 +2457,8 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
             style: const TextStyle(
               color: AppColors.white,
             ),
+            onFieldSubmitted: widget.onSubmit,
+            onTapOutside: widget.onTappedOutSide,
           );
         },
       ),

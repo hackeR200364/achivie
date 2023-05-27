@@ -1,10 +1,8 @@
-import 'package:achivie/screens/news_bloc_profile.dart';
-import 'package:achivie/screens/news_discover_screen.dart';
-import 'package:achivie/screens/news_saved_screen.dart';
-import 'package:achivie/screens/news_screen.dart';
+import 'package:achivie/screens/reports_upload_screen.dart';
 import 'package:achivie/screens/search_screen.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -12,7 +10,11 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import '../Utils/custom_glass_icon.dart';
 import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
+import 'news_bloc_profile.dart';
+import 'news_discover_screen.dart';
 import 'news_notification_screen.dart';
+import 'news_saved_screen.dart';
+import 'news_screen.dart';
 
 class NewsMainScreen extends StatefulWidget {
   const NewsMainScreen({Key? key}) : super(key: key);
@@ -24,7 +26,7 @@ class NewsMainScreen extends StatefulWidget {
 class _NewsMainScreenState extends State<NewsMainScreen> {
   int screenTabIndex = 0;
   String usrName = "";
-  bool hasBloc = false;
+  bool hasBloc = false, isDownwards = false;
   @override
   void initState() {
     getUserDetails();
@@ -111,6 +113,59 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           ),
         ),
       ),
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+      floatingActionButton: AnimatedContainer(
+        duration: Duration(
+          milliseconds: 100,
+        ),
+        height: 50,
+        width: (isDownwards) ? 50 : 150,
+        child: (isDownwards)
+            ? FloatingActionButton(
+                heroTag: "fab",
+                onPressed: (() {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c0ntextNext) => ReportUploadScreen(),
+                    ),
+                  );
+                }),
+                isExtended: true,
+                clipBehavior: Clip.hardEdge,
+                backgroundColor: AppColors.backgroundColour,
+                enableFeedback: true,
+                child: const Center(
+                  child: Icon(
+                    Icons.add,
+                    color: AppColors.white,
+                    size: 30,
+                  ),
+                ),
+              )
+            : FloatingActionButton.extended(
+                heroTag: "fab",
+                onPressed: (() {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c0ntextNext) => ReportUploadScreen(),
+                    ),
+                  );
+                }),
+                enableFeedback: true,
+                clipBehavior: Clip.hardEdge,
+                backgroundColor: AppColors.backgroundColour,
+                label: Text(
+                  "Add Reports",
+                ),
+                icon: Icon(
+                  Icons.add,
+                  color: AppColors.white,
+                  size: 30,
+                ),
+              ),
+      ),
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(
           left: 15,
@@ -171,16 +226,40 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          if (screenTabIndex == 0) NewsScreen(),
-          if (screenTabIndex == 1) NewsDiscoverScreen(),
-          if (screenTabIndex == 2) NewsSavedScreen(),
-          if (screenTabIndex == 3)
-            NewsBlocProfile(
-              hasBloc: hasBloc,
-            ),
-        ],
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          // log(notification.metrics.pixels.toString());
+          if (notification.direction == ScrollDirection.reverse) {
+            if (!isDownwards) {
+              setState(() {
+                isDownwards = true;
+              });
+            }
+          }
+
+          if (notification.direction == ScrollDirection.forward) {
+            if (isDownwards) {
+              setState(() {
+                isDownwards = false;
+              });
+            }
+          }
+          // log(isDownwards.toString());
+          // if (notification.metrics.)
+
+          return true;
+        },
+        child: Stack(
+          children: [
+            if (screenTabIndex == 0) const NewsScreen(),
+            if (screenTabIndex == 1) const NewsDiscoverScreen(),
+            if (screenTabIndex == 2) const NewsSavedScreen(),
+            if (screenTabIndex == 3)
+              NewsBlocProfile(
+                hasBloc: hasBloc,
+              ),
+          ],
+        ),
       ),
     );
   }
