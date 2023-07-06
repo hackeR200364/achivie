@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 
 import '../styles.dart';
@@ -7,6 +6,7 @@ import 'email_us_screen.dart';
 import 'home_screen.dart';
 import 'info_screen.dart';
 import 'menu_screen.dart';
+import 'news_main_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -38,8 +38,8 @@ class _MainScreenState extends State<MainScreen> {
         return const InfoScreen();
       case 2:
         return const EmailUSScreen();
-      // case 3:
-      //   return const NewsMainScreen();
+      case 3:
+        return const NewsMainScreen();
 
       default:
         return const HomeScreen();

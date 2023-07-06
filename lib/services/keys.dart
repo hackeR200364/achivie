@@ -53,7 +53,8 @@ class Keys {
   static const String userSongName = "userSongName";
   static const String userSongApp = "userSongApp";
   static const String apiBaseUrl =
-      "https://backend-api.achivie.com/v1/production";
+      "https://backend-api.achivie.com/v1/development";
   static const String apiUsersBaseUrl = "$apiBaseUrl/api/users";
   static const String apiTasksBaseUrl = "$apiBaseUrl/api/tasks";
+  static const String apiReportsBaseUrl = "$apiBaseUrl/api/newsBloc";
 }

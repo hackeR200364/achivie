@@ -291,11 +291,13 @@ class ReportDetailsColumn extends StatelessWidget {
     super.key,
     required this.category,
     required this.reportHeading,
-    required this.reportTime,
-    required this.reportPic,
+    required this.reportUploadTime,
+    this.reportTime,
+    required this.reportThumbPic,
   });
 
-  final String category, reportHeading, reportTime, reportPic;
+  final String category, reportHeading, reportUploadTime, reportThumbPic;
+  final String? reportTime;
 
   @override
   Widget build(BuildContext context) {
@@ -314,14 +316,20 @@ class ReportDetailsColumn extends StatelessWidget {
         const SizedBox(
           height: 15,
         ),
+        ReportUploadedTimeText(
+          reportTime: reportUploadTime,
+        ),
+        const SizedBox(
+          height: 5,
+        ),
         ReportTimeText(
-          reportTime: reportTime,
+          reportTime: reportTime!,
         ),
         const SizedBox(
           height: 15,
         ),
         ReportPic(
-          reportPic: reportPic,
+          reportPic: reportThumbPic,
         ),
       ],
     );
@@ -462,6 +470,40 @@ class ReportPic extends StatelessWidget {
   }
 }
 
+class ReportUploadedTimeText extends StatelessWidget {
+  const ReportUploadedTimeText({
+    super.key,
+    required this.reportTime,
+  });
+
+  final String reportTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "Uploaded on: ",
+          style: TextStyle(
+            color: AppColors.white.withOpacity(0.4),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          reportTime,
+          style: TextStyle(
+            color: AppColors.white.withOpacity(0.4),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class ReportTimeText extends StatelessWidget {
   const ReportTimeText({
     super.key,
@@ -472,13 +514,26 @@ class ReportTimeText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      reportTime,
-      style: TextStyle(
-        color: AppColors.white.withOpacity(0.4),
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          "Report on: ",
+          style: TextStyle(
+            color: AppColors.white.withOpacity(0.4),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          reportTime,
+          style: TextStyle(
+            color: AppColors.white.withOpacity(0.4),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -668,7 +723,7 @@ class ReportUserNameText extends StatelessWidget {
             overflow: TextOverflow.visible,
           ),
         ),
-        if (followers != null)
+        if (followers != null && followers! > 0)
           Container(
             margin: EdgeInsets.only(top: 2),
             child: Text(
