@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,13 +9,16 @@ import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mobile_number/mobile_number.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils/snackbar_utils.dart';
 import '../providers/app_providers.dart';
+import '../services/keys.dart';
 import '../widgets/email_us_screen_widgets.dart';
 
 class NewsBlocCreationScreen extends StatefulWidget {
@@ -56,8 +60,8 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
     usrName = await StorageServices.getUsrName();
     uid = await StorageServices.getUID();
     usrEmail = await StorageServices.getUsrEmail();
-    await _handlePhonePermission();
     await getUserLocation();
+    await _handlePhonePermission();
 
     setState(() {});
   }
@@ -172,54 +176,149 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
               builder: ((allAppProvidersContext, allAppProvidersProvider,
                   allAppProvidersChild) {
                 return GestureDetector(
-                  onTap: (() {
-                    if (selectedImage != null) {
-                      if (_blocNameController.text.trim().isNotEmpty &&
-                          _blockDesController.text.trim().isNotEmpty) {
-                        if (streetName != "Street" &&
-                            subLocalityName != "Sub-Locality" &&
-                            cityName != "City" &&
-                            countryName != "Country" &&
-                            countryCode != "Country Code" &&
-                            pin != "PIN Code") {
-                          if (phoneNumber != null && phoneNumber!.isNotEmpty) {
+                  onTap: (allAppProvidersProvider.isLoading)
+                      ? null
+                      : (() async {
+                          if (selectedImage != null) {
+                            if (_blocNameController.text.trim().isNotEmpty &&
+                                _blockDesController.text.trim().isNotEmpty) {
+                              if (streetName != "Street" &&
+                                  subLocalityName != "Sub-Locality" &&
+                                  cityName != "City" &&
+                                  countryName != "Country" &&
+                                  countryCode != "Country Code" &&
+                                  pin != "PIN Code") {
+                                if (phoneNumber != null &&
+                                    phoneNumber!.isNotEmpty) {
+                                  allAppProvidersProvider.isLoadingFunc(true);
+
+                                  var request = http.MultipartRequest(
+                                    'POST',
+                                    Uri.parse(
+                                        "${Keys.apiReportsBaseUrl}/create"),
+                                  );
+
+                                  var fileStream = http.ByteStream(
+                                    selectedImage!.openRead(),
+                                  );
+
+                                  var length = await selectedImage!.length();
+
+                                  var multipartFile = http.MultipartFile(
+                                    Keys.blocProfile,
+                                    fileStream,
+                                    length,
+                                    filename:
+                                        selectedImage!.path.split('/').last,
+                                  );
+
+                                  request.files.add(multipartFile);
+
+                                  request.headers["content-type"] =
+                                      "multipart/form-data";
+
+                                  request.fields[Keys.usrName] = usrName;
+
+                                  request.fields[Keys.usrID] = uid;
+
+                                  request.fields[Keys.usrEmail] = usrEmail;
+                                  request.fields[Keys.usrPhoneNo] =
+                                      phoneNumber!;
+                                  request.fields[Keys.blocName] =
+                                      _blocNameController.text.trim();
+                                  request.fields[Keys.blocDes] =
+                                      _blockDesController.text.trim();
+                                  request.fields[Keys.blocLat] =
+                                      _currentPosition!.latitude.toString();
+                                  request.fields[Keys.blocLong] =
+                                      _currentPosition!.longitude.toString();
+
+                                  http.Response response =
+                                      await http.Response.fromStream(
+                                          await request.send());
+
+                                  Map<String, dynamic> responseJson =
+                                      await json.decode(response.body);
+
+                                  log(responseJson.toString());
+
+                                  if (response.statusCode == 200) {
+                                    if (responseJson["success"]) {
+                                      StorageServices.setUsrHasBloc(true);
+                                      StorageServices.setUsrBlocID(
+                                          responseJson[Keys.blocID]);
+                                      StorageServices.setUsrBlocName(
+                                          responseJson[Keys.blocName]);
+                                      StorageServices.setUsrBlocDes(
+                                          responseJson[Keys.blocDes]);
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+                                      Navigator.pop(context);
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                              allAppProvidersContext)
+                                          .showSnackBar(
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message: responseJson[Keys.message],
+                                          context: allAppProvidersContext,
+                                        ),
+                                      );
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(allAppProvidersContext)
+                                        .showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: responseJson[Keys.message],
+                                        context: allAppProvidersContext,
+                                      ),
+                                    );
+                                    allAppProvidersProvider
+                                        .isLoadingFunc(false);
+                                  }
+
+                                  allAppProvidersProvider.isLoadingFunc(false);
+                                } else {
+                                  ScaffoldMessenger.of(allAppProvidersContext)
+                                      .showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message:
+                                          "Please select your phone number",
+                                      context: allAppProvidersContext,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(allAppProvidersContext)
+                                    .showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message:
+                                        "Your address is not properly fetched.\nTry again later.",
+                                    context: allAppProvidersContext,
+                                  ),
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(allAppProvidersContext)
+                                  .showSnackBar(
+                                AppSnackbar().customizedAppSnackbar(
+                                  message: "Please enter bloc details",
+                                  context: allAppProvidersContext,
+                                ),
+                              );
+                            }
                           } else {
                             ScaffoldMessenger.of(allAppProvidersContext)
                                 .showSnackBar(
                               AppSnackbar().customizedAppSnackbar(
-                                message: "Please select your phone number",
+                                message:
+                                    "Please select your bloc profile picture",
                                 context: allAppProvidersContext,
                               ),
                             );
                           }
-                        } else {
-                          ScaffoldMessenger.of(allAppProvidersContext)
-                              .showSnackBar(
-                            AppSnackbar().customizedAppSnackbar(
-                              message:
-                                  "Your address is not properly fetched.\nTry again later.",
-                              context: allAppProvidersContext,
-                            ),
-                          );
-                        }
-                      } else {
-                        ScaffoldMessenger.of(allAppProvidersContext)
-                            .showSnackBar(
-                          AppSnackbar().customizedAppSnackbar(
-                            message: "Please enter bloc details",
-                            context: allAppProvidersContext,
-                          ),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(allAppProvidersContext).showSnackBar(
-                        AppSnackbar().customizedAppSnackbar(
-                          message: "Please select your bloc profile picture",
-                          context: allAppProvidersContext,
-                        ),
-                      );
-                    }
-                  }),
+                        }),
                   child: Container(
                     width: size.width / 3,
                     height: 41,
@@ -231,14 +330,22 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Center(
-                      child: Text(
-                        "Create",
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
+                      child: (allAppProvidersProvider.isLoading)
+                          ? Center(
+                              child: Lottie.asset(
+                                "assets/loading-animation.json",
+                                width: double.infinity,
+                                height: 50,
+                              ),
+                            )
+                          : Text(
+                              "Create",
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
                     ),
                   ),
                 );

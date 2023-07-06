@@ -666,8 +666,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                                                   var fileStream =
                                                       http.ByteStream(
-                                                          selectedImage!
-                                                              .openRead());
+                                                    selectedImage!.openRead(),
+                                                  );
                                                   var length =
                                                       await selectedImage!
                                                           .length();
