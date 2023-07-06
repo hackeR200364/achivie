@@ -27,6 +27,7 @@ class ReporterPublicProfile extends StatefulWidget {
 }
 
 class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
+  String email = 'email', profileType = "", uid = "", token = "";
   final List<Ticker> _tickers = [];
   late ScrollController _newsScrollController;
   late ScrollController _pageScrollController;
@@ -38,7 +39,7 @@ class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999;
 
-  bool _isScrollingDown = false, followed = false, saved = false;
+  // bool _isScrollingDown = false, followed = false, saved = false;
   String newsSelectedCategory = "All",
       usrProfilePic =
           "https://i0.wp.com/www.gosfordpark-coventry.org.uk/wp-content/uploads/blank-avatar.png?ssl=1";
@@ -144,7 +145,7 @@ class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
           slivers: [
             SliverToBoxAdapter(
               child: Container(
-                margin: EdgeInsets.only(
+                margin: const EdgeInsets.only(
                   left: 10,
                   right: 10,
                 ),
@@ -325,7 +326,7 @@ class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
                           blocName: "Rupam Karmakar",
                           blocProfilePic:
                               "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                          followed: followed,
+                          followed: false,
                           followedOnTap: (() {}),
                           onTap: (() {
                             Navigator.push(
@@ -346,8 +347,8 @@ class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
                           category: "Finance",
                           reportHeading:
                               "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                          reportTime: "Monday, 26 September 2022",
-                          reportPic:
+                          reportUploadTime: "Monday, 26 September 2022",
+                          reportThumbPic:
                               "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
                         ),
                         const SizedBox(
@@ -405,7 +406,7 @@ class _ReporterPublicProfileState extends State<ReporterPublicProfile> {
                                 ],
                               ),
                               ReportSaveBtn(
-                                saved: saved,
+                                saved: false,
                                 onTap: (() {}),
                               ),
                             ],

@@ -297,8 +297,8 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                         category: "Finance",
                         reportHeading:
                             "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                        reportTime: "Monday, 26 September 2022",
-                        reportPic:
+                        reportUploadTime: "Monday, 26 September 2022",
+                        reportThumbPic:
                             "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
                       ),
                       const SizedBox(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_marquee/flutter_marquee.dart' as flutter_marquee;
-import 'package:flutter_zoom_drawer/config.dart';
+// import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
@@ -400,14 +400,14 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           setIndex: widget.setIndex,
           zoomDrawerController: zoomDrawerController,
         ),
-        // MenuListItem(
-        //   title: "News",
-        //   icon: Icons.newspaper,
-        //   index: 3,
-        //   selectedIndex: widget.selectedIndex,
-        //   setIndex: widget.setIndex,
-        //   zoomDrawerController: zoomDrawerController,
-        // ),
+        MenuListItem(
+          title: "Reports",
+          icon: Icons.newspaper,
+          index: 3,
+          selectedIndex: widget.selectedIndex,
+          setIndex: widget.setIndex,
+          zoomDrawerController: zoomDrawerController,
+        ),
         MenuListItem(
           title: "Info",
           icon: Icons.info,
