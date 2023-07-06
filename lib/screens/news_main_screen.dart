@@ -25,7 +25,7 @@ class NewsMainScreen extends StatefulWidget {
 
 class _NewsMainScreenState extends State<NewsMainScreen> {
   int screenTabIndex = 0;
-  String usrName = "";
+  String usrName = "", blocName = "";
   bool hasBloc = false, isDownwards = false;
   @override
   void initState() {
@@ -36,6 +36,9 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
   void getUserDetails() async {
     usrName = await StorageServices.getUsrName();
     hasBloc = await StorageServices.getUsrHasBloc();
+    if (hasBloc) {
+      blocName = (await StorageServices.getBlocName())!;
+    }
     setState(() {});
   }
 
@@ -106,7 +109,9 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
                       : (screenTabIndex == 2)
                           ? "Saved News"
                           : (screenTabIndex == 3)
-                              ? usrName
+                              ? (hasBloc)
+                                  ? blocName
+                                  : usrName
                               : "",
               style: AppColors.subHeadingTextStyle,
             ),

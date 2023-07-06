@@ -246,11 +246,14 @@ class _NewsBlocCreationScreenState extends State<NewsBlocCreationScreen> {
                                     if (responseJson["success"]) {
                                       StorageServices.setUsrHasBloc(true);
                                       StorageServices.setUsrBlocID(
-                                          responseJson[Keys.blocID]);
+                                          responseJson[Keys.blocDetails]
+                                              [Keys.blocID]);
                                       StorageServices.setUsrBlocName(
-                                          responseJson[Keys.blocName]);
+                                          responseJson[Keys.blocDetails]
+                                              [Keys.blocName]);
                                       StorageServices.setUsrBlocDes(
-                                          responseJson[Keys.blocDes]);
+                                          responseJson[Keys.blocDetails]
+                                              [Keys.blocDes]);
                                       allAppProvidersProvider
                                           .isLoadingFunc(false);
                                       Navigator.pop(context);
