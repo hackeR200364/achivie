@@ -15,6 +15,7 @@ class Keys {
   static const String hasBloc = "hasBloc";
   static const String blocDes = "blocDes";
   static const String blocID = "blocID";
+  static const String blocDetails = "blocDetails";
   static const String blocName = "blocName";
   static const String usrDescription = "usrDescription";
   static const String usrProfession = "usrProfession";

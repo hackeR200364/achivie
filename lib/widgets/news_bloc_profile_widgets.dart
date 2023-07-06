@@ -319,12 +319,14 @@ class ReportDetailsColumn extends StatelessWidget {
         ReportUploadedTimeText(
           reportTime: reportUploadTime,
         ),
-        const SizedBox(
-          height: 5,
-        ),
-        ReportTimeText(
-          reportTime: reportTime!,
-        ),
+        if (reportTime != null)
+          const SizedBox(
+            height: 5,
+          ),
+        if (reportTime != null)
+          ReportTimeText(
+            reportTime: reportTime!,
+          ),
         const SizedBox(
           height: 15,
         ),
