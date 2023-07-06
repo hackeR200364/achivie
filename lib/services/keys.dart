@@ -14,10 +14,13 @@ class Keys {
   static const String blocUID = "blocUID";
   static const String hasBloc = "hasBloc";
   static const String blocDes = "blocDes";
+  static const String blocID = "blocID";
+  static const String blocName = "blocName";
   static const String usrDescription = "usrDescription";
   static const String usrProfession = "usrProfession";
   static const String usrProfilePic = "usrProfilePic";
   static const String uid = "uid";
+  static const String usrID = "usrID";
   // static const String userPassword = "userPassword";
   static const String usrPassword = "usrPassword";
   // static const String userEmail = "userEmail";
@@ -57,4 +60,9 @@ class Keys {
   static const String apiUsersBaseUrl = "$apiBaseUrl/api/users";
   static const String apiTasksBaseUrl = "$apiBaseUrl/api/tasks";
   static const String apiReportsBaseUrl = "$apiBaseUrl/api/newsBloc";
+  static const String blocProfile = "blocProfile";
+  // static const String blocName = "blocName";
+  static const String usrPhoneNo = "usrPhoneNo";
+  static const String blocLat = "blocLat";
+  static const String blocLong = "blocLong";
 }

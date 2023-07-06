@@ -68,10 +68,10 @@ class StorageServices {
     pref.setInt(Keys.usrPoints, usrPoints);
   }
 
-  static void setUsrBlocUID(String blocUID) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(Keys.blocUID, blocUID);
-  }
+  // static void setUsrBlocUID(String blocUID) async {
+  //   SharedPreferences pref = await SharedPreferences.getInstance();
+  //   pref.setString(Keys.blocUID, blocUID);
+  // }
 
   static void setUsrBlocDes(String blocDes) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -81,6 +81,28 @@ class StorageServices {
   static void setUsrHasBloc(bool hasBloc) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setBool(Keys.hasBloc, hasBloc);
+  }
+
+  static void setUsrBlocID(String blocID) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.blocID, blocID);
+  }
+
+  static void setUsrBlocName(String blocName) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.blocName, blocName);
+  }
+
+  static Future<String?> getBlocName() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? blocName = pref.getString(Keys.blocName);
+    return blocName;
+  }
+
+  static Future<String?> getBlocID() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? blocID = pref.getString(Keys.blocID);
+    return blocID;
   }
 
   static Future<bool> getUsrHasBloc() async {
@@ -95,11 +117,11 @@ class StorageServices {
     return blocDes;
   }
 
-  static Future<String> getUsrBlocUID() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    String? blocUID = pref.getString(Keys.blocUID) ?? "";
-    return blocUID;
-  }
+  // static Future<String> getUsrBlocUID() async {
+  //   SharedPreferences pref = await SharedPreferences.getInstance();
+  //   String? blocUID = pref.getString(Keys.blocUID) ?? "";
+  //   return blocUID;
+  // }
 
   static Future<int> getUsrPoints() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
