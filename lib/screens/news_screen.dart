@@ -40,7 +40,8 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 5;
+      limitCount = 2,
+      totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
 
@@ -81,7 +82,7 @@ class _NewsScreenState extends State<NewsScreen> {
     _newsScrollController = ScrollController();
     _pageScrollController = ScrollController();
 
-    _newsScrollController.addListener(_updateScreenOffset);
+    _pageScrollController.addListener(_updateScreenOffset);
     // _pageScrollController.addListener(_updateNewsOffset);
     commentController = TextEditingController();
     getUserDetails();
@@ -91,7 +92,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
   @override
   void dispose() {
-    _newsScrollController.removeListener(_updateScreenOffset);
+    _pageScrollController.removeListener(_updateScreenOffset);
     // _pageScrollController.removeListener(_updateScreenOffset);
     _newsScrollController.dispose();
     _pageScrollController.dispose();
@@ -121,11 +122,52 @@ class _NewsScreenState extends State<NewsScreen> {
     // print(profileType);
   }
 
-  void _updateScreenOffset() => setState(() {
-        topItemIndex = _getIndexInView();
-        screenOffset = _pageScrollController.offset;
-        log(screenOffset.toString());
-      });
+  void _updateScreenOffset() {
+    if (_pageScrollController.position.maxScrollExtent ==
+        _pageScrollController.offset) {
+      if (pageCount < totalPage) {
+        fetch();
+      }
+      // setState(() {
+      //   reports.addAll(reports);
+      // });
+    }
+    // setState(() {
+    //   topItemIndex = _getIndexInView();
+    //   screenOffset = _pageScrollController.offset;
+    //   log(screenOffset.toString());
+    // });
+  }
+
+  Future fetch() async {
+    if (pageCount < totalPage) {
+      pageCount++;
+    }
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/reports/all/$uid?page=$pageCount&limit=$limitCount"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final AllReports allReports = allReportsFromJson(response.body);
+      if (allReports.success) {
+        log(pageCount.toString());
+        log(totalPage.toString());
+
+        setState(() {
+          reports.addAll(allReports.reports);
+        });
+      } else {
+        message = "No reports found";
+        loading = false;
+      }
+    }
+    setState(() {});
+  }
 
   // void _updateNewsOffset() => setState(() {
   //       topItemIndex = _getIndexInView();
@@ -143,6 +185,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
   Future<void> refresh() async {
     loading = false;
+    pageCount = 1;
     setState(() {});
     http.Response response = await http.get(
       Uri.parse(
@@ -157,8 +200,9 @@ class _NewsScreenState extends State<NewsScreen> {
       final AllReports allReports = allReportsFromJson(response.body);
       if (allReports.success) {
         reports = allReports.reports;
+        totalPage = allReports.totalPage;
         setState(() {});
-        log(reports.length.toString());
+        log(pageCount.toString());
       } else {
         message = "No reports found";
         loading = true;
@@ -347,139 +391,155 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    childCount: reports.length,
-                    (context, index) => GestureDetector(
-                      onTap: (() {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (newsDetailsScreenContext) =>
-                                NewsDetailsScreen(
-                              contentID: reports[index].reportId,
+                    childCount: reports.length + 1,
+                    (context, index) {
+                      if (index < reports.length) {
+                        return GestureDetector(
+                          onTap: (() {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (newsDetailsScreenContext) =>
+                                    NewsDetailsScreen(
+                                  contentID: reports[index].reportId,
+                                ),
+                              ),
+                            );
+                          }),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            margin: const EdgeInsets.only(
+                              left: 10,
+                              right: 10,
+                              top: 10,
                             ),
-                          ),
-                        );
-                      }),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 15,
-                          bottom: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.backgroundColour.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            BlocDetailsRow(
-                              followers: reports[index].followers,
-                              blocName: reports[index].blocName,
-                              blocProfilePic: reports[index].blocProfile,
-                              followed: reports[index].followed ?? false,
-                              followedOnTap: (() {}),
-                              onTap: (() {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (profileDetailsContext) =>
-                                        ReporterPublicProfile(
-                                      blockUID: reports[index].blocId,
-                                    ),
-                                  ),
-                                );
-                              }),
+                            padding: const EdgeInsets.only(
+                              left: 10,
+                              right: 10,
+                              top: 15,
+                              bottom: 15,
                             ),
-                            const SizedBox(
-                              height: 25,
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.backgroundColour.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            ReportDetailsColumn(
-                              category: reports[index].reportCat,
-                              reportHeading: reports[index].reportHeadline,
-                              reportUploadTime:
-                                  "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
-                              reportTime:
-                                  "${reports[index].reportTime}, ${reports[index].reportDate}",
-                              reportThumbPic: reports[index].reportTumbImage,
-                            ),
-                            const SizedBox(
-                              height: 25,
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
+                            child: Column(
+                              children: [
+                                BlocDetailsRow(
+                                  followers: reports[index].followers,
+                                  blocName: reports[index].blocName,
+                                  blocProfilePic: reports[index].blocProfile,
+                                  followed: reports[index].followed ?? false,
+                                  followedOnTap: (() {}),
+                                  onTap: (() {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (profileDetailsContext) =>
+                                            ReporterPublicProfile(
+                                          blockUID: reports[index].blocId,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                                const SizedBox(
+                                  height: 25,
+                                ),
+                                ReportDetailsColumn(
+                                  category: reports[index].reportCat,
+                                  reportHeading: reports[index].reportHeadline,
+                                  reportUploadTime:
+                                      "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                                  reportTime:
+                                      "${reports[index].reportTime}, ${reports[index].reportDate}",
+                                  reportThumbPic:
+                                      reports[index].reportTumbImage,
+                                ),
+                                const SizedBox(
+                                  height: 25,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      ReportLikeBtn(
-                                        likeCount: reports[index].reportLikes,
-                                        onTap: ((liked) async {
-                                          if (reports[index].liked!) {
-                                          } else {}
-                                        }),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          ReportLikeBtn(
+                                            likeCount:
+                                                reports[index].reportLikes,
+                                            onTap: ((liked) async {
+                                              if (reports[index].liked!) {
+                                              } else {}
+                                            }),
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
+                                          ReactBtn(
+                                            head: NumberFormat.compact()
+                                                .format(reports[index]
+                                                    .reportComments)
+                                                .toString(),
+                                            icon: Icons.comment_outlined,
+                                            onPressed: (() {
+                                              showModalBottomSheet(
+                                                backgroundColor:
+                                                    AppColors.mainColor,
+                                                context: context,
+                                                isScrollControlled: true,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                    topLeft:
+                                                        Radius.circular(10),
+                                                    topRight:
+                                                        Radius.circular(10),
+                                                  ),
+                                                ),
+                                                builder:
+                                                    (commentModelContext) =>
+                                                        CommentModalSheet(
+                                                  commentController:
+                                                      commentController,
+                                                  reporterProfilePic:
+                                                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                                  blocUID: 'Rupam Karmakar',
+                                                  commentTime: '12h',
+                                                  comment:
+                                                      "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                                  commentModelContext:
+                                                      commentModelContext,
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      ReactBtn(
-                                        head: NumberFormat.compact()
-                                            .format(
-                                                reports[index].reportComments)
-                                            .toString(),
-                                        icon: Icons.comment_outlined,
-                                        onPressed: (() {
-                                          showModalBottomSheet(
-                                            backgroundColor:
-                                                AppColors.mainColor,
-                                            context: context,
-                                            isScrollControlled: true,
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(10),
-                                                topRight: Radius.circular(10),
-                                              ),
-                                            ),
-                                            builder: (commentModelContext) =>
-                                                CommentModalSheet(
-                                              commentController:
-                                                  commentController,
-                                              reporterProfilePic:
-                                                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                              blocUID: 'Rupam Karmakar',
-                                              commentTime: '12h',
-                                              comment:
-                                                  "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                                              commentModelContext:
-                                                  commentModelContext,
-                                            ),
-                                          );
-                                        }),
+                                      ReportSaveBtn(
+                                        saved: saved,
+                                        onTap: (() {}),
                                       ),
                                     ],
                                   ),
-                                  ReportSaveBtn(
-                                    saved: saved,
-                                    onTap: (() {}),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
+                          ),
+                        );
+                      } else if (pageCount < totalPage) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                    },
                   ),
                 ),
               ],

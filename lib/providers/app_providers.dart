@@ -112,6 +112,12 @@ class AllAppProviders extends ChangeNotifier {
     notifyListeners();
   }
 
+  int namePosition = 0;
+  void nameLengthFunc(position) {
+    namePosition = position;
+    notifyListeners();
+  }
+
   int points = 0;
   void pointsFunc() async {
     points = await StorageServices.getUsrPoints();
@@ -130,5 +136,23 @@ class AllAppProviders extends ChangeNotifier {
       notificationCount = value.length;
       notifyListeners();
     });
+  }
+
+  String category = "";
+  void categoryFunc(String inputCategory) async {
+    category = inputCategory;
+    notifyListeners();
+  }
+
+  String hashtag = "";
+  void hashtagFunc(String inputHashtag) async {
+    hashtag = inputHashtag;
+    notifyListeners();
+  }
+
+  int catCount = 0;
+  void categoryCountFunc(int inputCatCount) async {
+    catCount = inputCatCount;
+    notifyListeners();
   }
 }

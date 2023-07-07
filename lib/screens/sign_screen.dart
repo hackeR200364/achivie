@@ -2363,16 +2363,21 @@ class AuthNameTextField extends StatefulWidget {
     this.onSubmit,
     this.onTappedOutSide,
     this.readOnly,
+    this.nameField,
+    this.onChange,
+    this.inputFormatter,
     // required this.formKey,
   });
   final TextEditingController controller;
   final String hintText;
   final IconData icon;
   final int? maxWords, maxLines;
-  final bool? desField, readOnly;
+  final bool? nameField, desField, readOnly;
   final VoidCallback? onTap;
   final Function(String)? onSubmit;
+  final Function(String)? onChange;
   final Function(PointerDownEvent)? onTappedOutSide;
+  final List<TextInputFormatter>? inputFormatter;
 
   @override
   State<AuthNameTextField> createState() => _AuthNameTextFieldState();
@@ -2398,7 +2403,9 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
               counterText: "",
               suffixText: (widget.desField != null && widget.desField == true)
                   ? "${allAppProvider.desPosition.toString()}/${widget.maxWords}"
-                  : "",
+                  : (widget.nameField != null && widget.nameField == true)
+                      ? "${allAppProvider.namePosition.toString()}/${widget.maxWords}"
+                      : "",
               prefixIcon: Icon(
                 widget.icon,
                 color: AppColors.white,
@@ -2441,6 +2448,9 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
               if (widget.desField != null && widget.desField == true) {
                 allAppProvider.desLengthFunc(text.trim().length);
               }
+              if (widget.nameField != null && widget.nameField == true) {
+                allAppProvider.nameLengthFunc(text.trim().length);
+              }
             }),
             maxLength: widget.maxWords,
             maxLines: (widget.desField != null && widget.desField == true)
@@ -2459,6 +2469,7 @@ class _AuthNameTextFieldState extends State<AuthNameTextField> {
             ),
             onFieldSubmitted: widget.onSubmit,
             onTapOutside: widget.onTappedOutSide,
+            inputFormatters: widget.inputFormatter,
           );
         },
       ),
