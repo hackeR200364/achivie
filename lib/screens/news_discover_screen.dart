@@ -1,14 +1,16 @@
-import 'dart:developer';
-
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/screens/top_reporters_screen.dart';
 import 'package:achivie/styles.dart';
 import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../models/categories_models.dart';
 import '../models/news_category_model.dart';
+import '../services/keys.dart';
+import '../services/shared_preferences.dart';
 import '../widgets/news_discover_screen_widget.dart';
 import 'news_details_screen.dart';
 import 'news_screen.dart';
@@ -55,10 +57,11 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
       index: 5,
     ),
   ];
-  String newsSelectedCategory = "All";
+  String newsSelectedCategory = "All", token = "";
   late TextEditingController commentController;
   late ScrollController _newsScrollController;
   late ScrollController _pageScrollController;
+  List<Category> categoryList = [];
 
   @override
   void initState() {
@@ -66,6 +69,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
     _newsScrollController = ScrollController();
     _pageScrollController = ScrollController(keepScrollOffset: false);
     _newsScrollController.addListener(_updateState);
+    getUsrDetails();
     super.initState();
   }
 
@@ -94,8 +98,28 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
     return index;
   }
 
+  void getUsrDetails() async {
+    token = await StorageServices.getUsrToken();
+    await refresh();
+    setState(() {});
+  }
+
   Future<void> refresh() async {
-    log("refreshing");
+    http.Response catResponse = await http.get(
+      Uri.parse("${Keys.apiReportsBaseUrl}/categories"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (catResponse.statusCode == 200) {
+      final blocAllCategories = blocAllCategoriesFromJson(catResponse.body);
+
+      if (blocAllCategories.success) {
+        categoryList = blocAllCategories.categories;
+      }
+    }
   }
 
   @override
@@ -243,7 +267,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                   ),
                   Expanded(
                     child: ListView.separated(
-                      itemCount: newsCategory.length,
+                      itemCount: categoryList.length,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (newsCatContext, index) {
                         return GestureDetector(
@@ -251,7 +275,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                             // log(newsCategory[index].category);
                             setState(() {
                               newsSelectedCategory =
-                                  newsCategory[index].category;
+                                  categoryList[index].reportCat;
                               newsSelectedCategoryIndex = index;
                             });
                           }),
@@ -276,8 +300,8 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                newsCategory[index].category,
-                                style: const TextStyle(
+                                categoryList[index].reportCat,
+                                style: TextStyle(
                                   color: AppColors.white,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -288,7 +312,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
-                        return const SizedBox(
+                        return SizedBox(
                           width: 10,
                         );
                       },

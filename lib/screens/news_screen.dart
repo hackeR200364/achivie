@@ -13,6 +13,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../models/categories_models.dart';
 import '../services/shared_preferences.dart';
 
 class NewsScreen extends StatefulWidget {
@@ -30,7 +31,7 @@ class _NewsScreenState extends State<NewsScreen> {
       message = "message";
   final List<Ticker> _tickers = [];
   CarouselController carouselController = CarouselController();
-  late ScrollController _newsScrollController;
+  // late ScrollController _reportsCatController;
   late ScrollController _pageScrollController;
   late TextEditingController commentController;
   int newsSliderIndex = 0,
@@ -40,8 +41,11 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
+      catPageCount = 1,
+      catLimitCount = 10,
       limitCount = 2,
-      totalPage = 0;
+      totalPage = 0,
+      catTotalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
 
@@ -74,12 +78,13 @@ class _NewsScreenState extends State<NewsScreen> {
     ),
   ];
   List<Report> reports = <Report>[];
+  List<Category> categoryList = [];
   String newsDes =
       "Crypto investors should be prepared to lose all their money, BOE governor says sdfbkd sjfbd shbcshb ckxc mzxcnidush yeihewjhfjdsk fjsdnkcv jdsfjkdsf iusdfhjsdff";
 
   @override
   void initState() {
-    _newsScrollController = ScrollController();
+    // _reportsCatController = ScrollController();
     _pageScrollController = ScrollController();
 
     _pageScrollController.addListener(_updateScreenOffset);
@@ -93,8 +98,7 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   void dispose() {
     _pageScrollController.removeListener(_updateScreenOffset);
-    // _pageScrollController.removeListener(_updateScreenOffset);
-    _newsScrollController.dispose();
+    // _reportsCatController.dispose();
     _pageScrollController.dispose();
     commentController.dispose();
     for (var ticker in _tickers) {
@@ -126,7 +130,7 @@ class _NewsScreenState extends State<NewsScreen> {
     if (_pageScrollController.position.maxScrollExtent ==
         _pageScrollController.offset) {
       if (pageCount < totalPage) {
-        fetch();
+        fetchAllReports();
       }
       // setState(() {
       //   reports.addAll(reports);
@@ -139,7 +143,7 @@ class _NewsScreenState extends State<NewsScreen> {
     // });
   }
 
-  Future fetch() async {
+  Future fetchAllReports() async {
     if (pageCount < totalPage) {
       pageCount++;
     }
@@ -174,18 +178,17 @@ class _NewsScreenState extends State<NewsScreen> {
   //       newsOffset = _newsScrollController.offset;
   //     });
 
-  int _getIndexInView() {
-    double itemHeight = 10; // calculate the height of each item
-    double position = _newsScrollController.position.pixels;
-    int index =
-        (position / itemHeight).floor() + 1; // add 1 to start from the 2nd item
-    // log(index.toString());
-    return index;
-  }
+  // int _getIndexInView() {
+  //   double itemHeight = 10; // calculate the height of each item
+  //   double position = _newsScrollController.position.pixels;
+  //   int index =
+  //       (position / itemHeight).floor() + 1; // add 1 to start from the 2nd item
+  //   // log(index.toString());
+  //   return index;
+  // }
 
   Future<void> refresh() async {
     loading = false;
-    pageCount = 1;
     setState(() {});
     http.Response response = await http.get(
       Uri.parse(
@@ -201,15 +204,30 @@ class _NewsScreenState extends State<NewsScreen> {
       if (allReports.success) {
         reports = allReports.reports;
         totalPage = allReports.totalPage;
-        setState(() {});
-        log(pageCount.toString());
       } else {
         message = "No reports found";
-        loading = true;
-        setState(() {});
       }
     }
-    log(message);
+
+    http.Response catResponse = await http.get(
+      Uri.parse("${Keys.apiReportsBaseUrl}/categories"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (catResponse.statusCode == 200) {
+      final blocAllCategories = blocAllCategoriesFromJson(catResponse.body);
+
+      if (blocAllCategories.success) {
+        categoryList = blocAllCategories.categories;
+      }
+    }
+
+    loading = false;
+    setState(() {});
+    // log(message);
   }
   // void _scrollListener() {
   //   if (_scrollController.offset <=
@@ -332,7 +350,7 @@ class _NewsScreenState extends State<NewsScreen> {
                         ),
                         Expanded(
                           child: ListView.separated(
-                            itemCount: newsCategory.length,
+                            itemCount: categoryList.length,
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (newsCatContext, index) {
                               return GestureDetector(
@@ -340,7 +358,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                   // log(newsCategory[index].category);
                                   setState(() {
                                     newsSelectedCategory =
-                                        newsCategory[index].category;
+                                        categoryList[index].reportCat;
                                     newsSelectedCategoryIndex = index;
                                   });
                                 }),
@@ -366,7 +384,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      newsCategory[index].category,
+                                      categoryList[index].reportCat,
                                       style: TextStyle(
                                         color: AppColors.white,
                                         fontSize: 12,

@@ -1,10 +1,12 @@
-import 'dart:developer';
-
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../models/categories_models.dart';
 import '../models/news_category_model.dart';
+import '../services/keys.dart';
+import '../services/shared_preferences.dart';
 import '../styles.dart';
 import '../widgets/news_bloc_profile_widgets.dart';
 import 'news_details_screen.dart';
@@ -46,13 +48,15 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
   ];
 
   int newsSelectedCategoryIndex = 0, likeCount = 9999;
-  String newsSelectedCategory = "All";
+  String newsSelectedCategory = "All", token = "";
   bool followed = false, saved = false;
   late TextEditingController commentController;
+  List<Category> categoryList = [];
+
   @override
   void initState() {
     commentController = TextEditingController();
-
+    getUsrDetails();
     super.initState();
   }
 
@@ -63,8 +67,28 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
     super.dispose();
   }
 
+  void getUsrDetails() async {
+    token = await StorageServices.getUsrToken();
+    await refresh();
+    setState(() {});
+  }
+
   Future<void> refresh() async {
-    log("refreshing");
+    http.Response catResponse = await http.get(
+      Uri.parse("${Keys.apiReportsBaseUrl}/categories"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (catResponse.statusCode == 200) {
+      final blocAllCategories = blocAllCategoriesFromJson(catResponse.body);
+
+      if (blocAllCategories.success) {
+        categoryList = blocAllCategories.categories;
+      }
+    }
   }
 
   @override
@@ -94,7 +118,7 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
                   ),
                   Expanded(
                     child: ListView.separated(
-                      itemCount: newsCategory.length,
+                      itemCount: categoryList.length,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (newsCatContext, index) {
                         return GestureDetector(
@@ -102,7 +126,7 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
                             // log(newsCategory[index].category);
                             setState(() {
                               newsSelectedCategory =
-                                  newsCategory[index].category;
+                                  categoryList[index].reportCat;
                               newsSelectedCategoryIndex = index;
                             });
                           }),
@@ -127,7 +151,7 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                newsCategory[index].category,
+                                categoryList[index].reportCat,
                                 style: TextStyle(
                                   color: AppColors.white,
                                   fontSize: 12,
