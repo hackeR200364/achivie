@@ -1,18 +1,89 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:achivie/models/categories_models.dart';
+import 'package:achivie/models/hashtags_model.dart';
 import 'package:achivie/screens/sign_screen.dart';
+import 'package:achivie/services/keys.dart';
 import 'package:achivie/styles.dart';
+import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
+import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils/snackbar_utils.dart';
 import '../providers/app_providers.dart';
+import '../services/shared_preferences.dart';
 import '../widgets/email_us_screen_widgets.dart';
+
+class RestrictedTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Remove any characters that are not alphabetic letters
+    final formattedText = newValue.text.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+
+    // Return the formatted text
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
+    );
+  }
+}
+
+class LocationTextInputFormatter extends TextInputFormatter {
+  final RegExp _allowedRegex = RegExp(r'^[a-zA-Z,]*$');
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final formattedText = newValue.text.replaceAll(RegExp(r'[^a-zA-Z,]'), '');
+    final words = formattedText.split(',');
+    final limitedWords = words.take(3);
+    final limitedText = limitedWords.join(',');
+
+    return TextEditingValue(
+      text: limitedText,
+      selection: newValue.selection.copyWith(
+        baseOffset: limitedText.length,
+        extentOffset: limitedText.length,
+      ),
+    );
+  }
+}
+
+class SingleWordTextInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Remove any whitespace from the beginning or end of the input
+    final trimmedValue = newValue.text.trim();
+
+    // Check if the input contains any whitespace
+    final hasWhitespace = trimmedValue.contains(RegExp(r'\s'));
+
+    if (hasWhitespace) {
+      // If input contains whitespace, replace it with an empty string
+      final formattedText = trimmedValue.replaceAll(RegExp(r'\s'), '');
+      return TextEditingValue(
+        text: formattedText,
+        selection: TextSelection.collapsed(offset: formattedText.length),
+      );
+    }
+
+    // Return the original value if there are no changes needed
+    return newValue;
+  }
+}
 
 class ReportUploadScreen extends StatefulWidget {
   const ReportUploadScreen({Key? key}) : super(key: key);
@@ -22,7 +93,10 @@ class ReportUploadScreen extends StatefulWidget {
 }
 
 class _ReportUploadScreenState extends State<ReportUploadScreen> {
-  late TextEditingController _reportNameController,
+  int pageCount = 1, limitCount = 10;
+
+  late TextEditingController _reportCatController,
+      _reportNameController,
       _reportDesController,
       _reportLocationController,
       _reportDateController;
@@ -33,14 +107,20 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
       locationTapped = false,
       headLineTapped = false,
       desTapped = false,
-      isCustomDate = false;
+      isCustomDate = false,
+      isCatTapped = false,
+      desHashtagDetect = false,
+      nameHashtagDetect = false;
 
-  DateTime? dateTime;
+  // DateTime? dateTime;
   DateTime? newDate;
   TimeOfDay? newTime;
+  List<Category> categories = [];
+  List<String> hashtagsLocal = [];
 
   @override
   void initState() {
+    _reportCatController = TextEditingController();
     _reportNameController = TextEditingController();
     _reportDesController = TextEditingController();
     _reportLocationController = TextEditingController();
@@ -52,12 +132,74 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
 
   @override
   void dispose() {
+    _reportCatController.dispose();
     _reportNameController.dispose();
     _reportDesController.dispose();
     _reportLocationController.dispose();
     _reportDateController.dispose();
     super.dispose();
   }
+
+  Future<List<Category>> fetchCategories(String query) async {
+    String token = await StorageServices.getUsrToken();
+
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/categories?page=$pageCount&limit=$limitCount"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final blocAllCategories = blocAllCategoriesFromJson(response.body);
+      if (blocAllCategories.success) {
+        if (query.isNotEmpty) {
+          return blocAllCategories.categories
+              .where((item) => item.reportCat.startsWith(query))
+              .toList();
+        } else {
+          return blocAllCategories.categories;
+        }
+      } else {
+        throw Exception('Failed to fetch hashtags');
+      }
+    } else {
+      throw Exception('Failed to fetch hashtags');
+    }
+  }
+
+  Future<List<String>> fetchHashtags(String query) async {
+    String token = await StorageServices.getUsrToken();
+
+    var uri = Uri.parse(
+        "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(query)}&page=$pageCount&limit=$limitCount");
+
+    http.Response response = await http.get(
+      uri,
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Hashtags hashtags = hashtagsFromJson(response.body);
+      if (hashtags.success) {
+        log(hashtags.message);
+        return hashtags.hashtags;
+      } else {
+        throw Exception('Failed to fetch hashtags 1');
+      }
+    } else {
+      log(response.statusCode.toString());
+      throw Exception('Failed to fetch hashtags');
+    }
+  }
+
+  String replaceText(String currentText, String newText) => currentText
+      .replaceAllMapped(RegExp(r'(#\w+)(?!.*#\w+)'), (match) => newText);
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +225,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
           borderGradient: AppColors.customGlassIconButtonBorderGradient,
           child: Center(
             child: Text(
-              "Upload New Report",
+              "Upload Report",
               style: AppColors.subHeadingTextStyle,
             ),
           ),
@@ -94,42 +236,190 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
               builder: ((allAppProvidersContext, allAppProvidersProvider,
                   allAppProvidersChild) {
                 return GestureDetector(
-                  onTap: (() {
-                    if (pickedImages.isNotEmpty &&
-                        pickedImages.length > 1 &&
-                        thumbnail != null) {
-                      if (_reportNameController.text.trim().isNotEmpty &&
-                          _reportDesController.text.trim().isNotEmpty &&
-                          _reportDateController.text.trim().isNotEmpty &&
-                          _reportLocationController.text.trim().isNotEmpty) {
-                        if (newDate != null && newTime != null) {
-                        } else {
-                          ScaffoldMessenger.of(allAppProvidersContext)
-                              .showSnackBar(
-                            AppSnackbar().customizedAppSnackbar(
-                              message: "Please select the date properly",
-                              context: allAppProvidersContext,
-                            ),
-                          );
-                        }
-                      } else {
-                        ScaffoldMessenger.of(allAppProvidersContext)
-                            .showSnackBar(
-                          AppSnackbar().customizedAppSnackbar(
-                            message: "Please enter your report details",
-                            context: allAppProvidersContext,
-                          ),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(allAppProvidersContext).showSnackBar(
-                        AppSnackbar().customizedAppSnackbar(
-                          message: "Please select your report pictures",
-                          context: allAppProvidersContext,
-                        ),
-                      );
-                    }
-                  }),
+                  onTap: (allAppProvidersProvider.isLoading)
+                      ? null
+                      // (() {
+                      //     allAppProvidersProvider.isLoadingFunc(false);
+                      //   })
+                      : (() async {
+                          if (pickedImages.isNotEmpty &&
+                              pickedImages.length > 1 &&
+                              thumbnail != null) {
+                            if (_reportNameController.text.trim().isNotEmpty &&
+                                _reportDesController.text.trim().isNotEmpty &&
+                                _reportDateController.text.trim().isNotEmpty &&
+                                _reportLocationController.text
+                                    .trim()
+                                    .isNotEmpty) {
+                              newDate = DateTime.now();
+                              newTime = TimeOfDay(
+                                hour: newDate!.hour,
+                                minute: newDate!.minute,
+                              );
+                              if (newDate != null && newTime != null) {
+                                allAppProvidersProvider.isLoadingFunc(true);
+                                FocusManager.instance.primaryFocus?.unfocus();
+
+                                if (isCustomDate) {
+                                  newDate = DateTime(
+                                    newDate!.year,
+                                    newDate!.month,
+                                    newDate!.day,
+                                    newTime!.hour,
+                                    newTime!.minute,
+                                  );
+                                } else {
+                                  newDate = DateTime.now();
+                                }
+                                var request = http.MultipartRequest(
+                                  'POST',
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/add",
+                                  ),
+                                );
+
+                                for (var i = 0; i < pickedImages.length; i++) {
+                                  var imageFile = pickedImages[i];
+                                  var stream =
+                                      http.ByteStream(imageFile.openRead());
+                                  var length = await imageFile.length();
+
+                                  var multipartImagesFile = http.MultipartFile(
+                                    'reportImages',
+                                    stream,
+                                    length,
+                                    filename: imageFile.path,
+                                  );
+
+                                  var fileStream = http.ByteStream(
+                                    thumbnail!.openRead(),
+                                  );
+
+                                  var thumbLength = await thumbnail!.length();
+
+                                  var multipartThumbFile = http.MultipartFile(
+                                    "reportTumbImage",
+                                    fileStream,
+                                    thumbLength,
+                                    filename: thumbnail!.path.split('/').last,
+                                  );
+
+                                  request.fields["reportCat"] =
+                                      _reportCatController.text.trim();
+
+                                  request.fields["reportHeadline"] =
+                                      _reportNameController.text.trim();
+
+                                  request.fields["reportDes"] =
+                                      _reportDesController.text.trim();
+
+                                  request.fields["reportLocation"] =
+                                      _reportLocationController.text.trim();
+
+                                  request.fields["reportDate"] = newDate!
+                                      .millisecondsSinceEpoch
+                                      .toString();
+
+                                  request.fields["reportTime"] = newDate!
+                                      .millisecondsSinceEpoch
+                                      .toString();
+
+                                  request.fields["reportBlocID"] =
+                                      (await StorageServices.getBlocID())!;
+
+                                  request.fields["reportUsrID"] =
+                                      (await StorageServices.getUID());
+
+                                  request.files.add(multipartImagesFile);
+                                  request.files.add(multipartThumbFile);
+
+                                  http.StreamedResponse streamedResponse =
+                                      await request.send();
+
+                                  http.Response response =
+                                      await http.Response.fromStream(
+                                          streamedResponse);
+
+                                  log(response.body.toString());
+
+                                  Map<String, dynamic> responseJson =
+                                      await json.decode(response.body);
+
+                                  if (response.statusCode == 200) {
+                                    if (responseJson["success"]) {
+                                      ScaffoldMessenger.of(
+                                              allAppProvidersContext)
+                                          .showSnackBar(
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message: responseJson["message"],
+                                          context: allAppProvidersContext,
+                                        ),
+                                      );
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+
+                                      Navigator.pop(context);
+                                    } else {
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+
+                                      ScaffoldMessenger.of(
+                                              allAppProvidersContext)
+                                          .showSnackBar(
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message: responseJson["message"],
+                                          context: allAppProvidersContext,
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    allAppProvidersProvider
+                                        .isLoadingFunc(false);
+
+                                    ScaffoldMessenger.of(allAppProvidersContext)
+                                        .showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: response.statusCode.toString(),
+                                        context: allAppProvidersContext,
+                                      ),
+                                    );
+                                  }
+                                }
+                              } else {
+                                allAppProvidersProvider.isLoadingFunc(false);
+
+                                ScaffoldMessenger.of(allAppProvidersContext)
+                                    .showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Please select the date properly",
+                                    context: allAppProvidersContext,
+                                  ),
+                                );
+                              }
+                            } else {
+                              allAppProvidersProvider.isLoadingFunc(false);
+
+                              ScaffoldMessenger.of(allAppProvidersContext)
+                                  .showSnackBar(
+                                AppSnackbar().customizedAppSnackbar(
+                                  message: "Please enter your report details",
+                                  context: allAppProvidersContext,
+                                ),
+                              );
+                            }
+                          } else {
+                            allAppProvidersProvider.isLoadingFunc(false);
+
+                            ScaffoldMessenger.of(allAppProvidersContext)
+                                .showSnackBar(
+                              AppSnackbar().customizedAppSnackbar(
+                                message: "Please select your report pictures",
+                                context: allAppProvidersContext,
+                              ),
+                            );
+                          }
+                          allAppProvidersProvider.isLoadingFunc(false);
+                        }),
                   child: Container(
                     width: MediaQuery.of(context).size.width / 3,
                     height: 41,
@@ -141,14 +431,22 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Center(
-                      child: Text(
-                        "Post",
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
+                      child: (allAppProvidersProvider.isLoading)
+                          ? Center(
+                              child: Lottie.asset(
+                                "assets/loading-animation.json",
+                                width: double.infinity,
+                                height: 50,
+                              ),
+                            )
+                          : Text(
+                              "Post",
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
                     ),
                   ),
                 );
@@ -175,7 +473,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                 }),
                 headTitle: "Upload Images",
                 suggTitle:
-                    "Don't select more than 10 pictures\nIt will decrease your rank",
+                    "Don't select more than 6 pictures\nIt will decrease your rank",
               ),
             ),
           if (pickedImages.isNotEmpty)
@@ -216,7 +514,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                           onTap: (() {}),
                           child: Container(
                             width: MediaQuery.of(context).size.width,
-                            height: 150,
+                            height: 250,
                             margin: EdgeInsets.only(
                               top: 10,
                               left: 10,
@@ -227,7 +525,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                 image: FileImage(
                                   File(thumbnail!.path),
                                 ),
-                                fit: BoxFit.fill,
+                                fit: BoxFit.cover,
                               ),
                               borderRadius: BorderRadius.circular(15),
                             ),
@@ -236,15 +534,24 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                         Positioned(
                           right: 10,
                           top: 10,
-                          child: IconButton(
-                            onPressed: (() {
-                              thumbnail = null;
-                              isThumb = false;
-                              setState(() {});
-                            }),
-                            icon: Icon(
-                              Icons.delete,
-                              size: 30,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.mainColor.withOpacity(0.7),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(15),
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: (() {
+                                thumbnail = null;
+                                isThumb = false;
+                                setState(() {});
+                              }),
+                              icon: Icon(
+                                Icons.delete,
+                                color: AppColors.white,
+                                size: 30,
+                              ),
                             ),
                           ),
                         ),
@@ -341,12 +648,26 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      "Use custom date for your report",
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 15,
-                      ),
+                    Column(
+                      children: [
+                        Text(
+                          "Use custom date for your report",
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 15,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 2,
+                        ),
+                        Text(
+                          "(Else it will take the current time)",
+                          style: TextStyle(
+                            color: AppColors.white.withOpacity(0.5),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                     Transform.scale(
                       scale: 0.8,
@@ -402,55 +723,636 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
               ),
             ),
           SliverToBoxAdapter(
-            child: AuthNameTextField(
-              controller: _reportNameController,
-              hintText: "Report Headline",
-              icon: Icons.newspaper,
-              desField: true,
-              maxWords: 50,
-            ),
-          ),
-          if (desTapped)
-            const SliverToBoxAdapter(
-              child: SuggestionContainer(
-                sugg:
-                    "Suggestion: Describe the incident. Don't use any AI generated content. It will decrease the ranking ability",
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 15,
+                right: 15,
+                bottom: 10,
+              ),
+              child: Consumer<AllAppProviders>(
+                builder: (allAppContext, allAppProvider, allAppChild) {
+                  return TextFormField(
+                    textCapitalization: TextCapitalization.sentences,
+                    onTap: (() {
+                      setState(() {
+                        isCatTapped = true;
+                      });
+                    }),
+                    decoration: InputDecoration(
+                      counterText: "",
+                      // suffixText: (widget.desField != null && widget.desField == true)
+                      //     ? "${allAppProvider.desPosition.toString()}/${widget.maxWords}"
+                      //     : "",
+                      prefixIcon: Icon(
+                        Icons.category,
+                        color: AppColors.white,
+                      ),
+                      prefixStyle: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
+                      hintText: "Category",
+                      hintStyle: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      contentPadding: const EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                      ),
+                    ),
+                    onChanged: ((text) {
+                      allAppProvider.categoryFunc(text.trim());
+                    }),
+                    onTapOutside: ((_) {
+                      setState(() {
+                        isCatTapped = false;
+                      });
+                    }),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.singleLineFormatter,
+                      SingleWordTextInputFormatter(),
+                      RestrictedTextInputFormatter(),
+                    ],
+                    controller: _reportCatController,
+                    keyboardType: TextInputType.name,
+                    cursorColor: AppColors.white,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                    ),
+                  );
+                },
               ),
             ),
+          ),
+          // if (isCatTapped && !desTapped && !headLineTapped && !locationTapped)
+          //   SliverToBoxAdapter(
+          //     child: Consumer<AllAppProviders>(
+          //       builder: (allAppContext, allAppProvider, allAppChild) {
+          //         return Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             FutureBuilder<List<Category>>(
+          //               future: fetchCategories(allAppProvider.category),
+          //               builder: (catContext, snapshot) {
+          //                 if (snapshot.connectionState ==
+          //                     ConnectionState.waiting) {
+          //                   return const Center(
+          //                     child: CircularProgressIndicator(
+          //                       color: AppColors.white,
+          //                     ),
+          //                   );
+          //                 } else if (snapshot.hasError) {
+          //                   return Text('Error: ${snapshot.error}');
+          //                 } else if (snapshot.hasData) {
+          //                   return Column(
+          //                     crossAxisAlignment: CrossAxisAlignment.start,
+          //                     children: [
+          //                       if (snapshot.data!.length != 0)
+          //                         Padding(
+          //                           padding: const EdgeInsets.only(left: 23),
+          //                           child: Text(
+          //                             "Categories",
+          //                             style: TextStyle(
+          //                               color: AppColors.white.withOpacity(0.5),
+          //                             ),
+          //                           ),
+          //                         ),
+          //                       AnimatedContainer(
+          //                         width: MediaQuery.of(context).size.width,
+          //                         height: snapshot.data!.length * 40,
+          //                         margin: EdgeInsets.only(
+          //                           left: 15,
+          //                           right: 15,
+          //                           top: 5,
+          //                         ),
+          //                         duration: Duration(
+          //                           milliseconds: 600,
+          //                         ),
+          //                         child: ListView.separated(
+          //                           itemBuilder:
+          //                               (catListContext, catListIndex) {
+          //                             return GestureDetector(
+          //                               onTap: (() {
+          //                                 log(snapshot
+          //                                     .data![catListIndex].reportCat);
+          //                                 _reportCatController.text = snapshot
+          //                                     .data![catListIndex].reportCat;
+          //                                 setState(() {});
+          //                               }),
+          //                               child: Container(
+          //                                 margin: const EdgeInsets.only(
+          //                                   left: 10,
+          //                                   right: 10,
+          //                                 ),
+          //                                 padding: EdgeInsets.symmetric(
+          //                                   horizontal: 10,
+          //                                 ),
+          //                                 decoration: BoxDecoration(
+          //                                   color: AppColors.backgroundColour
+          //                                       .withOpacity(0.4),
+          //                                   borderRadius:
+          //                                       BorderRadius.circular(15),
+          //                                 ),
+          //                                 width: MediaQuery.of(catListContext)
+          //                                     .size
+          //                                     .width,
+          //                                 height: 40,
+          //                                 child: Column(
+          //                                   mainAxisAlignment:
+          //                                       MainAxisAlignment.center,
+          //                                   crossAxisAlignment:
+          //                                       CrossAxisAlignment.start,
+          //                                   children: [
+          //                                     Text(
+          //                                       snapshot.data![catListIndex]
+          //                                           .reportCat,
+          //                                       style: TextStyle(
+          //                                         color: AppColors.white
+          //                                             .withOpacity(0.8),
+          //                                       ),
+          //                                     ),
+          //                                   ],
+          //                                 ),
+          //                               ),
+          //                             );
+          //                           },
+          //                           separatorBuilder:
+          //                               (BuildContext context, int index) {
+          //                             return SizedBox(
+          //                               width:
+          //                                   MediaQuery.of(context).size.width,
+          //                               height: 1.5,
+          //                             );
+          //                           },
+          //                           itemCount: snapshot.data!.length,
+          //                         ),
+          //                       ),
+          //                       if (snapshot.data!.length != 0)
+          //                         SizedBox(
+          //                           height: 2,
+          //                         ),
+          //                       if (snapshot.data!.length != 0)
+          //                         Center(
+          //                           child: Text(
+          //                             "If you cannot found proper category, just type it",
+          //                             style: TextStyle(
+          //                               color: AppColors.white.withOpacity(0.5),
+          //                             ),
+          //                           ),
+          //                         ),
+          //                       if (snapshot.data!.length == 0)
+          //                         Center(
+          //                           child: Text(
+          //                             "There are no categories according to your report category\nIf your are confident about it just type it",
+          //                             textAlign: TextAlign.center,
+          //                             style: TextStyle(
+          //                               color: AppColors.white.withOpacity(0.5),
+          //                             ),
+          //                           ),
+          //                         ),
+          //                     ],
+          //                   );
+          //                 } else {
+          //                   return Container();
+          //                 }
+          //               },
+          //             ),
+          //           ],
+          //         );
+          //       },
+          //     ),
+          //   ),
           SliverToBoxAdapter(
-            child: AuthNameTextField(
-              controller: _reportDesController,
-              hintText: "Report Description",
-              icon: Icons.description,
-              desField: true,
-              maxWords: 1000,
-              maxLines: 5,
-              onTap: (() {
-                setState(() {
-                  desTapped = true;
-                });
-                Timer(
-                  const Duration(seconds: 7),
-                  (() {
-                    setState(() {
-                      desTapped = false;
-                    });
-                  }),
+            child: Consumer<AllAppProviders>(
+              builder: (allAppContext, allAppProvider, allAppChild) {
+                return Container(
+                  padding: const EdgeInsets.only(
+                    top: 20,
+                    left: 15,
+                    right: 15,
+                    bottom: 10,
+                  ),
+                  child: DetectableTextField(
+                    textCapitalization: TextCapitalization.sentences,
+                    detectionRegExp: detectionRegExp()!,
+                    controller: _reportNameController,
+                    keyboardType: TextInputType.multiline,
+                    basicStyle: TextStyle(
+                      color: AppColors.white,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: "",
+                      suffixText: "",
+                      prefixIcon: Icon(
+                        Icons.newspaper,
+                        color: AppColors.white,
+                      ),
+                      prefixStyle: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
+                      hintText: "Headline",
+                      hintStyle: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      contentPadding: const EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                        top: 10,
+                        bottom: 10,
+                      ),
+                    ),
+                    decoratedStyle: TextStyle(
+                      color: AppColors.backgroundColour,
+                    ),
+                    maxLines: 2,
+                    minLines: 1,
+                    onDetectionTyped: ((text) async {
+                      log(text);
+                      nameHashtagDetect = true;
+                      // hashtags = await fetchHashtags(text);
+                      String token = await StorageServices.getUsrToken();
+
+                      var uri = Uri.parse(
+                          "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(text)}&page=$pageCount&limit=$limitCount");
+
+                      http.Response response = await http.get(
+                        uri,
+                        headers: {
+                          'content-Type': 'application/json',
+                          'authorization': 'Bearer $token',
+                        },
+                      );
+
+                      if (response.statusCode == 200) {
+                        log(response.body.toString());
+                        if (jsonDecode(response.body)["success"]) {
+                          Hashtags hashtags = hashtagsFromJson(response.body);
+
+                          log(hashtags.message);
+                          hashtagsLocal = hashtags.hashtags;
+                        }
+                      }
+                      setState(() {});
+                    }),
+                    onDetectionFinished: (() {
+                      nameHashtagDetect = false;
+                      hashtagsLocal.clear();
+                      setState(() {});
+                    }),
+                  ),
                 );
-              }),
+              },
             ),
           ),
-          if (locationTapped)
-            const SliverToBoxAdapter(
-              child: SuggestionContainer(
-                sugg:
-                    "Suggestion: Write your location like in this format, Nearby Place, Street, Place, State, PIN",
-              ),
+          // if (nameHashtagDetect)
+          //   SliverToBoxAdapter(
+          //     child: Consumer<AllAppProviders>(
+          //       builder: (allAppContext, allAppProvider, allAppChild) {
+          //         return Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             if (hashtagsLocal.isNotEmpty)
+          //               Padding(
+          //                 padding: const EdgeInsets.only(left: 23),
+          //                 child: Text(
+          //                   "Hashtags",
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //             AnimatedContainer(
+          //               width: MediaQuery.of(context).size.width,
+          //               height: hashtagsLocal.length * 40,
+          //               margin: EdgeInsets.only(
+          //                 left: 15,
+          //                 right: 15,
+          //                 top: 5,
+          //               ),
+          //               duration: Duration(
+          //                 milliseconds: 600,
+          //               ),
+          //               child: ListView.separated(
+          //                 itemBuilder: (hashtagListContext, hashtagListIndex) {
+          //                   return GestureDetector(
+          //                     onTap: (() {
+          //                       _reportNameController.text =
+          //                           _reportNameController.text +
+          //                               hashtagsLocal[hashtagListIndex];
+          //                     }),
+          //                     child: Container(
+          //                       margin: const EdgeInsets.only(
+          //                         left: 10,
+          //                         right: 10,
+          //                       ),
+          //                       padding: EdgeInsets.symmetric(horizontal: 10),
+          //                       decoration: BoxDecoration(
+          //                         color: AppColors.backgroundColour
+          //                             .withOpacity(0.4),
+          //                         borderRadius: BorderRadius.circular(15),
+          //                       ),
+          //                       width: MediaQuery.of(hashtagListContext)
+          //                           .size
+          //                           .width,
+          //                       height: 40,
+          //                       child: Column(
+          //                         mainAxisAlignment: MainAxisAlignment.center,
+          //                         crossAxisAlignment: CrossAxisAlignment.start,
+          //                         children: [
+          //                           Text(
+          //                             hashtagsLocal[hashtagListIndex],
+          //                             style: TextStyle(
+          //                               color: AppColors.white.withOpacity(0.8),
+          //                             ),
+          //                           ),
+          //                         ],
+          //                       ),
+          //                     ),
+          //                   );
+          //                 },
+          //                 separatorBuilder: (BuildContext context, int index) {
+          //                   return SizedBox(
+          //                     width: MediaQuery.of(context).size.width,
+          //                     height: 1.5,
+          //                   );
+          //                 },
+          //                 itemCount: hashtagsLocal.length,
+          //               ),
+          //             ),
+          //             if (hashtagsLocal.isNotEmpty)
+          //               SizedBox(
+          //                 height: 2,
+          //               ),
+          //             if (hashtagsLocal.isNotEmpty)
+          //               Center(
+          //                 child: Text(
+          //                   "If you cannot found proper category, just type it",
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //             if (hashtagsLocal.isEmpty)
+          //               Center(
+          //                 child: Text(
+          //                   "You can add few hashtag in headline",
+          //                   textAlign: TextAlign.center,
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //           ],
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // if (desTapped)
+          //   const SliverToBoxAdapter(
+          //     child: SuggestionContainer(
+          //       sugg:
+          //           "Suggestion: Describe the incident. Don't use any AI generated content. It will decrease the ranking ability",
+          //     ),
+          //   ),
+          SliverToBoxAdapter(
+            child: Consumer<AllAppProviders>(
+              builder: (allAppContext, allAppProvider, allAppChild) {
+                return Container(
+                  padding: const EdgeInsets.only(
+                    top: 20,
+                    left: 15,
+                    right: 15,
+                    bottom: 10,
+                  ),
+                  child: DetectableTextField(
+                    textCapitalization: TextCapitalization.sentences,
+                    detectionRegExp: detectionRegExp(atSign: false)!,
+                    controller: _reportDesController,
+                    keyboardType: TextInputType.multiline,
+                    basicStyle: TextStyle(
+                      color: AppColors.white,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: "",
+                      suffixText: "",
+                      prefixIcon: Icon(
+                        Icons.description,
+                        color: AppColors.white,
+                      ),
+                      prefixStyle: const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
+                      hintText: "Description",
+                      hintStyle: TextStyle(
+                        color: AppColors.white.withOpacity(0.5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.white,
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          width: 1,
+                          color: AppColors.white,
+                        ),
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      contentPadding: const EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                        top: 10,
+                        bottom: 10,
+                      ),
+                    ),
+                    decoratedStyle: TextStyle(
+                      color: AppColors.backgroundColour,
+                    ),
+                    maxLines: 15,
+                    minLines: 1,
+                    maxLength: 1000,
+                    onDetectionTyped: ((text) async {
+                      if (text.contains('#')) {
+                        log(text);
+                        desHashtagDetect = true;
+                        hashtagsLocal = await fetchHashtags(text);
+                        setState(() {});
+                      }
+                    }),
+                    onDetectionFinished: (() {
+                      desHashtagDetect = false;
+
+                      setState(() {});
+                    }),
+                  ),
+                );
+              },
             ),
+          ),
+
+          // if (desHashtagDetect)
+          //   SliverToBoxAdapter(
+          //     child: Consumer<AllAppProviders>(
+          //       builder: (allAppContext, allAppProvider, allAppChild) {
+          //         return Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             if (hashtagsLocal.isNotEmpty)
+          //               Padding(
+          //                 padding: const EdgeInsets.only(left: 23),
+          //                 child: Text(
+          //                   "Hashtags",
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //             AnimatedContainer(
+          //               width: MediaQuery.of(context).size.width,
+          //               height: hashtagsLocal.length * 40,
+          //               margin: EdgeInsets.only(
+          //                 left: 15,
+          //                 right: 15,
+          //                 top: 5,
+          //               ),
+          //               duration: Duration(
+          //                 milliseconds: 600,
+          //               ),
+          //               child: ListView.separated(
+          //                 itemBuilder: (hashtagListContext, hashtagListIndex) {
+          //                   return Container(
+          //                     margin: const EdgeInsets.only(
+          //                       left: 10,
+          //                       right: 10,
+          //                     ),
+          //                     padding: EdgeInsets.symmetric(horizontal: 10),
+          //                     decoration: BoxDecoration(
+          //                       color:
+          //                           AppColors.backgroundColour.withOpacity(0.4),
+          //                       borderRadius: BorderRadius.circular(15),
+          //                     ),
+          //                     width:
+          //                         MediaQuery.of(hashtagListContext).size.width,
+          //                     height: 40,
+          //                     child: Column(
+          //                       mainAxisAlignment: MainAxisAlignment.center,
+          //                       crossAxisAlignment: CrossAxisAlignment.start,
+          //                       children: [
+          //                         Text(
+          //                           hashtagsLocal[hashtagListIndex],
+          //                           style: TextStyle(
+          //                             color: AppColors.white.withOpacity(0.8),
+          //                           ),
+          //                         ),
+          //                       ],
+          //                     ),
+          //                   );
+          //                 },
+          //                 separatorBuilder: (BuildContext context, int index) {
+          //                   return SizedBox(
+          //                     width: MediaQuery.of(context).size.width,
+          //                     height: 1.5,
+          //                   );
+          //                 },
+          //                 itemCount: hashtagsLocal.length,
+          //               ),
+          //             ),
+          //             if (hashtagsLocal.isNotEmpty)
+          //               SizedBox(
+          //                 height: 2,
+          //               ),
+          //             if (hashtagsLocal.isNotEmpty)
+          //               Center(
+          //                 child: Text(
+          //                   "If you cannot found proper category, just type it",
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //             if (hashtagsLocal.isEmpty)
+          //               Center(
+          //                 child: Text(
+          //                   "There are no categories according to your report category\nIf your are confident about it just type it",
+          //                   textAlign: TextAlign.center,
+          //                   style: TextStyle(
+          //                     color: AppColors.white.withOpacity(0.5),
+          //                   ),
+          //                 ),
+          //               ),
+          //           ],
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // if (locationTapped)
+          //   const SliverToBoxAdapter(
+          //     child: SuggestionContainer(
+          //       sugg:
+          //           "Suggestion: Write your location like in this format, Nearby Place, Street, Place, State, PIN",
+          //     ),
+          //   ),
           SliverToBoxAdapter(
             child: AuthNameTextField(
+              // inputFormatter: [
+              //   LocationTextInputFormatter(),
+              // ],
               controller: _reportLocationController,
-              hintText: "Report location",
+              hintText: "location",
               icon: Icons.location_on,
               onTap: (() {
                 setState(() {

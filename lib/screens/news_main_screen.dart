@@ -121,53 +121,60 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: AnimatedContainer(
         duration: Duration(
-          milliseconds: 100,
+          milliseconds: 50,
         ),
         height: 50,
         width: (isDownwards) ? 50 : 150,
+        decoration: BoxDecoration(
+          color: AppColors.backgroundColour,
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: (isDownwards)
-            ? FloatingActionButton(
-                heroTag: "fab",
-                onPressed: (() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (c0ntextNext) => ReportUploadScreen(),
+            ? Center(
+                child: IconButton(
+                  icon: Center(
+                    child: const Icon(
+                      Icons.add,
+                      size: 30,
+                      color: AppColors.white,
                     ),
-                  );
-                }),
-                isExtended: true,
-                clipBehavior: Clip.hardEdge,
-                backgroundColor: AppColors.backgroundColour,
-                enableFeedback: true,
-                child: const Center(
-                  child: Icon(
-                    Icons.add,
-                    color: AppColors.white,
-                    size: 30,
                   ),
+                  onPressed: (() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (c0ntextNext) => ReportUploadScreen(),
+                      ),
+                    );
+                  }),
                 ),
               )
-            : FloatingActionButton.extended(
-                heroTag: "fab",
-                onPressed: (() {
+            : GestureDetector(
+                onTap: (() {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (c0ntextNext) => ReportUploadScreen(),
+                      builder: (contextNext) => ReportUploadScreen(),
                     ),
                   );
                 }),
-                enableFeedback: true,
-                clipBehavior: Clip.hardEdge,
-                backgroundColor: AppColors.backgroundColour,
-                label: Text(
-                  "Add Reports",
-                ),
-                icon: Icon(
-                  Icons.add,
-                  color: AppColors.white,
-                  size: 30,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(
+                      Icons.add,
+                      size: 30,
+                      color: AppColors.white,
+                    ),
+                    Text(
+                      "Add reports",
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
+                  ],
                 ),
               ),
       ),

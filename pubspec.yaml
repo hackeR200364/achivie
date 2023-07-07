@@ -90,6 +90,7 @@ dependencies:
   geolocator:
   geocoding:
   mobile_number:
+  detectable_text_field:
 #  rename: any
 #  pinput:
 
