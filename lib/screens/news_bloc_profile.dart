@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:achivie/models/bloc_all_reports_model.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/services/keys.dart';
 import 'package:achivie/services/shared_preferences.dart';
@@ -40,7 +41,9 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
       topItemIndex = 0,
       listLen = 100,
       newsSelectedCategoryIndex = 0,
-      likeCount = 9999;
+      likeCount = 9999,
+      pageCount = 1,
+      limitCount = 5;
 
   bool _isScrollingDown = false,
       followed = false,
@@ -71,7 +74,8 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
   ];
   String newsDes =
       "Crypto investors should be prepared to lose all their money, BOE governor says sdfbkd sjfbd shbcshb ckxc mzxcnidush yeihewjhfjdsk fjsdnkcv jdsfjkdsf iusdfhjsdff";
-  Map<String, dynamic>? blocDetails;
+  Map<String, dynamic>? blocDetails, blocAllReportsError;
+  BlocAllReports? blocAllReports;
 
   @override
   void initState() {
@@ -106,60 +110,12 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
   //   return index;
   // }
 
-  void getUsrDetails() async {
-    // widget.hasBloc = false;
-    isLoading = true;
-    setState(() {});
-    if (widget.hasBloc) {
-      uid = await StorageServices.getUID();
-      blocID = (await StorageServices.getBlocID())!;
-      token = await StorageServices.getUsrToken();
-
-      log(token);
-
-      http.Response response = await http.get(
-        Uri.parse("${Keys.apiReportsBaseUrl}/bloc/details/$blocID/$uid/$uid"),
-        headers: {
-          'content-Type': 'application/json',
-          'authorization': 'Bearer $token',
-        },
-      );
-
-      log(response.statusCode.toString());
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseJson = await json.decode(response.body);
-
-        if (responseJson["success"]) {
-          blocDetails = responseJson;
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            AppSnackbar().customizedAppSnackbar(
-              message: responseJson[Keys.message],
-              context: context,
-            ),
-          );
-        }
-        // log(responseJson.toString());
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          AppSnackbar().customizedAppSnackbar(
-            message: "Something went wrong",
-            context: context,
-          ),
-        );
-      }
-      isLoading = false;
-      setState(() {});
-      // log(usrProfilePic);
-    } else {
-      uid = await StorageServices.getUID();
-      usrDes = await StorageServices.getUsrDescription();
-      newsSelectedCategoryIndex = 1;
-      setState(() {});
-    }
-  }
-
-  Future<void> refresh() async {
+  Future<void> getBlocDetails(
+    String blocID,
+    String uid,
+    String token,
+  ) async {
+    log(token);
     http.Response response = await http.get(
       Uri.parse("${Keys.apiReportsBaseUrl}/bloc/details/$blocID/$uid/$uid"),
       headers: {
@@ -168,12 +124,13 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
       },
     );
 
-    log(response.statusCode.toString());
+    // log(response.statusCode.toString());
     if (response.statusCode == 200) {
       Map<String, dynamic> responseJson = await json.decode(response.body);
 
       if (responseJson["success"]) {
         blocDetails = responseJson;
+        setState(() {});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           AppSnackbar().customizedAppSnackbar(
@@ -191,15 +148,72 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
         ),
       );
     }
+  }
 
+  Future<void> getReports(
+    String blocID,
+    String uid,
+    String token,
+    int pageCount,
+    int limitCount,
+  ) async {
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/reports/bloc/all/$blocID/$uid?page=$pageCount&limit=$limitCount"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      blocAllReports = blocAllReportsFromJson(response.body);
+      if (blocAllReports!.success) {
+        setState(() {});
+      } else {
+        blocAllReportsError = await json.decode(response.body);
+        setState(() {});
+      }
+    }
+  }
+
+  void getUsrDetails() async {
+    // widget.hasBloc = false;
+    isLoading = true;
     setState(() {});
+    if (widget.hasBloc) {
+      uid = await StorageServices.getUID();
+      blocID = (await StorageServices.getBlocID())!;
+      token = await StorageServices.getUsrToken();
+
+      // log(token);
+      await getBlocDetails(blocID, uid, token);
+      await getReports(blocID, uid, token, pageCount, limitCount);
+
+      isLoading = false;
+      setState(() {});
+      // log(usrProfilePic);
+    } else {
+      uid = await StorageServices.getUID();
+      usrDes = await StorageServices.getUsrDescription();
+      newsSelectedCategoryIndex = 1;
+      setState(() {});
+    }
+  }
+
+  Future<void> refresh() async {
+    await getBlocDetails(blocID, uid, token);
+    await getReports(blocID, uid, token, pageCount, limitCount);
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: refresh,
-      child: (widget.hasBloc && blocDetails != null) || (!widget.hasBloc)
+      child: (widget.hasBloc &&
+                  blocDetails != null &&
+                  blocAllReports != null) ||
+              (!widget.hasBloc)
           ? CustomScrollView(
               controller: _pageScrollController,
               slivers: [
@@ -323,6 +337,7 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                 ),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
+                    childCount: blocAllReports!.reports.length,
                     (context, index) => GestureDetector(
                       onTap: (() {
                         Navigator.push(
@@ -377,13 +392,17 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                               const SizedBox(
                                 height: 25,
                               ),
-                            const ReportDetailsColumn(
-                              category: "Finance",
+                            ReportDetailsColumn(
+                              category:
+                                  blocAllReports!.reports[index].reportCat,
                               reportHeading:
-                                  "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                              reportUploadTime: "Monday, 26 September 2022",
-                              reportThumbPic:
-                                  "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
+                                  blocAllReports!.reports[index].reportHeadline,
+                              reportUploadTime:
+                                  "${DateFormat('EEEE').format(blocAllReports!.reports[index].reportUploadTime)}, ${blocAllReports!.reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(blocAllReports!.reports[index].reportUploadTime)} ${blocAllReports!.reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                              reportTime:
+                                  "${blocAllReports!.reports[index].reportTime}, ${blocAllReports!.reports[index].reportDate}",
+                              reportThumbPic: blocAllReports!
+                                  .reports[index].reportTumbImage,
                             ),
                             const SizedBox(
                               height: 25,
@@ -400,7 +419,8 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                                         MainAxisAlignment.spaceEvenly,
                                     children: [
                                       ReportLikeBtn(
-                                        likeCount: likeCount,
+                                        likeCount: blocAllReports!
+                                            .reports[index].reportLikes,
                                         onTap: ((liked) async {
                                           log(liked.toString());
                                           return false;
@@ -411,7 +431,8 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                                       ),
                                       ReactBtn(
                                         head: NumberFormat.compact()
-                                            .format(10000000)
+                                            .format(blocAllReports!
+                                                .reports[index].reportComments)
                                             .toString(),
                                         icon: Icons.comment_outlined,
                                         onPressed: (() {
