@@ -66,7 +66,7 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (notificationContext) => const SearchScreen(),
+                        builder: (notificationContext) => SearchScreen(),
                       ),
                     );
                   }),

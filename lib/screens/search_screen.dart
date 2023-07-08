@@ -16,7 +16,13 @@ import 'news_details_screen.dart';
 import 'news_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  SearchScreen({
+    super.key,
+    this.initialIndex,
+    this.query,
+  });
+  int? initialIndex;
+  String? query;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -59,9 +65,13 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   void initState() {
-    _searchController = TextEditingController();
+    _searchController = TextEditingController(
+      text: widget.query,
+    );
+    _searchController.addListener(_onTextChanged);
     commentController = TextEditingController();
     _tabController = TabController(
+      initialIndex: widget.initialIndex ?? 0,
       length: 3,
       vsync: this,
     );
@@ -75,6 +85,15 @@ class _SearchScreenState extends State<SearchScreen>
     timer?.cancel();
 
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    // Update the value in real-time
+    String updatedValue = _searchController.text.toUpperCase();
+    _searchController.value = _searchController.value.copyWith(
+      text: updatedValue,
+      selection: TextSelection.collapsed(offset: updatedValue.length),
+    );
   }
 
   void _startTimer() {

@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:like_button/like_button.dart';
 
+import '../screens/search_screen.dart';
 import '../styles.dart';
 
 class IfHasBlocProfileDetails extends StatelessWidget {
@@ -552,13 +554,88 @@ class ReportHeadText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      head,
-      style: const TextStyle(
-        color: AppColors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 20,
-      ),
+    final hashtagRegex = RegExp(r'\#\w+');
+    final mentionRegex = RegExp(r'\@\w+');
+    final List<TextSpan> spans = [];
+
+    head.splitMapJoin(
+      hashtagRegex,
+      onMatch: (Match match) {
+        final String? matchedText = match.group(0);
+
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: TextStyle(
+              color: AppColors.backgroundColour,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (searchPageCtx) => SearchScreen(
+                      query: matchedText,
+                    ),
+                  ),
+                );
+              },
+          ),
+        );
+
+        return matchedText!;
+      },
+      onNonMatch: (String nonMatch) {
+        spans.add(
+          TextSpan(
+            text: nonMatch,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
+        return nonMatch;
+      },
+    );
+
+    head.splitMapJoin(
+      mentionRegex,
+      onMatch: (Match match) {
+        final String? matchedText = match.group(0);
+
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: TextStyle(
+              color: AppColors.mainColor2,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = (() {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (searchPageCtx) => SearchScreen(
+                      initialIndex: 1,
+                      query: matchedText!.substring(1),
+                    ),
+                  ),
+                );
+              }),
+          ),
+        );
+        return matchedText!;
+      },
+    );
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 }
