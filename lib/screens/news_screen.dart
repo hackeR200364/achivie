@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:achivie/models/all_reports_model.dart';
-import 'package:achivie/models/news_category_model.dart';
 import 'package:achivie/screens/news_details_screen.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/services/keys.dart';
@@ -41,42 +40,13 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      catPageCount = 1,
-      catLimitCount = 10,
       limitCount = 2,
-      totalPage = 0,
-      catTotalPage = 0;
+      totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
 
   bool followed = false, saved = false, loading = false;
   String newsSelectedCategory = "All";
-  List<NewsCategoryModel> newsCategory = <NewsCategoryModel>[
-    NewsCategoryModel(
-      category: "All",
-      index: 0,
-    ),
-    NewsCategoryModel(
-      category: "Health",
-      index: 1,
-    ),
-    NewsCategoryModel(
-      category: "Technology",
-      index: 2,
-    ),
-    NewsCategoryModel(
-      category: "Finance",
-      index: 3,
-    ),
-    NewsCategoryModel(
-      category: "Arts",
-      index: 4,
-    ),
-    NewsCategoryModel(
-      category: "Sports",
-      index: 5,
-    ),
-  ];
   List<Report> reports = <Report>[];
   List<Category> categoryList = [];
   String newsDes =
@@ -255,7 +225,7 @@ class _NewsScreenState extends State<NewsScreen> {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: refresh,
-      child: (loading == false)
+      child: (categoryList.isNotEmpty || reports.isNotEmpty)
           ? CustomScrollView(
               controller: _pageScrollController,
               slivers: [
@@ -557,16 +527,21 @@ class _NewsScreenState extends State<NewsScreen> {
                         );
                       } else if (pageCount < totalPage) {
                         return Center(
-                          child: CircularProgressIndicator(),
+                          child: CircularProgressIndicator(
+                            color: AppColors.backgroundColour,
+                          ),
                         );
                       }
+                      return Container();
                     },
                   ),
                 ),
               ],
             )
-          : CircularProgressIndicator(
-              color: AppColors.mainColor,
+          : const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.backgroundColour,
+              ),
             ),
     );
   }

@@ -1,40 +1,46 @@
 // To parse this JSON data, do
 //
-//     final allReports = allReportsFromJson(jsonString);
+//     final trendingReports = trendingReportsFromJson(jsonString);
 
 import 'dart:convert';
 
-AllReports allReportsFromJson(String str) =>
-    AllReports.fromJson(json.decode(str));
+TrendingReports trendingReportsFromJson(String str) =>
+    TrendingReports.fromJson(json.decode(str));
 
-String allReportsToJson(AllReports data) => json.encode(data.toJson());
+String trendingReportsToJson(TrendingReports data) =>
+    json.encode(data.toJson());
 
-class AllReports {
+class TrendingReports {
   bool success;
-  List<Report> reports;
+  String message;
   int totalPage;
+  List<TrendingReport> reports;
 
-  AllReports({
+  TrendingReports({
     required this.success,
-    required this.reports,
+    required this.message,
     required this.totalPage,
+    required this.reports,
   });
 
-  factory AllReports.fromJson(Map<String, dynamic> json) => AllReports(
+  factory TrendingReports.fromJson(Map<String, dynamic> json) =>
+      TrendingReports(
         success: json["success"],
-        reports:
-            List<Report>.from(json["reports"].map((x) => Report.fromJson(x))),
+        message: json["message"],
         totalPage: json["totalPage"],
+        reports: List<TrendingReport>.from(
+            json["reports"].map((x) => TrendingReport.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "success": success,
-        "reports": List<dynamic>.from(reports.map((x) => x.toJson())),
+        "message": message,
         "totalPage": totalPage,
+        "reports": List<dynamic>.from(reports.map((x) => x.toJson())),
       };
 }
 
-class Report {
+class TrendingReport {
   String reportId;
   // List<String> reportImages;
   String reportTumbImage;
@@ -63,11 +69,12 @@ class Report {
   String blocProfile;
   double blocLat;
   double blocLong;
-  bool? followed;
-  bool? liked;
-  bool? commented;
+  bool commented;
+  bool saved;
+  bool liked;
+  bool followed;
 
-  Report({
+  TrendingReport({
     required this.reportId,
     // required this.reportImages,
     required this.reportTumbImage,
@@ -96,12 +103,13 @@ class Report {
     required this.blocProfile,
     required this.blocLat,
     required this.blocLong,
-    this.followed,
-    this.liked,
-    this.commented,
+    required this.commented,
+    required this.saved,
+    required this.liked,
+    required this.followed,
   });
 
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
+  factory TrendingReport.fromJson(Map<String, dynamic> json) => TrendingReport(
         reportId: json["reportID"],
         // reportImages: List<String>.from(json["reportImages"].map((x) => x)),
         reportTumbImage: json["reportTumbImage"],
@@ -130,9 +138,10 @@ class Report {
         blocProfile: json["blocProfile"],
         blocLat: json["blocLat"]?.toDouble(),
         blocLong: json["blocLong"]?.toDouble(),
-        followed: json["followed"] ?? false,
-        liked: json["liked"] ?? false,
         commented: json["commented"] ?? false,
+        saved: json["saved"] ?? false,
+        liked: json["liked"] ?? false,
+        followed: json["followed"] ?? false,
       );
 
   Map<String, dynamic> toJson() => {
@@ -164,8 +173,9 @@ class Report {
         "blocProfile": blocProfile,
         "blocLat": blocLat,
         "blocLong": blocLong,
-        "followed": followed,
-        "liked": liked,
         "commented": commented,
+        "saved": saved,
+        "liked": liked,
+        "followed": followed,
       };
 }
