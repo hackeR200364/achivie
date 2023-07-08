@@ -91,6 +91,7 @@ dependencies:
   geocoding:
   mobile_number:
   detectable_text_field:
+  hidable:
 #  rename: any
 #  pinput:
 

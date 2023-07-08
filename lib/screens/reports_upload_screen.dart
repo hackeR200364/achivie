@@ -237,10 +237,11 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                   allAppProvidersChild) {
                 return GestureDetector(
                   onTap: (allAppProvidersProvider.isLoading)
-                      ? null
-                      // (() {
-                      //     allAppProvidersProvider.isLoadingFunc(false);
-                      //   })
+                      ?
+                      // null
+                      (() {
+                          allAppProvidersProvider.isLoadingFunc(false);
+                        })
                       : (() async {
                           if (pickedImages.isNotEmpty &&
                               pickedImages.length > 1 &&
@@ -271,6 +272,8 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                 } else {
                                   newDate = DateTime.now();
                                 }
+
+                                http.MultipartFile? multipartImagesFile;
                                 var request = http.MultipartRequest(
                                   'POST',
                                   Uri.parse(
@@ -278,100 +281,92 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                   ),
                                 );
 
-                                for (var i = 0; i < pickedImages.length; i++) {
-                                  var imageFile = pickedImages[i];
-                                  var stream =
-                                      http.ByteStream(imageFile.openRead());
-                                  var length = await imageFile.length();
+                                // for (var i = 0; i < pickedImages.length; i++) {
+                                //   var imageFile = pickedImages[i];
+                                //   var stream =
+                                //       http.ByteStream(imageFile.openRead());
+                                //   var length = await imageFile.length();
+                                //
+                                //   multipartImagesFile = http.MultipartFile(
+                                //     'reportImages',
+                                //     stream,
+                                //     length,
+                                //     filename: imageFile.path,
+                                //   );
+                                // }
 
-                                  var multipartImagesFile = http.MultipartFile(
-                                    'reportImages',
-                                    stream,
-                                    length,
-                                    filename: imageFile.path,
-                                  );
+                                for (var file in pickedImages) {
+                                  var multipartFile =
+                                      await http.MultipartFile.fromPath(
+                                          "reportImages", file.path);
+                                  request.files.add(multipartFile);
+                                }
 
-                                  var fileStream = http.ByteStream(
-                                    thumbnail!.openRead(),
-                                  );
+                                var fileStream = http.ByteStream(
+                                  thumbnail!.openRead(),
+                                );
 
-                                  var thumbLength = await thumbnail!.length();
+                                var thumbLength = await thumbnail!.length();
 
-                                  var multipartThumbFile = http.MultipartFile(
-                                    "reportTumbImage",
-                                    fileStream,
-                                    thumbLength,
-                                    filename: thumbnail!.path.split('/').last,
-                                  );
+                                var multipartThumbFile = http.MultipartFile(
+                                  "reportTumbImage",
+                                  fileStream,
+                                  thumbLength,
+                                  filename: thumbnail!.path.split('/').last,
+                                );
 
-                                  request.fields["reportCat"] =
-                                      _reportCatController.text.trim();
+                                request.fields["reportCat"] =
+                                    _reportCatController.text.trim();
 
-                                  request.fields["reportHeadline"] =
-                                      _reportNameController.text.trim();
+                                request.fields["reportHeadline"] =
+                                    _reportNameController.text.trim();
 
-                                  request.fields["reportDes"] =
-                                      _reportDesController.text.trim();
+                                request.fields["reportDes"] =
+                                    _reportDesController.text.trim();
 
-                                  request.fields["reportLocation"] =
-                                      _reportLocationController.text.trim();
+                                request.fields["reportLocation"] =
+                                    _reportLocationController.text.trim();
 
-                                  request.fields["reportDate"] = newDate!
-                                      .millisecondsSinceEpoch
-                                      .toString();
+                                request.fields["reportDate"] =
+                                    newDate!.millisecondsSinceEpoch.toString();
 
-                                  request.fields["reportTime"] = newDate!
-                                      .millisecondsSinceEpoch
-                                      .toString();
+                                request.fields["reportTime"] =
+                                    newDate!.millisecondsSinceEpoch.toString();
 
-                                  request.fields["reportBlocID"] =
-                                      (await StorageServices.getBlocID())!;
+                                request.fields["reportBlocID"] =
+                                    (await StorageServices.getBlocID())!;
 
-                                  request.fields["reportUsrID"] =
-                                      (await StorageServices.getUID());
+                                request.fields["reportUsrID"] =
+                                    (await StorageServices.getUID());
 
-                                  request.files.add(multipartImagesFile);
-                                  request.files.add(multipartThumbFile);
+                                // request.files.add(multipartImagesFile!);
+                                request.files.add(multipartThumbFile);
 
-                                  http.StreamedResponse streamedResponse =
-                                      await request.send();
+                                http.StreamedResponse streamedResponse =
+                                    await request.send();
 
-                                  http.Response response =
-                                      await http.Response.fromStream(
-                                          streamedResponse);
+                                http.Response response =
+                                    await http.Response.fromStream(
+                                        streamedResponse);
 
-                                  log(response.body.toString());
+                                log(response.body.toString());
 
-                                  Map<String, dynamic> responseJson =
-                                      await json.decode(response.body);
+                                Map<String, dynamic> responseJson =
+                                    await json.decode(response.body);
 
-                                  if (response.statusCode == 200) {
-                                    if (responseJson["success"]) {
-                                      ScaffoldMessenger.of(
-                                              allAppProvidersContext)
-                                          .showSnackBar(
-                                        AppSnackbar().customizedAppSnackbar(
-                                          message: responseJson["message"],
-                                          context: allAppProvidersContext,
-                                        ),
-                                      );
-                                      allAppProvidersProvider
-                                          .isLoadingFunc(false);
+                                if (response.statusCode == 200) {
+                                  if (responseJson["success"]) {
+                                    ScaffoldMessenger.of(allAppProvidersContext)
+                                        .showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: responseJson["message"],
+                                        context: allAppProvidersContext,
+                                      ),
+                                    );
+                                    allAppProvidersProvider
+                                        .isLoadingFunc(false);
 
-                                      Navigator.pop(context);
-                                    } else {
-                                      allAppProvidersProvider
-                                          .isLoadingFunc(false);
-
-                                      ScaffoldMessenger.of(
-                                              allAppProvidersContext)
-                                          .showSnackBar(
-                                        AppSnackbar().customizedAppSnackbar(
-                                          message: responseJson["message"],
-                                          context: allAppProvidersContext,
-                                        ),
-                                      );
-                                    }
+                                    Navigator.pop(context);
                                   } else {
                                     allAppProvidersProvider
                                         .isLoadingFunc(false);
@@ -379,11 +374,21 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                     ScaffoldMessenger.of(allAppProvidersContext)
                                         .showSnackBar(
                                       AppSnackbar().customizedAppSnackbar(
-                                        message: response.statusCode.toString(),
+                                        message: responseJson["message"],
                                         context: allAppProvidersContext,
                                       ),
                                     );
                                   }
+                                } else {
+                                  allAppProvidersProvider.isLoadingFunc(false);
+
+                                  ScaffoldMessenger.of(allAppProvidersContext)
+                                      .showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: response.statusCode.toString(),
+                                      context: allAppProvidersContext,
+                                    ),
+                                  );
                                 }
                               } else {
                                 allAppProvidersProvider.isLoadingFunc(false);
