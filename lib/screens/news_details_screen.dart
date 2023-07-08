@@ -67,10 +67,10 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
       Map<String, dynamic> resJson = jsonDecode(response.body);
       if (resJson["success"]) {
         reportDetails = reportDetailsFromJson(response.body);
-        log(reportDetails.toString());
+        // log(reportDetails.toString());
         dateTime = DateTime.fromMillisecondsSinceEpoch(
             int.parse(reportDetails!.details.reportTime));
-        log(dateTime.toString());
+        // log(dateTime.toString());
       } else {
         message = reportDetails!.message;
       }
