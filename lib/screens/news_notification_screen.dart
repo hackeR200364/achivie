@@ -56,7 +56,7 @@ class NewsNotificationScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (newsDetailsScreen) => NewsDetailsScreen(
-                      contentID: "",
+                      reportID: "",
                     ),
                   ),
                 );

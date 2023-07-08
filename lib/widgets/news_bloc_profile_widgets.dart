@@ -392,13 +392,15 @@ class ReportSaveBtn extends StatelessWidget {
 }
 
 class ReportLikeBtn extends StatelessWidget {
-  const ReportLikeBtn({
+  ReportLikeBtn({
     super.key,
     required this.likeCount,
     required this.onTap,
+    this.isLiked,
   });
 
   final int likeCount;
+  bool? isLiked = false;
   final Future<bool?> Function(bool)? onTap;
 
   @override
@@ -406,7 +408,7 @@ class ReportLikeBtn extends StatelessWidget {
     return LikeButton(
       onTap: onTap,
       likeCount: likeCount,
-      isLiked: true,
+      isLiked: isLiked,
       circleColor: const CircleColor(
         start: AppColors.gold,
         end: AppColors.orange,

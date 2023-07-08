@@ -119,18 +119,19 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
         ),
       ),
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: AnimatedContainer(
-        duration: Duration(
-          milliseconds: 50,
-        ),
-        height: 50,
-        width: (isDownwards) ? 50 : 150,
-        decoration: BoxDecoration(
-          color: AppColors.backgroundColour,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: (isDownwards)
-            ? Center(
+      floatingActionButton: (isDownwards)
+          ? null
+          : AnimatedContainer(
+              duration: Duration(
+                milliseconds: 100,
+              ),
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                color: AppColors.backgroundColour,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
                 child: IconButton(
                   icon: Center(
                     child: const Icon(
@@ -148,37 +149,12 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
                     );
                   }),
                 ),
-              )
-            : GestureDetector(
-                onTap: (() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (contextNext) => ReportUploadScreen(),
-                    ),
-                  );
-                }),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      Icons.add,
-                      size: 30,
-                      color: AppColors.white,
-                    ),
-                    Text(
-                      "Add reports",
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    )
-                  ],
-                ),
               ),
-      ),
-      bottomNavigationBar: Container(
+            ),
+      bottomNavigationBar: AnimatedContainer(
+        duration: Duration(
+          milliseconds: 200,
+        ),
         margin: EdgeInsets.only(
           left: 15,
           right: 15,

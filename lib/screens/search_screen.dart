@@ -291,7 +291,7 @@ class _SearchScreenState extends State<SearchScreen>
                                   MaterialPageRoute(
                                     builder: (newsDetailsScreenContext) =>
                                         const NewsDetailsScreen(
-                                      contentID: "",
+                                      reportID: "",
                                     ),
                                   ),
                                 );
@@ -658,7 +658,7 @@ class _SearchScreenState extends State<SearchScreen>
                                   MaterialPageRoute(
                                     builder: (newsDetailsScreenContext) =>
                                         const NewsDetailsScreen(
-                                      contentID: "",
+                                      reportID: "",
                                     ),
                                   ),
                                 );

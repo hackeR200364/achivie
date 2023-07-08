@@ -1,11 +1,18 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:achivie/models/report_details_model.dart';
 import 'package:achivie/screens/image_preview_screen.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../services/keys.dart';
+import '../services/shared_preferences.dart';
 import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
 import 'news_screen.dart';
@@ -13,10 +20,12 @@ import 'news_screen.dart';
 class NewsDetailsScreen extends StatefulWidget {
   const NewsDetailsScreen({
     Key? key,
-    required this.contentID,
+    required this.reportID,
+    this.reportUsrID,
+    this.usrID,
   }) : super(key: key);
 
-  final String contentID;
+  final String? reportID, reportUsrID, usrID;
 
   @override
   State<NewsDetailsScreen> createState() => _NewsDetailsScreenState();
@@ -24,328 +33,374 @@ class NewsDetailsScreen extends StatefulWidget {
 
 class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
   int likeCount = 10000;
-  bool saved = false, followed = false, commentPressed = false;
+  bool liked = false,
+      saved = false,
+      followed = false,
+      commented = false,
+      commentPressed = false,
+      loading = false;
   late TextEditingController commentController;
+  String token = "", message = "";
+  ReportDetails? reportDetails;
+  DateTime? dateTime;
 
   @override
   void initState() {
     commentController = TextEditingController();
+    getUserDetails();
     super.initState();
+  }
+
+  Future<void> refresh(String usrToken) async {
+    loading = false;
+    setState(() {});
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/report/details/${widget.reportUsrID}/${widget.reportID}/${widget.usrID}"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $usrToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> resJson = jsonDecode(response.body);
+      if (resJson["success"]) {
+        reportDetails = reportDetailsFromJson(response.body);
+        log(reportDetails.toString());
+        dateTime = DateTime.fromMillisecondsSinceEpoch(
+            int.parse(reportDetails!.details.reportTime));
+        log(dateTime.toString());
+      } else {
+        message = reportDetails!.message;
+      }
+    } else {
+      message = "${response.statusCode}: Something went wrong";
+    }
+
+    setState(() {});
+  }
+
+  void getUserDetails() async {
+    token = await StorageServices.getUsrToken();
+
+    await refresh(token);
+    // Future.delayed(
+    //   const Duration(
+    //     milliseconds: 700,
+    //   ),
+    //   (() {
+    //
+    //   }),
+    // );
+
+    // print(profileType);
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: AppColors.mainColor,
-        appBar: AppBar(
-          backgroundColor: AppColors.transparent,
-          elevation: 0,
-          leading: CustomAppBarLeading(
-            onPressed: (() {
-              Navigator.pop(context);
-              // print(isPlaying);
-            }),
-            icon: Icons.arrow_back_ios_new,
-          ),
-          title: GlassmorphicContainer(
-            width: double.infinity,
-            height: 41,
-            borderRadius: 40,
-            linearGradient: AppColors.customGlassIconButtonGradient,
-            border: 2,
-            blur: 4,
-            borderGradient: AppColors.customGlassIconButtonBorderGradient,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              // height: 41 / 2.3,
-              child: Center(
-                child: Text(
-                  "News Details",
-                  style: AppColors.headingTextStyle,
+      home: (reportDetails == null)
+          ? Scaffold(
+              backgroundColor: AppColors.mainColor,
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.backgroundColour,
                 ),
               ),
-            ),
-          ),
-        ),
-        bottomNavigationBar: Container(
-          width: MediaQuery.of(context).size.width,
-          height: 65,
-          padding: EdgeInsets.only(
-            bottom: 10,
-            top: 10,
-            left: 10,
-            right: 10,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ReportLikeBtn(
-                likeCount: likeCount,
-                onTap: ((liked) async {
-                  if (likeCount < 100000) return false;
-                }),
-              ),
-              ReactBtn(
-                head: NumberFormat.compact().format(10000000).toString(),
-                icon: Icons.comment_outlined,
-                onPressed: (() {
-                  showModalBottomSheet(
-                    backgroundColor: AppColors.mainColor,
-                    context: context,
-                    isScrollControlled: true,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
-                    builder: (commentModelContext) => CommentModalSheet(
-                      commentController: commentController,
-                      reporterProfilePic:
-                          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                      blocUID: 'Rupam Karmakar',
-                      commentTime: '12h',
-                      comment:
-                          "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                      commentModelContext: commentModelContext,
-                    ),
-                  );
-                }),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: (() {
-                    setState(() {
-                      saved = !saved;
-                    });
+            )
+          : Scaffold(
+              backgroundColor: AppColors.mainColor,
+              appBar: AppBar(
+                backgroundColor: AppColors.transparent,
+                elevation: 0,
+                leading: CustomAppBarLeading(
+                  onPressed: (() {
+                    Navigator.pop(context);
+                    // print(isPlaying);
                   }),
-                  child: AnimatedContainer(
-                    duration: Duration(milliseconds: 400),
-                    margin: EdgeInsets.only(
-                      left: 10,
-                      right: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (saved == true)
-                          ? AppColors.white.withOpacity(0.35)
-                          : AppColors.white.withOpacity(0.25),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          (saved == true)
-                              ? Icons.bookmark
-                              : Icons.bookmark_border_outlined,
-                          color: AppColors.white,
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Center(
-                          child: Text(
-                            (saved == true) ? "Saved" : "Save",
-                            style: TextStyle(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                  icon: Icons.arrow_back_ios_new,
+                ),
+                title: GlassmorphicContainer(
+                  width: double.infinity,
+                  height: 41,
+                  borderRadius: 40,
+                  linearGradient: AppColors.customGlassIconButtonGradient,
+                  border: 2,
+                  blur: 4,
+                  borderGradient: AppColors.customGlassIconButtonBorderGradient,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    // height: 41 / 2.3,
+                    child: Center(
+                      child: Text(
+                        "News Details",
+                        style: AppColors.headingTextStyle,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.only(
-              left: 15,
-              right: 15,
-              top: 10,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BlocDetailsRow(
-                  radius: 25,
-                  followers: 1000000,
-                  blocName: "Rupam Karmakar",
-                  blocProfilePic:
-                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                  followed: followed,
-                  followedOnTap: (() {}),
-                  onTap: (() {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (profileDetailsContext) =>
-                            const ReporterPublicProfile(
-                          blockUID: "",
+              bottomNavigationBar: Container(
+                width: MediaQuery.of(context).size.width,
+                height: 65,
+                padding: EdgeInsets.only(
+                  bottom: 10,
+                  top: 10,
+                  left: 10,
+                  right: 10,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ReportLikeBtn(
+                      likeCount: reportDetails!.details.reportLikes,
+                      isLiked: reportDetails!.liked,
+                      onTap: ((liked) async {
+                        // if (likeCount < 100000)
+                        return false;
+                      }),
+                    ),
+                    ReactBtn(
+                      head: NumberFormat.compact()
+                          .format(reportDetails!.details.reportComments)
+                          .toString(),
+                      icon: (reportDetails!.commented)
+                          ? Icons.comment
+                          : Icons.comment_outlined,
+                      onPressed: (() {
+                        showModalBottomSheet(
+                          backgroundColor: AppColors.mainColor,
+                          context: context,
+                          isScrollControlled: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                              topRight: Radius.circular(10),
+                            ),
+                          ),
+                          builder: (commentModelContext) => CommentModalSheet(
+                            commentController: commentController,
+                            reporterProfilePic:
+                                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                            blocID: 'Rupam Karmakar',
+                            commentTime: '12h',
+                            comment:
+                                "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                            commentModelContext: commentModelContext,
+                          ),
+                        );
+                      }),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: (() {
+                          setState(() {
+                            saved = !saved;
+                          });
+                        }),
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 400),
+                          margin: EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (reportDetails!.saved == true)
+                                ? AppColors.white.withOpacity(0.35)
+                                : AppColors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                (reportDetails!.saved == true)
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border_outlined,
+                                color: AppColors.white,
+                              ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Center(
+                                child: Text(
+                                  (reportDetails!.saved == true)
+                                      ? "Saved"
+                                      : "Save",
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  height: 24,
-                ),
-                Container(
+              ),
+              body: SingleChildScrollView(
+                child: Container(
                   padding: const EdgeInsets.only(
                     left: 15,
                     right: 15,
-                    top: 5,
-                    bottom: 5,
+                    top: 10,
                   ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: AppColors.backgroundColour,
-                    ),
-                  ),
-                  child: Text(
-                    "Finance",
-                    style: TextStyle(
-                      color: AppColors.backgroundColour,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  "Bitcoin Price and Ethereum Consolidate Despite Broader US Dollar Rally",
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  "Monday, 26 September 2022",
-                  style: TextStyle(
-                    color: AppColors.white.withOpacity(0.4),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(
-                  height: 24,
-                ),
-                Container(
-                  height: 200,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: CarouselSlider(
-                    items: [
-                      GestureDetector(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BlocDetailsRow(
+                        radius: 25,
+                        followers: reportDetails!.details.followers,
+                        blocName: reportDetails!.details.blocName,
+                        blocProfilePic: reportDetails!.details.blocProfile,
+                        followed: reportDetails!.followed,
+                        followedOnTap: (() {}),
                         onTap: (() {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (imagePreviewContext) =>
-                                  ImagePreviewScreen(
-                                imageURL:
-                                    "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
+                              builder: (profileDetailsContext) =>
+                                  const ReporterPublicProfile(
+                                blockUID: "",
                               ),
                             ),
                           );
                         }),
-                        child: Container(
-                          height: 200,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(
-                                "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
-                              ),
-                            ),
+                      ),
+                      SizedBox(
+                        height: 24,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.only(
+                          left: 15,
+                          right: 15,
+                          top: 5,
+                          bottom: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.backgroundColour,
+                          ),
+                        ),
+                        child: Text(
+                          reportDetails!.details.reportCat,
+                          style: TextStyle(
+                            color: AppColors.backgroundColour,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: (() {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (imagePreviewContext) =>
-                                  ImagePreviewScreen(
-                                imageURL:
-                                    "https://images.pexels.com/photos/16523717/pexels-photo-16523717.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-                              ),
-                            ),
-                          );
-                        }),
-                        child: Hero(
-                          tag:
-                              "https://images.pexels.com/photos/16523717/pexels-photo-16523717.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-                          child: Container(
-                            height: 200,
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                  "https://images.pexels.com/photos/16523717/pexels-photo-16523717.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        reportDetails!.details.reportHeadline,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      ReportUploadedTimeText(
+                        reportTime:
+                            "${DateFormat('EEEE').format(reportDetails!.details.reportUploadTime)}, ${reportDetails!.details.reportUploadTime.day} ${DateFormat('MMMM').format(reportDetails!.details.reportUploadTime)} ${reportDetails!.details.reportUploadTime.year}", //"Monday, 26 September 2022",
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      ReportTimeText(
+                        reportTime:
+                            "${DateFormat('EEEE').format(dateTime!)}, ${dateTime!.day} ${DateFormat('MMMM').format(dateTime!)} ${dateTime!.year}", //"Monday, 26 September 2022",,
+                      ),
+                      const SizedBox(
+                        height: 14,
+                      ),
+                      Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: CarouselSlider(
+                          items: reportDetails!.details.reportImages
+                              .map(
+                                (e) => GestureDetector(
+                                  onTap: (() {
+                                    log(reportDetails!.details.reportImages
+                                        .toString());
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (imagePreviewContext) =>
+                                            ImagePreviewScreen(
+                                          imageURL: e,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  child: Container(
+                                    height: 200,
+                                    width: MediaQuery.of(context).size.width,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(
+                                          e,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              )
+                              .toList(),
+                          options: CarouselOptions(
+                            viewportFraction: 0.85,
+                            height: 250,
+                            enlargeCenterPage: true,
+                            enableInfiniteScroll: false,
+                            // autoPlay: true,
+                            scrollPhysics: AppColors.scrollPhysics,
+                            onPageChanged: ((index, reason) {
+                              setState(() {
+                                // newsSliderIndex = index;
+                              });
+                            }),
                           ),
                         ),
+                      ),
+                      SizedBox(
+                        height: 24,
+                      ),
+                      Text(
+                        reportDetails!.details.reportDes,
+                        style: TextStyle(
+                          color: AppColors.white,
+                          height: 2,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 24,
                       ),
                     ],
-                    options: CarouselOptions(
-                      viewportFraction: 0.85,
-                      height: 250,
-                      enlargeCenterPage: true,
-                      enableInfiniteScroll: false,
-                      // autoPlay: true,
-                      scrollPhysics: AppColors.scrollPhysics,
-                      onPageChanged: ((index, reason) {
-                        setState(() {
-                          // newsSliderIndex = index;
-                        });
-                      }),
-                    ),
                   ),
                 ),
-                SizedBox(
-                  height: 24,
-                ),
-                Text(
-                  "Disclaimer: The Industry Talk section features insights by crypto industry players and is not a part of the editorial content of Cryptonews.com. Shiba Inu has dropped by 6.4% in the past 24 hours. SHIB’s 24-hour dip adds to the intense bearish pressure that has seen it lose 19% of its value over the past month. At the time of writing, SHIB was trading at \$0.00001124 Shiba Inu seems to be affected by the bearish sentiment pushing its price to lower lows. During the past 24 hours, SHIB has recorded \$433 million in trading volumes, with its market cap dropping slightly to \$6.63 billion.",
-                  style: TextStyle(
-                    color: AppColors.white,
-                    height: 2,
-                  ),
-                ),
-                SizedBox(
-                  height: 24,
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -355,7 +410,7 @@ class CommentModalSheet extends StatelessWidget {
     super.key,
     required this.commentController,
     required this.reporterProfilePic,
-    required this.blocUID,
+    required this.blocID,
     required this.commentTime,
     required this.comment,
     required this.commentModelContext,
@@ -363,7 +418,7 @@ class CommentModalSheet extends StatelessWidget {
 
   final TextEditingController commentController;
   final BuildContext commentModelContext;
-  final String reporterProfilePic, blocUID, commentTime, comment;
+  final String reporterProfilePic, blocID, commentTime, comment;
 
   @override
   Widget build(BuildContext context) {
@@ -419,7 +474,7 @@ class CommentModalSheet extends StatelessWidget {
               (context, index) => ReportCommentList(
                 commentModelContext: commentModelContext,
                 reporterProfilePic: reporterProfilePic,
-                blocUID: blocUID,
+                blocUID: blocID,
                 commentTime: commentTime,
                 comment: comment,
               ),
