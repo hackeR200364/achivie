@@ -1,46 +1,44 @@
 // To parse this JSON data, do
 //
-//     final topReports = topReportsFromJson(jsonString);
+//     final topReportsSearch = topReportsSearchFromJson(jsonString);
 
 import 'dart:convert';
 
-TopReports topReportsFromJson(String str) =>
-    TopReports.fromJson(json.decode(str));
+TopReportsSearch topReportsSearchFromJson(String str) =>
+    TopReportsSearch.fromJson(json.decode(str));
 
-String topReportsToJson(TopReports data) => json.encode(data.toJson());
+String topReportsSearchToJson(TopReportsSearch data) =>
+    json.encode(data.toJson());
 
-class TopReports {
+class TopReportsSearch {
   bool success;
-  String message;
   int totalPage;
-  List<Report> reports;
+  List<TopReportSearch> reports;
 
-  TopReports({
+  TopReportsSearch({
     required this.success,
-    required this.message,
     required this.totalPage,
     required this.reports,
   });
 
-  factory TopReports.fromJson(Map<String, dynamic> json) => TopReports(
+  factory TopReportsSearch.fromJson(Map<String, dynamic> json) =>
+      TopReportsSearch(
         success: json["success"],
-        message: json["message"],
         totalPage: json["totalPage"],
-        reports:
-            List<Report>.from(json["reports"].map((x) => Report.fromJson(x))),
+        reports: List<TopReportSearch>.from(
+            json["reports"].map((x) => TopReportSearch.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "success": success,
-        "message": message,
         "totalPage": totalPage,
         "reports": List<dynamic>.from(reports.map((x) => x.toJson())),
       };
 }
 
-class Report {
+class TopReportSearch {
   String reportId;
-  List<String> reportImages;
+  // List<String> reportImages;
   String reportTumbImage;
   String reportDate;
   String reportTime;
@@ -72,9 +70,9 @@ class Report {
   bool saved;
   bool followed;
 
-  Report({
+  TopReportSearch({
     required this.reportId,
-    required this.reportImages,
+    // required this.reportImages,
     required this.reportTumbImage,
     required this.reportDate,
     required this.reportTime,
@@ -107,9 +105,10 @@ class Report {
     required this.followed,
   });
 
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
+  factory TopReportSearch.fromJson(Map<String, dynamic> json) =>
+      TopReportSearch(
         reportId: json["reportID"],
-        reportImages: List<String>.from(json["reportImages"].map((x) => x)),
+        // reportImages: List<String>.from(json["reportImages"].map((x) => x)),
         reportTumbImage: json["reportTumbImage"],
         reportDate: json["reportDate"],
         reportTime: json["reportTime"],
@@ -144,7 +143,7 @@ class Report {
 
   Map<String, dynamic> toJson() => {
         "reportID": reportId,
-        "reportImages": List<dynamic>.from(reportImages.map((x) => x)),
+        // "reportImages": List<dynamic>.from(reportImages.map((x) => x)),
         "reportTumbImage": reportTumbImage,
         "reportDate": reportDate,
         "reportTime": reportTime,

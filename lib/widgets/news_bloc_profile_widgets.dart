@@ -594,11 +594,7 @@ class ReportHeadText extends StatelessWidget {
                           : matchedText.startsWith("@")
                               ? 1
                               : 0,
-                      query: matchedText.startsWith("#")
-                          ? matchedText
-                          : matchedText.startsWith("@")
-                              ? matchedText.substring(1)
-                              : null,
+                      query: matchedText,
                     ),
                   ),
                 );
