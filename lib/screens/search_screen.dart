@@ -61,15 +61,24 @@ class _SearchScreenState extends State<SearchScreen>
   late TextEditingController _searchController;
   late TextEditingController commentController;
   late TabController _tabController;
+  late ScrollController _pageScrollController;
   bool followed = false, saved = false, loading = false;
-  int likeCount = 1000000, _hintIndex = 0, pageCount = 1, limitCount = 10;
+  int likeCount = 1000000,
+      _hintIndex = 0,
+      pageCount = 1,
+      pageCountSearch = 1,
+      limitCount = 2,
+      totalPage = 0,
+      totalPageSearch = 0;
   Timer? timer;
   List<Report> reports = <Report>[];
   List<TopReportSearch> searchReports = <TopReportSearch>[];
-  String uid = "", token = "", query = "";
+  String uid = "", token = "";
 
   @override
   void initState() {
+    _pageScrollController = ScrollController();
+    _pageScrollController.addListener(_updateScreenOffset);
     _searchController = TextEditingController(
       text: widget.query,
     );
@@ -88,9 +97,103 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   void dispose() {
+    _pageScrollController.removeListener(_updateScreenOffset);
     _searchController.dispose();
     timer?.cancel();
     super.dispose();
+  }
+
+  void _updateScreenOffset() {
+    if (_pageScrollController.position.maxScrollExtent ==
+        _pageScrollController.offset) {
+      // if (pageCount < totalPage) {
+      //   setState(() {
+      //     fetchTopReports();
+      //   });
+      // }
+
+      if (_searchController.text.trim().isEmpty) {
+        log("top fetch");
+
+        if (pageCount < totalPage) {
+          fetchTopReports();
+        }
+      }
+      if (_searchController.text.trim().isNotEmpty) {
+        if (pageCountSearch < totalPageSearch) {
+          log("search fetch");
+          fetchTopReportsSearch();
+        }
+      }
+      // setState(() {
+      //   reports.addAll(reports);
+      // });
+    }
+    // setState(() {
+    //   topItemIndex = _getIndexInView();
+    //   screenOffset = _pageScrollController.offset;
+    //   log(screenOffset.toString());
+    // });
+  }
+
+  Future fetchTopReportsSearch() async {
+    pageCountSearch++;
+
+    String query = _searchController.text.trim();
+
+    if (query.startsWith("#")) {
+      query = Uri.encodeComponent(query);
+    }
+    setState(() {});
+
+    http.Response topSearchResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reports/top/search/$uid?page=$pageCountSearch&limit=$limitCount&q=$query",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topSearchResponse.statusCode == 200) {
+      Map<String, dynamic> topSearchResponseJson =
+          jsonDecode(topSearchResponse.body);
+      if (topSearchResponseJson["success"]) {
+        TopReportsSearch topSearchReports =
+            topReportsSearchFromJson(topSearchResponse.body);
+        searchReports.addAll(topSearchReports.reports);
+        // totalPageSearch = topSearchReports.totalPage;
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future fetchTopReports() async {
+    pageCount++;
+    log(pageCount.toString());
+    http.Response topReportsResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reports/top/$uid?page=$pageCount&limit=$limitCount",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topReportsResponse.statusCode == 200) {
+      Map<String, dynamic> topSearchResponseJson =
+          jsonDecode(topReportsResponse.body);
+      if (topSearchResponseJson["success"]) {
+        TopReports topReports = topReportsFromJson(topReportsResponse.body);
+        reports.addAll(topReports.reports);
+        // totalPage = topReports.totalPage;
+      }
+    }
+
+    setState(() {});
   }
 
   void _onTextChanged() {
@@ -139,6 +242,7 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController.clear();
     searchReports.clear();
     loading = true;
+    totalPage = 0;
     setState(() {});
 
     http.Response topResponse = await http.get(
@@ -156,6 +260,7 @@ class _SearchScreenState extends State<SearchScreen>
       if (topResponseJson["success"]) {
         TopReports topReports = topReportsFromJson(topResponse.body);
         reports = topReports.reports;
+        totalPage = topReports.totalPage;
       }
     }
 
@@ -166,7 +271,8 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Future<void> refreshTopReportsSearch(String query) async {
-    pageCount = 1;
+    pageCountSearch = 1;
+    totalPageSearch = 0;
     loading = true;
     reports.clear();
 
@@ -177,7 +283,7 @@ class _SearchScreenState extends State<SearchScreen>
 
     http.Response topSearchResponse = await http.get(
       Uri.parse(
-        "${Keys.apiReportsBaseUrl}/reports/top/search/$uid?page=$pageCount&limit=$limitCount&q=$query",
+        "${Keys.apiReportsBaseUrl}/reports/top/search/$uid?page=$pageCountSearch&limit=$limitCount&q=$query",
       ),
       headers: {
         'content-Type': 'application/json',
@@ -192,6 +298,7 @@ class _SearchScreenState extends State<SearchScreen>
         TopReportsSearch topSearchReports =
             topReportsSearchFromJson(topSearchResponse.body);
         searchReports = topSearchReports.reports;
+        totalPageSearch = topSearchReports.totalPage;
       }
     }
     loading = false;
@@ -239,6 +346,7 @@ class _SearchScreenState extends State<SearchScreen>
       // ),
       body: SafeArea(
         child: CustomScrollView(
+          // controller: _pageScrollController,
           slivers: [
             SliverAppBar(
               leading: Container(),
@@ -401,126 +509,152 @@ class _SearchScreenState extends State<SearchScreen>
                   RefreshIndicator(
                     onRefresh: refreshTopReports,
                     child: ListView.builder(
+                      controller: _pageScrollController,
                       itemCount: (_searchController.text.trim().isNotEmpty)
-                          ? searchReports.length
-                          : reports.length,
+                          ? searchReports.length + 1
+                          : reports.length + 1,
                       itemBuilder: ((topNewsContext, topNewsIndex) {
-                        // log(searchReports.length.toString());
-                        return (_searchController.text.isNotEmpty ||
-                                searchReports.isNotEmpty)
-                            ? ReportContainer(
-                                followers:
-                                    searchReports[topNewsIndex].followers,
-                                likeCount:
-                                    searchReports[topNewsIndex].reportLikes,
-                                blocName: searchReports[topNewsIndex].blocName,
-                                blocProfile:
-                                    searchReports[topNewsIndex].blocProfile,
-                                reportCat:
-                                    searchReports[topNewsIndex].reportCat,
-                                reportHeadline:
-                                    searchReports[topNewsIndex].reportHeadline,
-                                reportUploadTime:
-                                    "${DateFormat('EEEE').format(searchReports[topNewsIndex].reportUploadTime)}, ${searchReports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(searchReports[topNewsIndex].reportUploadTime)} ${searchReports[topNewsIndex].reportUploadTime.year}", //"Monday, 26 September 2022",
-                                reportTime: "${DateFormat('EEEE').format(
-                                  DateTime.fromMillisecondsSinceEpoch(
+                        // log(_searchController.text.isEmpty.toString());
+                        if ((_searchController.text.trim().isNotEmpty &&
+                                topNewsIndex < searchReports.length) ||
+                            (_searchController.text.trim().isEmpty &&
+                                topNewsIndex < reports.length)) {
+                          return (_searchController.text.isNotEmpty ||
+                                  searchReports.isNotEmpty)
+                              ? ReportContainer(
+                                  followers:
+                                      searchReports[topNewsIndex].followers,
+                                  likeCount:
+                                      searchReports[topNewsIndex].reportLikes,
+                                  blocName:
+                                      searchReports[topNewsIndex].blocName,
+                                  blocProfile:
+                                      searchReports[topNewsIndex].blocProfile,
+                                  reportCat:
+                                      searchReports[topNewsIndex].reportCat,
+                                  reportHeadline: searchReports[topNewsIndex]
+                                      .reportHeadline,
+                                  reportUploadTime:
+                                      "${DateFormat('EEEE').format(searchReports[topNewsIndex].reportUploadTime)}, ${searchReports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(searchReports[topNewsIndex].reportUploadTime)} ${searchReports[topNewsIndex].reportUploadTime.year}",
+                                  //"Monday, 26 September 2022",
+                                  reportTime: "${DateFormat('EEEE').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(searchReports[topNewsIndex]
+                                          .reportTime),
+                                    ),
+                                  )}, ${DateTime.fromMillisecondsSinceEpoch(
                                     int.parse(
                                         searchReports[topNewsIndex].reportTime),
-                                  ),
-                                )}, ${DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(
-                                      searchReports[topNewsIndex].reportTime),
-                                ).day} ${DateFormat('MMMM').format(
-                                  DateTime.fromMillisecondsSinceEpoch(
+                                  ).day} ${DateFormat('MMMM').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(searchReports[topNewsIndex]
+                                          .reportTime),
+                                    ),
+                                  )} ${DateTime.fromMillisecondsSinceEpoch(
                                     int.parse(
                                         searchReports[topNewsIndex].reportTime),
-                                  ),
-                                )} ${DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(
-                                      searchReports[topNewsIndex].reportTime),
-                                ).year}",
-                                reportThumbPic:
-                                    searchReports[topNewsIndex].reportTumbImage,
-                                commentCount: NumberFormat.compact()
-                                    .format(searchReports[topNewsIndex]
-                                        .reportComments)
-                                    .toString(),
-                                reportOnTap: (() {}),
-                                blocDetailsOnTap: (() {}),
-                                likeBtnOnTap: ((liked) async {
-                                  return true;
-                                }),
-                                commentBtnOnTap: (() {}),
-                                saveBtnOnTap: (() {}),
-                                followed: searchReports[topNewsIndex].followed,
-                                followedOnTap: (() {}),
-                                saved: searchReports[topNewsIndex].saved,
-                                liked: searchReports[topNewsIndex].liked,
-                                commented:
-                                    searchReports[topNewsIndex].commented,
-                              )
-                            : (_searchController.text.isEmpty &&
-                                    reports.isNotEmpty)
-                                ? ReportContainer(
-                                    followers: reports[topNewsIndex].followers,
-                                    likeCount:
-                                        reports[topNewsIndex].reportLikes,
-                                    blocName: reports[topNewsIndex].blocName,
-                                    blocProfile:
-                                        reports[topNewsIndex].blocProfile,
-                                    reportCat: reports[topNewsIndex].reportCat,
-                                    reportHeadline:
-                                        reports[topNewsIndex].reportHeadline,
-                                    reportUploadTime:
-                                        "${DateFormat('EEEE').format(reports[topNewsIndex].reportUploadTime)}, ${reports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(reports[topNewsIndex].reportUploadTime)} ${reports[topNewsIndex].reportUploadTime.year}", //"Monday, 26 September 2022",
-                                    reportTime: "${DateFormat('EEEE').format(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                        int.parse(
-                                            reports[topNewsIndex].reportTime),
-                                      ),
-                                    )}, ${DateTime.fromMillisecondsSinceEpoch(
-                                      int.parse(
-                                          reports[topNewsIndex].reportTime),
-                                    ).day} ${DateFormat('MMMM').format(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                        int.parse(
-                                            reports[topNewsIndex].reportTime),
-                                      ),
-                                    )} ${DateTime.fromMillisecondsSinceEpoch(
-                                      int.parse(
-                                          reports[topNewsIndex].reportTime),
-                                    ).year}",
-                                    reportThumbPic:
-                                        reports[topNewsIndex].reportTumbImage,
-                                    commentCount: NumberFormat.compact()
-                                        .format(reports[topNewsIndex]
-                                            .reportComments)
-                                        .toString(),
-                                    reportOnTap: (() {}),
-                                    blocDetailsOnTap: (() {}),
-                                    likeBtnOnTap: ((liked) async {
-                                      return true;
-                                    }),
-                                    commentBtnOnTap: (() {}),
-                                    saveBtnOnTap: (() {}),
-                                    followed: reports[topNewsIndex].followed,
-                                    followedOnTap: (() {}),
-                                    saved: reports[topNewsIndex].saved,
-                                    liked: reports[topNewsIndex].liked,
-                                    commented: reports[topNewsIndex].commented,
-                                  )
-                                : (searchReports.isEmpty &&
-                                        _searchController.text
-                                            .trim()
-                                            .isNotEmpty)
-                                    ? Text(
-                                        "No reports found",
-                                        style: TextStyle(
-                                          color:
-                                              AppColors.white.withOpacity(0.7),
+                                  ).year}",
+                                  reportThumbPic: searchReports[topNewsIndex]
+                                      .reportTumbImage,
+                                  commentCount: NumberFormat.compact()
+                                      .format(searchReports[topNewsIndex]
+                                          .reportComments)
+                                      .toString(),
+                                  reportOnTap: (() {}),
+                                  blocDetailsOnTap: (() {}),
+                                  likeBtnOnTap: ((liked) async {
+                                    return true;
+                                  }),
+                                  commentBtnOnTap: (() {}),
+                                  saveBtnOnTap: (() {}),
+                                  followed:
+                                      searchReports[topNewsIndex].followed,
+                                  followedOnTap: (() {}),
+                                  saved: searchReports[topNewsIndex].saved,
+                                  liked: searchReports[topNewsIndex].liked,
+                                  commented:
+                                      searchReports[topNewsIndex].commented,
+                                )
+                              : (_searchController.text.isEmpty &&
+                                      reports.isNotEmpty)
+                                  ? ReportContainer(
+                                      followers:
+                                          reports[topNewsIndex].followers,
+                                      likeCount:
+                                          reports[topNewsIndex].reportLikes,
+                                      blocName: reports[topNewsIndex].blocName,
+                                      blocProfile:
+                                          reports[topNewsIndex].blocProfile,
+                                      reportCat:
+                                          reports[topNewsIndex].reportCat,
+                                      reportHeadline:
+                                          reports[topNewsIndex].reportHeadline,
+                                      reportUploadTime:
+                                          "${DateFormat('EEEE').format(reports[topNewsIndex].reportUploadTime)}, ${reports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(reports[topNewsIndex].reportUploadTime)} ${reports[topNewsIndex].reportUploadTime.year}",
+                                      //"Monday, 26 September 2022",
+                                      reportTime: "${DateFormat('EEEE').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(
+                                              reports[topNewsIndex].reportTime),
                                         ),
-                                      )
-                                    : Container();
+                                      )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(
+                                            reports[topNewsIndex].reportTime),
+                                      ).day} ${DateFormat('MMMM').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(
+                                              reports[topNewsIndex].reportTime),
+                                        ),
+                                      )} ${DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(
+                                            reports[topNewsIndex].reportTime),
+                                      ).year}",
+                                      reportThumbPic:
+                                          reports[topNewsIndex].reportTumbImage,
+                                      commentCount: NumberFormat.compact()
+                                          .format(reports[topNewsIndex]
+                                              .reportComments)
+                                          .toString(),
+                                      reportOnTap: (() {}),
+                                      blocDetailsOnTap: (() {}),
+                                      likeBtnOnTap: ((liked) async {
+                                        return true;
+                                      }),
+                                      commentBtnOnTap: (() {}),
+                                      saveBtnOnTap: (() {}),
+                                      followed: reports[topNewsIndex].followed,
+                                      followedOnTap: (() {}),
+                                      saved: reports[topNewsIndex].saved,
+                                      liked: reports[topNewsIndex].liked,
+                                      commented:
+                                          reports[topNewsIndex].commented,
+                                    )
+                                  : (searchReports.isEmpty &&
+                                          _searchController.text
+                                              .trim()
+                                              .isNotEmpty)
+                                      ? Text(
+                                          "No reports found",
+                                          style: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.7),
+                                          ),
+                                        )
+                                      : Container();
+                        } else if ((_searchController.text.trim().isEmpty &&
+                                (pageCount < totalPage)) ||
+                            (_searchController.text.trim().isNotEmpty &&
+                                (pageCountSearch < totalPageSearch))) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
+                            ),
+                          );
+                        }
+                        return Container();
                       }),
                     ),
                   ),
