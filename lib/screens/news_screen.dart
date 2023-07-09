@@ -726,189 +726,47 @@ class _NewsScreenState extends State<NewsScreen> {
                       childCount: reports.length + 1,
                       (context, index) {
                         if (index < reports.length) {
-                          return Column(
-                            children: [
-                              GestureDetector(
-                                onTap: (() {
-                                  log(reports[index].reportId);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (newsDetailsScreenContext) =>
-                                          NewsDetailsScreen(
-                                        reportID: reports[index].reportId,
-                                        reportUsrID: reports[index].reportUsrId,
-                                        usrID: uid,
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                child: Container(
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                  ),
-                                  padding: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                    top: 15,
-                                    bottom: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      BlocDetailsRow(
-                                        followers: reports[index].followers,
-                                        blocName: reports[index].blocName,
-                                        blocProfilePic:
-                                            reports[index].blocProfile,
-                                        followed:
-                                            reports[index].followed ?? false,
-                                        followedOnTap: (() {}),
-                                        onTap: (() {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (profileDetailsContext) =>
-                                                      ReporterPublicProfile(
-                                                blockUID: reports[index].blocId,
-                                              ),
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      const SizedBox(
-                                        height: 25,
-                                      ),
-                                      ReportDetailsColumn(
-                                        category: reports[index].reportCat,
-                                        reportHeading:
-                                            reports[index].reportHeadline,
-                                        reportUploadTime:
-                                            "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
-                                        reportTime:
-                                            "${DateFormat('EEEE').format(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                            int.parse(
-                                                reports[index].reportTime),
-                                          ),
-                                        )}, ${DateTime.fromMillisecondsSinceEpoch(
-                                          int.parse(reports[index].reportTime),
-                                        ).day} ${DateFormat('MMMM').format(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                            int.parse(
-                                                reports[index].reportTime),
-                                          ),
-                                        )} ${DateTime.fromMillisecondsSinceEpoch(
-                                          int.parse(reports[index].reportTime),
-                                        ).year}",
-                                        reportThumbPic:
-                                            reports[index].reportTumbImage,
-                                      ),
-                                      const SizedBox(
-                                        height: 25,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 0,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                ReportLikeBtn(
-                                                  likeCount: reports[index]
-                                                      .reportLikes,
-                                                  onTap: ((liked) async {
-                                                    if (reports[index].liked!) {
-                                                    } else {}
-                                                  }),
-                                                ),
-                                                const SizedBox(
-                                                  width: 10,
-                                                ),
-                                                ReactBtn(
-                                                  head: NumberFormat.compact()
-                                                      .format(reports[index]
-                                                          .reportComments)
-                                                      .toString(),
-                                                  icon: Icons.comment_outlined,
-                                                  onPressed: (() {
-                                                    showModalBottomSheet(
-                                                      backgroundColor:
-                                                          AppColors.mainColor,
-                                                      context: context,
-                                                      isScrollControlled: true,
-                                                      shape:
-                                                          const RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius.only(
-                                                          topLeft:
-                                                              Radius.circular(
-                                                                  10),
-                                                          topRight:
-                                                              Radius.circular(
-                                                                  10),
-                                                        ),
-                                                      ),
-                                                      builder:
-                                                          (commentModelContext) =>
-                                                              CommentModalSheet(
-                                                        commentController:
-                                                            commentController,
-                                                        reporterProfilePic:
-                                                            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                                        blocID:
-                                                            'Rupam Karmakar',
-                                                        commentTime: '12h',
-                                                        comment:
-                                                            "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                                                        commentModelContext:
-                                                            commentModelContext,
-                                                      ),
-                                                    );
-                                                  }),
-                                                ),
-                                              ],
-                                            ),
-                                            ReportSaveBtn(
-                                              saved: saved,
-                                              onTap: (() {}),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                          return ReportContainer(
+                            followers: reports[index].followers,
+                            blocName: reports[index].blocName,
+                            blocProfile: reports[index].blocProfile,
+                            followed: reports[index].followed ?? false,
+                            reportCat: reports[index].reportCat,
+                            reportHeadline: reports[index].reportHeadline,
+                            reportUploadTime:
+                                "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                            reportTime: "${DateFormat('EEEE').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(reports[index].reportTime),
                               ),
-                              Container(
-                                margin: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                ),
-                                width: MediaQuery.of(context).size.width,
-                                height: 1,
-                                decoration: BoxDecoration(
-                                  color: AppColors.backgroundColour
-                                      .withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                            )}, ${DateTime.fromMillisecondsSinceEpoch(
+                              int.parse(reports[index].reportTime),
+                            ).day} ${DateFormat('MMMM').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(reports[index].reportTime),
                               ),
-                            ],
+                            )} ${DateTime.fromMillisecondsSinceEpoch(
+                              int.parse(reports[index].reportTime),
+                            ).year}",
+                            reportThumbPic: reports[index].reportTumbImage,
+                            likeCount: reports[index].reportLikes,
+                            commentCount: NumberFormat.compact()
+                                .format(reports[index].reportComments)
+                                .toString(),
+                            saved: saved,
+                            reportOnTap: (() {}),
+                            blocDetailsOnTap: (() {}),
+                            likeBtnOnTap: ((liked) async {
+                              return true;
+                            }),
+                            commentBtnOnTap: (() {}),
+                            saveBtnOnTap: (() {}),
+                            followedOnTap: (() {}),
                           );
                         } else if (pageCount < totalPage) {
-                          return Center(
+                          return const Center(
                             child: Padding(
-                              padding: const EdgeInsets.all(8.0),
+                              padding: EdgeInsets.all(8.0),
                               child: CircularProgressIndicator(
                                 color: AppColors.backgroundColour,
                               ),
@@ -1701,6 +1559,154 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class ReportContainer extends StatelessWidget {
+  const ReportContainer({
+    super.key,
+    required this.followers,
+    required this.likeCount,
+    required this.blocName,
+    required this.blocProfile,
+    required this.reportCat,
+    required this.reportHeadline,
+    required this.reportUploadTime,
+    required this.reportTime,
+    required this.reportThumbPic,
+    required this.commentCount,
+    required this.reportOnTap,
+    required this.blocDetailsOnTap,
+    required this.likeBtnOnTap,
+    required this.commentBtnOnTap,
+    required this.saveBtnOnTap,
+    required this.followed,
+    required this.followedOnTap,
+    required this.saved,
+  });
+
+  final int followers, likeCount;
+  final bool followed, saved;
+  final String blocName,
+      blocProfile,
+      reportCat,
+      reportHeadline,
+      reportUploadTime,
+      reportTime,
+      reportThumbPic,
+      commentCount;
+
+  final VoidCallback reportOnTap,
+      blocDetailsOnTap,
+      commentBtnOnTap,
+      saveBtnOnTap,
+      followedOnTap;
+
+  final Future<bool?> Function(bool)? likeBtnOnTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: reportOnTap,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            margin: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+            ),
+            padding: const EdgeInsets.only(
+              left: 10,
+              right: 10,
+              top: 15,
+              bottom: 10,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                BlocDetailsRow(
+                  followers: followers,
+                  blocName: blocName,
+                  blocProfilePic: blocProfile,
+                  followed: followed,
+                  followedOnTap: followedOnTap,
+                  onTap: blocDetailsOnTap,
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+                ReportDetailsColumn(
+                  category: reportCat,
+                  reportHeading: reportHeadline,
+                  reportUploadTime: reportUploadTime,
+                  reportTime: reportTime,
+                  reportThumbPic: reportThumbPic,
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ReportLikeBtn(
+                            likeCount: likeCount,
+                            onTap: likeBtnOnTap,
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          ReactBtn(
+                            head: commentCount,
+                            icon: Icons.comment_outlined,
+                            onPressed: commentBtnOnTap,
+                          ),
+                        ],
+                      ),
+                      ReportSaveBtn(
+                        saved: saved,
+                        onTap: saveBtnOnTap,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const ReportsDivider(),
+      ],
+    );
+  }
+}
+
+class ReportsDivider extends StatelessWidget {
+  const ReportsDivider({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: 10,
+      ),
+      width: MediaQuery.of(context).size.width,
+      height: 1,
+      decoration: BoxDecoration(
+        color: AppColors.backgroundColour.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
     );
   }
 }
