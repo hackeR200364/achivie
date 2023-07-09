@@ -1,12 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:achivie/models/all_reports_model.dart';
+import 'package:achivie/models/recent_reports_model.dart';
 import 'package:achivie/screens/news_details_screen.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
+import 'package:achivie/screens/search_screen.dart';
 import 'package:achivie/services/keys.dart';
 import 'package:achivie/styles.dart';
 import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:http/http.dart' as http;
@@ -41,7 +46,7 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 2,
+      limitCount = 10,
       totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
@@ -50,6 +55,9 @@ class _NewsScreenState extends State<NewsScreen> {
   String newsSelectedCategory = "All";
   List<Report> reports = <Report>[];
   List<Category> categoryList = [];
+  List<RecentReport> recentReportList = [];
+  late Timer timer;
+  // String timeDifference = '';
   String newsDes =
       "Crypto investors should be prepared to lose all their money, BOE governor says sdfbkd sjfbd shbcshb ckxc mzxcnidush yeihewjhfjdsk fjsdnkcv jdsfjkdsf iusdfhjsdff";
 
@@ -62,6 +70,9 @@ class _NewsScreenState extends State<NewsScreen> {
     // _pageScrollController.addListener(_updateNewsOffset);
     commentController = TextEditingController();
     getUserDetails();
+    // timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   updateTimeDifference();
+    // });
     // refresh();
     super.initState();
   }
@@ -72,9 +83,9 @@ class _NewsScreenState extends State<NewsScreen> {
     // _reportsCatController.dispose();
     _pageScrollController.dispose();
     commentController.dispose();
-    for (var ticker in _tickers) {
-      ticker.dispose();
-    }
+    // for (var ticker in _tickers) {
+    //   ticker.dispose();
+    // }
     super.dispose();
   }
 
@@ -160,26 +171,29 @@ class _NewsScreenState extends State<NewsScreen> {
 
   Future<void> refresh() async {
     pageCount = 1;
-    loading = false;
     setState(() {});
-    http.Response response = await http.get(
+
+    http.Response recentResponse = await http.get(
       Uri.parse(
-          "${Keys.apiReportsBaseUrl}/reports/all/$uid?page=$pageCount&limit=$limitCount"),
+        "${Keys.apiReportsBaseUrl}/reports/recent/$uid?page=1&limit=5",
+      ),
       headers: {
         'content-Type': 'application/json',
         'authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode == 200) {
-      final AllReports allReports = allReportsFromJson(response.body);
-      if (allReports.success) {
-        reports = allReports.reports;
-        totalPage = allReports.totalPage;
-      } else {
-        message = "No reports found";
+    if (recentResponse.statusCode == 200) {
+      Map<String, dynamic> recentsResponseJson =
+          jsonDecode(recentResponse.body);
+      if (recentsResponseJson["success"]) {
+        RecentsReports recentsReports =
+            recentsReportsFromJson(recentResponse.body);
+        recentReportList = recentsReports.reports;
       }
     }
+
+    setState(() {});
 
     http.Response catResponse = await http.get(
       Uri.parse("${Keys.apiReportsBaseUrl}/categories"),
@@ -190,15 +204,38 @@ class _NewsScreenState extends State<NewsScreen> {
     );
 
     if (catResponse.statusCode == 200) {
-      final blocAllCategories = blocAllCategoriesFromJson(catResponse.body);
-
-      if (blocAllCategories.success) {
+      Map<String, dynamic> blocAllCategoriesJson = jsonDecode(catResponse.body);
+      if (blocAllCategoriesJson["success"]) {
+        BlocAllCategories blocAllCategories =
+            blocAllCategoriesFromJson(catResponse.body);
         categoryList = blocAllCategories.categories;
       }
     }
 
-    loading = false;
     setState(() {});
+
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/reports/all/$uid?page=$pageCount&limit=$limitCount"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> allReportsJson = jsonDecode(response.body);
+      if (allReportsJson["success"]) {
+        AllReports allReports = allReportsFromJson(response.body);
+        reports = allReports.reports;
+        totalPage = allReports.totalPage;
+      } else {
+        message = "No reports found";
+      }
+    }
+
+    setState(() {});
+
     // log(message);
   }
   // void _scrollListener() {
@@ -223,84 +260,333 @@ class _NewsScreenState extends State<NewsScreen> {
   //   }
   // }
 
+  String updateTimeDifference(DateTime dateTime) {
+    final now = DateTime.now();
+    // final dateTime = DateTime.parse(time);
+    final difference = now.difference(dateTime);
+
+    if (difference.inSeconds < 60) {
+      return '${difference.inSeconds} seconds ago';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else {
+      final formatter = DateFormat.yMd().add_jm();
+      return formatter.format(dateTime);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: refresh,
-      child: (categoryList.isNotEmpty || reports.isNotEmpty)
+      child: (recentReportList.isNotEmpty ||
+              categoryList.isNotEmpty ||
+              reports.isNotEmpty)
           ? CustomScrollView(
               controller: _pageScrollController,
               slivers: [
-                SliverToBoxAdapter(
-                  child: Container(
-                    height: 230,
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      left: 10,
-                      right: 10,
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: CarouselSlider(
-                        carouselController: carouselController,
-                        items: [
-                          HomeScreenCarouselItem(
-                            newsHead:
-                                "cbsdhys csdbch isdhulighc biusryiuew iusdgtfyiubhw iufgtwebndfew usdhgcjkkjc kjhxc",
-                            newsDes: newsDes,
-                            category: "Finance",
-                            followers: 100000,
-                            blocName: "Rupam Karmakar",
-                            blocProfilePic:
-                                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                            reportPic:
-                                "https://images.unsplash.com/photo-1567769082922-a02edac05807?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80",
-                            reportDetailsOnTap: (() {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (newsDetailsScreenContext) =>
-                                      NewsDetailsScreen(
-                                    reportID: "",
-                                  ),
-                                ),
+                if (recentReportList.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: 230,
+                      width: MediaQuery.of(context).size.width,
+                      margin: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        left: 10,
+                        right: 10,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: CarouselSlider(
+                          carouselController: carouselController,
+                          items: recentReportList.map(
+                            (RecentReport e) {
+                              // updateTimeDifference(e.reportUploadTime);
+                              return HomeScreenCarouselItem(
+                                newsHead: e.reportHeadline,
+                                newsDes: e.reportDes,
+                                category: e.reportCat,
+                                followers: e.followers,
+                                blocName: e.blocName,
+                                blocProfilePic: e.blocProfile,
+                                reportPic: e.reportTumbImage,
+                                reportDetailsOnTap: (() {
+                                  log(e.reportUploadTime.toString());
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (newsDetailsScreenContext) =>
+                                          NewsDetailsScreen(
+                                        reportID: e.reportId,
+                                        reportUsrID: e.reportUsrId,
+                                        usrID: uid,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                blocDetailsProfileOnTap: (() {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (profileDetailsContext) =>
+                                          ReporterPublicProfile(
+                                        blockUID: e.blocId,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                timeDifference:
+                                    updateTimeDifference(e.reportUploadTime),
                               );
-                            }),
-                            blocDetailsProfileOnTap: (() {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (profileDetailsContext) =>
-                                      ReporterPublicProfile(
-                                    blockUID: "",
-                                  ),
-                                ),
-                              );
+                            },
+                          ).toList(),
+                          options: CarouselOptions(
+                            padEnds: false,
+                            viewportFraction: 0.94,
+                            height: 230,
+                            enlargeCenterPage: true,
+                            enableInfiniteScroll: false,
+                            // autoPlay: true,
+                            disableCenter: true,
+                            enlargeFactor: 0.25,
+                            scrollPhysics: AppColors.scrollPhysics,
+                            onPageChanged: ((index, reason) {
+                              setState(() {
+                                newsSliderIndex = index;
+                              });
                             }),
                           ),
-                        ],
-                        options: CarouselOptions(
-                          padEnds: false,
-                          viewportFraction: 0.94,
-                          height: 230,
-                          enlargeCenterPage: true,
-                          enableInfiniteScroll: false,
-                          // autoPlay: true,
-                          disableCenter: true,
-                          enlargeFactor: 0.25,
-                          scrollPhysics: AppColors.scrollPhysics,
-                          onPageChanged: ((index, reason) {
-                            setState(() {
-                              newsSliderIndex = index;
-                            });
-                          }),
                         ),
                       ),
                     ),
                   ),
-                ),
+                if (recentReportList.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Container(
+                      height: 280,
+                      width: MediaQuery.of(context).size.width,
+                      margin: const EdgeInsets.only(
+                        left: 10,
+                        right: 10,
+                        bottom: 5,
+                        top: 15,
+                      ),
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 15,
+                      ),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (recentReportCtx, recentReportIdx) {
+                          return Container(
+                            width: MediaQuery.of(context).size.width - 40,
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.backgroundColour.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(
+                                        left: 15,
+                                        right: 20,
+                                        top: 25,
+                                      ),
+                                      height: 30,
+                                      width:
+                                          MediaQuery.of(context).size.width / 4,
+                                      decoration: BoxDecoration(
+                                        // shape: shape,
+                                        borderRadius: BorderRadius.circular(10),
+                                        color:
+                                            AppColors.white.withOpacity(0.08),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      ShimmerChild(
+                                        height: 17,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                1.9,
+                                        radius: 10,
+                                      ),
+                                      SizedBox(width: 5),
+                                      Container(
+                                        height: 17,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                4,
+                                        decoration: BoxDecoration(
+                                          // shape: shape,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          color: AppColors.backgroundColour
+                                              .withOpacity(0.4),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        height: 17,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                4,
+                                        decoration: BoxDecoration(
+                                          // shape: shape,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          color: AppColors.backgroundColour
+                                              .withOpacity(0.4),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      ShimmerChild(
+                                        height: 17,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                3,
+                                        radius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: ShimmerChild(
+                                    height: 10,
+                                    width: MediaQuery.of(context).size.width,
+                                    radius: 10,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
+                                  ),
+                                  child: ShimmerChild(
+                                    height: 10,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2,
+                                    radius: 10,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 5, right: 15),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Padding(
+                                            padding: EdgeInsets.only(
+                                              left: 10,
+                                              right: 1,
+                                            ),
+                                            child: ShimmerChild(
+                                              height: 40,
+                                              width: 40,
+                                              radius: 55,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 5,
+                                          ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              ShimmerChild(
+                                                height: 15,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    3.5,
+                                                radius: 15,
+                                              ),
+                                              const SizedBox(
+                                                height: 7,
+                                              ),
+                                              ShimmerChild(
+                                                height: 10,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4.5,
+                                                radius: 15,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      ShimmerChild(
+                                        height: 15,
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                3,
+                                        radius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                        separatorBuilder: (recentReportCtx, recentReportIdx) {
+                          return SizedBox(
+                            width: 15,
+                          );
+                        },
+                        itemCount: 20,
+                      ),
+                    ),
+                  ),
                 if (categoryList.isNotEmpty)
                   SliverAppBar(
                     expandedHeight: 40,
@@ -349,12 +635,12 @@ class _NewsScreenState extends State<NewsScreen> {
                                               : AppColors.backgroundColour
                                                   .withOpacity(0.5),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: const Border.fromBorderSide(
-                                        BorderSide(
-                                          width: 0.7,
-                                          color: AppColors.white,
-                                        ),
-                                      ),
+                                      // border: const Border.fromBorderSide(
+                                      //   BorderSide(
+                                      //     width: 0.7,
+                                      //     color: AppColors.white,
+                                      //   ),
+                                      // ),
                                     ),
                                     child: Center(
                                       child: Text(
@@ -440,154 +726,192 @@ class _NewsScreenState extends State<NewsScreen> {
                       childCount: reports.length + 1,
                       (context, index) {
                         if (index < reports.length) {
-                          return GestureDetector(
-                            onTap: (() {
-                              log(reports[index].reportId);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (newsDetailsScreenContext) =>
-                                      NewsDetailsScreen(
-                                    reportID: reports[index].reportId,
-                                    reportUsrID: reports[index].reportUsrId,
-                                    usrID: uid,
+                          return Column(
+                            children: [
+                              GestureDetector(
+                                onTap: (() {
+                                  log(reports[index].reportId);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (newsDetailsScreenContext) =>
+                                          NewsDetailsScreen(
+                                        reportID: reports[index].reportId,
+                                        reportUsrID: reports[index].reportUsrId,
+                                        usrID: uid,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
                                   ),
-                                ),
-                              );
-                            }),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 10,
-                              ),
-                              padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 15,
-                                bottom: 15,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    AppColors.backgroundColour.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                children: [
-                                  BlocDetailsRow(
-                                    followers: reports[index].followers,
-                                    blocName: reports[index].blocName,
-                                    blocProfilePic: reports[index].blocProfile,
-                                    followed: reports[index].followed ?? false,
-                                    followedOnTap: (() {}),
-                                    onTap: (() {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (profileDetailsContext) =>
-                                              ReporterPublicProfile(
-                                            blockUID: reports[index].blocId,
+                                  padding: const EdgeInsets.only(
+                                    left: 10,
+                                    right: 10,
+                                    top: 15,
+                                    bottom: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      BlocDetailsRow(
+                                        followers: reports[index].followers,
+                                        blocName: reports[index].blocName,
+                                        blocProfilePic:
+                                            reports[index].blocProfile,
+                                        followed:
+                                            reports[index].followed ?? false,
+                                        followedOnTap: (() {}),
+                                        onTap: (() {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (profileDetailsContext) =>
+                                                      ReporterPublicProfile(
+                                                blockUID: reports[index].blocId,
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      const SizedBox(
+                                        height: 25,
+                                      ),
+                                      ReportDetailsColumn(
+                                        category: reports[index].reportCat,
+                                        reportHeading:
+                                            reports[index].reportHeadline,
+                                        reportUploadTime:
+                                            "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                                        reportTime:
+                                            "${DateFormat('EEEE').format(
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                            int.parse(
+                                                reports[index].reportTime),
                                           ),
+                                        )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(reports[index].reportTime),
+                                        ).day} ${DateFormat('MMMM').format(
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                            int.parse(
+                                                reports[index].reportTime),
+                                          ),
+                                        )} ${DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(reports[index].reportTime),
+                                        ).year}",
+                                        reportThumbPic:
+                                            reports[index].reportTumbImage,
+                                      ),
+                                      const SizedBox(
+                                        height: 25,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 0,
                                         ),
-                                      );
-                                    }),
-                                  ),
-                                  const SizedBox(
-                                    height: 25,
-                                  ),
-                                  ReportDetailsColumn(
-                                    category: reports[index].reportCat,
-                                    reportHeading:
-                                        reports[index].reportHeadline,
-                                    reportUploadTime:
-                                        "${DateFormat('EEEE').format(reports[index].reportUploadTime)}, ${reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(reports[index].reportUploadTime)} ${reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
-                                    reportTime:
-                                        "${reports[index].reportTime}, ${reports[index].reportDate}",
-                                    reportThumbPic:
-                                        reports[index].reportTumbImage,
-                                  ),
-                                  const SizedBox(
-                                    height: 25,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
+                                        child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            ReportLikeBtn(
-                                              likeCount:
-                                                  reports[index].reportLikes,
-                                              onTap: ((liked) async {
-                                                if (reports[index].liked!) {
-                                                } else {}
-                                              }),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                ReportLikeBtn(
+                                                  likeCount: reports[index]
+                                                      .reportLikes,
+                                                  onTap: ((liked) async {
+                                                    if (reports[index].liked!) {
+                                                    } else {}
+                                                  }),
+                                                ),
+                                                const SizedBox(
+                                                  width: 10,
+                                                ),
+                                                ReactBtn(
+                                                  head: NumberFormat.compact()
+                                                      .format(reports[index]
+                                                          .reportComments)
+                                                      .toString(),
+                                                  icon: Icons.comment_outlined,
+                                                  onPressed: (() {
+                                                    showModalBottomSheet(
+                                                      backgroundColor:
+                                                          AppColors.mainColor,
+                                                      context: context,
+                                                      isScrollControlled: true,
+                                                      shape:
+                                                          const RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  10),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  10),
+                                                        ),
+                                                      ),
+                                                      builder:
+                                                          (commentModelContext) =>
+                                                              CommentModalSheet(
+                                                        commentController:
+                                                            commentController,
+                                                        reporterProfilePic:
+                                                            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                                        blocID:
+                                                            'Rupam Karmakar',
+                                                        commentTime: '12h',
+                                                        comment:
+                                                            "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                                        commentModelContext:
+                                                            commentModelContext,
+                                                      ),
+                                                    );
+                                                  }),
+                                                ),
+                                              ],
                                             ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            ReactBtn(
-                                              head: NumberFormat.compact()
-                                                  .format(reports[index]
-                                                      .reportComments)
-                                                  .toString(),
-                                              icon: Icons.comment_outlined,
-                                              onPressed: (() {
-                                                showModalBottomSheet(
-                                                  backgroundColor:
-                                                      AppColors.mainColor,
-                                                  context: context,
-                                                  isScrollControlled: true,
-                                                  shape:
-                                                      const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      topLeft:
-                                                          Radius.circular(10),
-                                                      topRight:
-                                                          Radius.circular(10),
-                                                    ),
-                                                  ),
-                                                  builder:
-                                                      (commentModelContext) =>
-                                                          CommentModalSheet(
-                                                    commentController:
-                                                        commentController,
-                                                    reporterProfilePic:
-                                                        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                                    blocID: 'Rupam Karmakar',
-                                                    commentTime: '12h',
-                                                    comment:
-                                                        "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                                                    commentModelContext:
-                                                        commentModelContext,
-                                                  ),
-                                                );
-                                              }),
+                                            ReportSaveBtn(
+                                              saved: saved,
+                                              onTap: (() {}),
                                             ),
                                           ],
                                         ),
-                                        ReportSaveBtn(
-                                          saved: saved,
-                                          onTap: (() {}),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                              Container(
+                                margin: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
+                                width: MediaQuery.of(context).size.width,
+                                height: 1,
+                                decoration: BoxDecoration(
+                                  color: AppColors.backgroundColour
+                                      .withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ],
                           );
                         } else if (pageCount < totalPage) {
                           return Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.backgroundColour,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
                             ),
                           );
                         }
@@ -1393,11 +1717,13 @@ class HomeScreenCarouselItem extends StatelessWidget {
     required this.reportDetailsOnTap,
     required this.blocDetailsProfileOnTap,
     required this.followers,
+    required this.timeDifference,
   });
 
   final String newsDes, reportPic, category, newsHead, blocName, blocProfilePic;
   final VoidCallback reportDetailsOnTap, blocDetailsProfileOnTap;
   final int followers;
+  final String timeDifference;
 
   @override
   Widget build(BuildContext context) {
@@ -1417,8 +1743,15 @@ class HomeScreenCarouselItem extends StatelessWidget {
         Positioned(
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.backgroundColour.withOpacity(0.6),
               borderRadius: BorderRadius.circular(15),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.transparent,
+                  AppColors.mainColor.withOpacity(0.7),
+                ],
+              ),
             ),
           ),
         ),
@@ -1451,6 +1784,7 @@ class HomeScreenCarouselItem extends StatelessWidget {
                       followers: followers,
                       blocProfilePic: blocProfilePic,
                       onTap: blocDetailsProfileOnTap,
+                      timeDifference: timeDifference,
                     ),
                   ],
                 ),
@@ -1470,11 +1804,13 @@ class HomeScreenCarouselReportBlocDetails extends StatelessWidget {
     required this.blocProfilePic,
     required this.blocName,
     this.followers,
+    this.timeDifference,
   });
 
   final VoidCallback onTap;
   final String blocProfilePic, blocName;
   final int? followers;
+  final String? timeDifference;
 
   @override
   Widget build(BuildContext context) {
@@ -1489,7 +1825,7 @@ class HomeScreenCarouselReportBlocDetails extends StatelessWidget {
             followers: followers,
           ),
           Text(
-            "10 minutes ago",
+            timeDifference!,
             style: TextStyle(
               color: AppColors.white.withOpacity(0.6),
             ),
@@ -1516,6 +1852,7 @@ class HomeScreenCarouselReportDetails extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           HomeScreenCarouselReportHead(
             head: newsHead,
@@ -1572,14 +1909,109 @@ class HomeScreenCarouselReportHead extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      head,
-      style: TextStyle(
-        color: AppColors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 17,
-        overflow: TextOverflow.clip,
-      ),
+    final regex = RegExp(r'(?:#|@)\w+');
+    // final mentionRegex = RegExp(r'\@\w+');
+    final List<TextSpan> spans = [];
+
+    head.splitMapJoin(
+      regex,
+      onMatch: (Match match) {
+        final String? matchedText = match.group(0);
+
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: matchedText!.startsWith("#")
+                ? TextStyle(
+                    color: AppColors.mentionTextDark,
+                    // fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  )
+                : matchedText.startsWith("@")
+                    ? TextStyle(
+                        color: AppColors.mentionText,
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      )
+                    : TextStyle(
+                        color: AppColors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (searchPageCtx) => SearchScreen(
+                      initialIndex: matchedText.startsWith("#")
+                          ? 0
+                          : matchedText.startsWith("@")
+                              ? 1
+                              : 0,
+                      query: matchedText.startsWith("#")
+                          ? matchedText
+                          : matchedText.startsWith("@")
+                              ? matchedText.substring(1)
+                              : null,
+                    ),
+                  ),
+                );
+              },
+          ),
+        );
+
+        return matchedText!;
+      },
+      onNonMatch: (String nonMatch) {
+        spans.add(
+          TextSpan(
+            text: nonMatch,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
+        return nonMatch;
+      },
+    );
+
+    // head.splitMapJoin(
+    //   mentionRegex,
+    //   onMatch: (Match match) {
+    //     final String? matchedText = match.group(0);
+    //
+    //     spans.add(
+    //       TextSpan(
+    //         text: matchedText,
+    //         style: TextStyle(
+    //           color: AppColors.mainColor2,
+    //           fontWeight: FontWeight.w500,
+    //           fontSize: 15,
+    //         ),
+    //         recognizer: TapGestureRecognizer()
+    //           ..onTap = (() {
+    //             Navigator.push(
+    //               context,
+    //               MaterialPageRoute(
+    //                 builder: (searchPageCtx) => SearchScreen(
+    //                   initialIndex: 1,
+    //                   query: matchedText!.substring(1),
+    //                 ),
+    //               ),
+    //             );
+    //           }),
+    //       ),
+    //     );
+    //     return matchedText!;
+    //   },
+    // );
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 }
@@ -1596,19 +2028,19 @@ class HomeScreenCarouselCat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        left: 15,
-        right: 15,
-        top: 5,
-        bottom: 5,
+        left: 25,
+        right: 25,
+        top: 10,
+        bottom: 10,
       ),
       decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.8),
+        color: AppColors.backgroundColour.withOpacity(0.8),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         head,
         style: TextStyle(
-          color: AppColors.backgroundColour,
+          color: AppColors.white,
           fontSize: 14,
           fontWeight: FontWeight.bold,
         ),

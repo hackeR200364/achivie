@@ -36,7 +36,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 2,
+      limitCount = 10,
       totalPage = 0;
   String newsSelectedCategory = "All", token = "", uid = "", message = "";
   late TextEditingController commentController;
@@ -137,6 +137,9 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
   }
 
   Future<void> refresh() async {
+    pageCount = 1;
+    setState(() {});
+
     http.Response trendingReportersResponse = await http.get(
       Uri.parse(
         "${Keys.apiReportsBaseUrl}/reporters/trending/$uid?page=1&limit=3",
@@ -175,7 +178,6 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
       }
     }
 
-    pageCount = 1;
     setState(() {});
 
     http.Response trendingResponse = await http.get(

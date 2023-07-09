@@ -554,30 +554,51 @@ class ReportHeadText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hashtagRegex = RegExp(r'\#\w+');
-    final mentionRegex = RegExp(r'\@\w+');
+    final regex = RegExp(r'(?:#|@)\w+');
+    // final mentionRegex = RegExp(r'\@\w+');
     final List<TextSpan> spans = [];
 
     head.splitMapJoin(
-      hashtagRegex,
+      regex,
       onMatch: (Match match) {
         final String? matchedText = match.group(0);
 
         spans.add(
           TextSpan(
             text: matchedText,
-            style: TextStyle(
-              color: AppColors.backgroundColour,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
+            style: matchedText!.startsWith("#")
+                ? TextStyle(
+                    color: AppColors.mentionTextDark,
+                    // fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  )
+                : matchedText.startsWith("@")
+                    ? TextStyle(
+                        color: AppColors.mentionText,
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      )
+                    : TextStyle(
+                        color: AppColors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (searchPageCtx) => SearchScreen(
-                      query: matchedText,
+                      initialIndex: matchedText.startsWith("#")
+                          ? 0
+                          : matchedText.startsWith("@")
+                              ? 1
+                              : 0,
+                      query: matchedText.startsWith("#")
+                          ? matchedText
+                          : matchedText.startsWith("@")
+                              ? matchedText.substring(1)
+                              : null,
                     ),
                   ),
                 );
@@ -603,36 +624,36 @@ class ReportHeadText extends StatelessWidget {
       },
     );
 
-    head.splitMapJoin(
-      mentionRegex,
-      onMatch: (Match match) {
-        final String? matchedText = match.group(0);
-
-        spans.add(
-          TextSpan(
-            text: matchedText,
-            style: TextStyle(
-              color: AppColors.mainColor2,
-              fontWeight: FontWeight.w500,
-              fontSize: 15,
-            ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = (() {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (searchPageCtx) => SearchScreen(
-                      initialIndex: 1,
-                      query: matchedText!.substring(1),
-                    ),
-                  ),
-                );
-              }),
-          ),
-        );
-        return matchedText!;
-      },
-    );
+    // head.splitMapJoin(
+    //   mentionRegex,
+    //   onMatch: (Match match) {
+    //     final String? matchedText = match.group(0);
+    //
+    //     spans.add(
+    //       TextSpan(
+    //         text: matchedText,
+    //         style: TextStyle(
+    //           color: AppColors.mainColor2,
+    //           fontWeight: FontWeight.w500,
+    //           fontSize: 15,
+    //         ),
+    //         recognizer: TapGestureRecognizer()
+    //           ..onTap = (() {
+    //             Navigator.push(
+    //               context,
+    //               MaterialPageRoute(
+    //                 builder: (searchPageCtx) => SearchScreen(
+    //                   initialIndex: 1,
+    //                   query: matchedText!.substring(1),
+    //                 ),
+    //               ),
+    //             );
+    //           }),
+    //       ),
+    //     );
+    //     return matchedText!;
+    //   },
+    // );
 
     return RichText(
       text: TextSpan(children: spans),
@@ -800,7 +821,7 @@ class ReportUserNameText extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: AppColors.white.withOpacity(0.8),
+            color: AppColors.white,
             overflow: TextOverflow.visible,
           ),
         ),

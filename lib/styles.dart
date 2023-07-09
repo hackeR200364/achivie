@@ -20,6 +20,8 @@ class AppColors {
   static const goldDark = Color(0xFFF2921D);
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
+  static const mentionText = Color(0xFFcff4fe);
+  static const mentionTextDark = Color(0xFFa3ebff);
   static const scrollPhysics = BouncingScrollPhysics();
   static final LinearGradient customGlassIconButtonGradient = LinearGradient(
     colors: [
