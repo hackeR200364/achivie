@@ -1,15 +1,17 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:achivie/models/report_details_model.dart';
 import 'package:achivie/screens/image_preview_screen.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
+import 'package:achivie/screens/search_screen.dart';
 import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../services/keys.dart';
 import '../services/shared_preferences.dart';
@@ -51,7 +53,7 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
     super.initState();
   }
 
-  Future<void> refresh(String usrToken) async {
+  Future<void> refresh() async {
     loading = false;
     setState(() {});
     http.Response response = await http.get(
@@ -59,7 +61,7 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
           "${Keys.apiReportsBaseUrl}/report/details/${widget.reportUsrID}/${widget.reportID}/${widget.usrID}"),
       headers: {
         'content-Type': 'application/json',
-        'authorization': 'Bearer $usrToken',
+        'authorization': 'Bearer $token',
       },
     );
 
@@ -69,7 +71,8 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
         reportDetails = reportDetailsFromJson(response.body);
         // log(reportDetails.toString());
         dateTime = DateTime.fromMillisecondsSinceEpoch(
-            int.parse(reportDetails!.details.reportTime));
+          int.parse(reportDetails!.details.reportTime),
+        );
         // log(dateTime.toString());
       } else {
         message = reportDetails!.message;
@@ -83,8 +86,9 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
 
   void getUserDetails() async {
     token = await StorageServices.getUsrToken();
+    setState(() {});
 
-    await refresh(token);
+    await refresh();
     // Future.delayed(
     //   const Duration(
     //     milliseconds: 700,
@@ -99,155 +103,164 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: (reportDetails == null)
-          ? Scaffold(
-              backgroundColor: AppColors.mainColor,
-              body: Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.backgroundColour,
-                ),
+    return (reportDetails == null)
+        ? const Scaffold(
+            backgroundColor: AppColors.mainColor,
+            body: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.backgroundColour,
               ),
-            )
-          : Scaffold(
-              backgroundColor: AppColors.mainColor,
-              appBar: AppBar(
-                backgroundColor: AppColors.transparent,
-                elevation: 0,
-                leading: CustomAppBarLeading(
-                  onPressed: (() {
-                    Navigator.pop(context);
-                    // print(isPlaying);
-                  }),
-                  icon: Icons.arrow_back_ios_new,
-                ),
-                title: GlassmorphicContainer(
-                  width: double.infinity,
-                  height: 41,
-                  borderRadius: 40,
-                  linearGradient: AppColors.customGlassIconButtonGradient,
-                  border: 2,
-                  blur: 4,
-                  borderGradient: AppColors.customGlassIconButtonBorderGradient,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    // height: 41 / 2.3,
-                    child: Center(
-                      child: Text(
-                        "News Details",
-                        style: AppColors.headingTextStyle,
-                      ),
+            ),
+          )
+        : Scaffold(
+            backgroundColor: AppColors.mainColor,
+            appBar: AppBar(
+              backgroundColor: AppColors.transparent,
+              elevation: 0,
+              leading: CustomAppBarLeading(
+                onPressed: (() {
+                  Navigator.pop(context);
+                  // print(isPlaying);
+                }),
+                icon: Icons.arrow_back_ios_new,
+              ),
+              title: GlassmorphicContainer(
+                width: double.infinity,
+                height: 41,
+                borderRadius: 40,
+                linearGradient: AppColors.customGlassIconButtonGradient,
+                border: 2,
+                blur: 4,
+                borderGradient: AppColors.customGlassIconButtonBorderGradient,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  // height: 41 / 2.3,
+                  child: Center(
+                    child: Text(
+                      "News Details",
+                      style: AppColors.headingTextStyle,
                     ),
                   ),
                 ),
               ),
-              bottomNavigationBar: Container(
-                width: MediaQuery.of(context).size.width,
-                height: 65,
-                padding: EdgeInsets.only(
-                  bottom: 10,
-                  top: 10,
-                  left: 10,
-                  right: 10,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ReportLikeBtn(
-                      likeCount: reportDetails!.details.reportLikes,
-                      isLiked: reportDetails!.liked,
-                      onTap: ((liked) async {
-                        // if (likeCount < 100000)
-                        return false;
-                      }),
-                    ),
-                    ReactBtn(
-                      head: NumberFormat.compact()
-                          .format(reportDetails!.details.reportComments)
-                          .toString(),
-                      icon: (reportDetails!.commented)
-                          ? Icons.comment
-                          : Icons.comment_outlined,
-                      onPressed: (() {
-                        showModalBottomSheet(
-                          backgroundColor: AppColors.mainColor,
-                          context: context,
-                          isScrollControlled: true,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(10),
-                              topRight: Radius.circular(10),
-                            ),
-                          ),
-                          builder: (commentModelContext) => CommentModalSheet(
-                            commentController: commentController,
-                            reporterProfilePic:
-                                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                            blocID: 'Rupam Karmakar',
-                            commentTime: '12h',
-                            comment:
-                                "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                            commentModelContext: commentModelContext,
-                          ),
-                        );
-                      }),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: (() {
-                          setState(() {
-                            saved = !saved;
-                          });
-                        }),
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 400),
-                          margin: EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: (reportDetails!.saved == true)
-                                ? AppColors.white.withOpacity(0.35)
-                                : AppColors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                (reportDetails!.saved == true)
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border_outlined,
-                                color: AppColors.white,
-                              ),
-                              SizedBox(
-                                width: 5,
-                              ),
-                              Center(
-                                child: Text(
-                                  (reportDetails!.saved == true)
-                                      ? "Saved"
-                                      : "Save",
-                                  style: TextStyle(
-                                    color: AppColors.white,
-                                  ),
+            ),
+            bottomNavigationBar: Container(
+              width: MediaQuery.of(context).size.width,
+              height: 65,
+              padding: EdgeInsets.only(
+                bottom: 10,
+                top: 10,
+                left: 10,
+                right: 10,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ReportLikeBtn(
+                          likeCount: reportDetails!.details.reportLikes,
+                          isLiked: reportDetails!.liked,
+                          onTap: ((liked) async {
+                            // if (likeCount < 100000)
+                            return false;
+                          }),
+                        ),
+                        ReactBtn(
+                          head: NumberFormat.compact()
+                              .format(reportDetails!.details.reportComments)
+                              .toString(),
+                          icon: (reportDetails!.commented)
+                              ? Icons.comment
+                              : Icons.comment_outlined,
+                          onPressed: (() {
+                            showModalBottomSheet(
+                              backgroundColor: AppColors.mainColor,
+                              context: context,
+                              isScrollControlled: true,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  topRight: Radius.circular(10),
                                 ),
                               ),
-                            ],
-                          ),
+                              builder: (commentModelContext) =>
+                                  CommentModalSheet(
+                                commentController: commentController,
+                                reporterProfilePic:
+                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                blocID: 'Rupam Karmakar',
+                                commentTime: '12h',
+                                comment:
+                                    "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                commentModelContext: commentModelContext,
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: (() {
+                        setState(() {
+                          saved = !saved;
+                        });
+                      }),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 400),
+                        margin: EdgeInsets.only(
+                          left: 10,
+                          right: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (reportDetails!.saved == true)
+                              ? AppColors.white.withOpacity(0.35)
+                              : AppColors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              (reportDetails!.saved == true)
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border_outlined,
+                              color: AppColors.white,
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Center(
+                              child: Text(
+                                (reportDetails!.saved == true)
+                                    ? "Saved"
+                                    : "Save",
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              body: SingleChildScrollView(
+            ),
+            body: RefreshIndicator(
+              onRefresh: refresh,
+              child: SingleChildScrollView(
                 child: Container(
                   padding: const EdgeInsets.only(
                     left: 15,
@@ -304,13 +317,8 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                       SizedBox(
                         height: 8,
                       ),
-                      Text(
-                        reportDetails!.details.reportHeadline,
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
+                      ReportDetailsHead(
+                        reportHeadline: reportDetails!.details.reportHeadline,
                       ),
                       SizedBox(
                         height: 8,
@@ -340,8 +348,6 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                               .map(
                                 (e) => GestureDetector(
                                   onTap: (() {
-                                    log(reportDetails!.details.reportImages
-                                        .toString());
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -386,12 +392,8 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                       SizedBox(
                         height: 24,
                       ),
-                      Text(
-                        reportDetails!.details.reportDes,
-                        style: TextStyle(
-                          color: AppColors.white,
-                          height: 2,
-                        ),
+                      ReportDetailsDes(
+                        reportDes: reportDetails!.details.reportDes,
                       ),
                       SizedBox(
                         height: 24,
@@ -401,6 +403,217 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                 ),
               ),
             ),
+          );
+  }
+}
+
+class ReportDetailsDes extends StatelessWidget {
+  ReportDetailsDes({
+    super.key,
+    required this.reportDes,
+  });
+
+  String reportDes;
+
+  @override
+  Widget build(BuildContext context) {
+    final regex = RegExp(r'(#[\w]+)|(https?:\/\/[\w.\/?=]+)');
+    final List<TextSpan> spans = [];
+
+    reportDes.splitMapJoin(
+      regex,
+      onMatch: (Match match) {
+        final matchedText = match.group(0);
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: matchedText!.startsWith("#")
+                ? const TextStyle(
+                    color: AppColors.mentionTextDark,
+                    fontSize: 14,
+                  )
+                : (matchedText.startsWith("https") ||
+                        matchedText.startsWith("http"))
+                    ? const TextStyle(
+                        color: AppColors.mentionText,
+                        fontSize: 14,
+                      )
+                    : const TextStyle(
+                        color: AppColors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = (() async {
+                if (matchedText.startsWith("#")) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (searchPageCtx) => SearchScreen(
+                        query: matchedText,
+                      ),
+                    ),
+                  );
+                }
+
+                if (matchedText.startsWith("https") ||
+                    matchedText.startsWith("http")) {
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (webPageCtx) => WebViewScreen(url: matchedText),
+                  //   ),
+                  // );
+
+                  if (await canLaunchUrlString(matchedText)) {
+                    await launchUrlString(matchedText);
+                  }
+                }
+              }),
+          ),
+        );
+        return matchedText;
+      },
+      onNonMatch: (String nonMatch) {
+        spans.add(
+          TextSpan(
+            text: nonMatch,
+            style: TextStyle(
+              color: AppColors.white,
+              height: 2,
+            ),
+          ),
+        );
+
+        return nonMatch;
+      },
+    );
+    reportDes = reportDes.replaceAllMapped(
+      RegExp(r'\\u\{([\dA-Fa-f ]+)\}'),
+      (match) => String.fromCharCode(
+        int.parse(match.group(1)!, radix: 16),
+      ),
+    );
+    return RichText(
+      text: TextSpan(
+        children: spans,
+      ),
+    );
+  }
+}
+
+class ReportDetailsHead extends StatelessWidget {
+  const ReportDetailsHead({
+    super.key,
+    required this.reportHeadline,
+  });
+
+  final String reportHeadline;
+
+  @override
+  Widget build(BuildContext context) {
+    final regex = RegExp(r'(?:#|@)\w+');
+    // final mentionRegex = RegExp(r'\@\w+');
+    final List<TextSpan> spans = [];
+
+    reportHeadline.splitMapJoin(
+      regex,
+      onMatch: (Match match) {
+        final String? matchedText = match.group(0);
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: matchedText!.startsWith("#")
+                ? TextStyle(
+                    color: AppColors.mentionTextDark,
+                    // fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  )
+                : matchedText.startsWith("@")
+                    ? TextStyle(
+                        color: AppColors.mentionText,
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      )
+                    : TextStyle(
+                        color: AppColors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (searchPageCtx) => SearchScreen(
+                      initialIndex: matchedText.startsWith("#")
+                          ? 0
+                          : matchedText.startsWith("@")
+                              ? 1
+                              : 0,
+                      query: matchedText.startsWith("#")
+                          ? matchedText
+                          : matchedText.startsWith("@")
+                              ? matchedText.substring(1)
+                              : null,
+                    ),
+                  ),
+                );
+              },
+          ),
+        );
+
+        return matchedText!;
+      },
+      onNonMatch: (String nonMatch) {
+        spans.add(
+          TextSpan(
+            text: nonMatch,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
+        return nonMatch;
+      },
+    );
+
+    // head.splitMapJoin(
+    //   mentionRegex,
+    //   onMatch: (Match match) {
+    //     final String? matchedText = match.group(0);
+    //
+    //     spans.add(
+    //       TextSpan(
+    //         text: matchedText,
+    //         style: TextStyle(
+    //           color: AppColors.mainColor2,
+    //           fontWeight: FontWeight.w500,
+    //           fontSize: 15,
+    //         ),
+    //         recognizer: TapGestureRecognizer()
+    //           ..onTap = (() {
+    //             Navigator.push(
+    //               context,
+    //               MaterialPageRoute(
+    //                 builder: (searchPageCtx) => SearchScreen(
+    //                   initialIndex: 1,
+    //                   query: matchedText!.substring(1),
+    //                 ),
+    //               ),
+    //             );
+    //           }),
+    //       ),
+    //     );
+    //     return matchedText!;
+    //   },
+    // );
+
+    return RichText(
+      text: TextSpan(children: spans),
     );
   }
 }

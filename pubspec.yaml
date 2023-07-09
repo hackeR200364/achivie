@@ -92,6 +92,7 @@ dependencies:
   mobile_number:
   detectable_text_field:
   hidable:
+  webview_flutter:
 #  rename: any
 #  pinput:
 

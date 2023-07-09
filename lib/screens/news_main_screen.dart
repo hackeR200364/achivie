@@ -27,8 +27,11 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
   int screenTabIndex = 0;
   String usrName = "", blocName = "";
   bool hasBloc = false, isDownwards = false;
+  // ScrollController? _scrollController;
+
   @override
   void initState() {
+    // _scrollController = ScrollController();
     getUserDetails();
     super.initState();
   }
@@ -42,8 +45,17 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
     setState(() {});
   }
 
+  // void _scrollToTop() {
+  //   _scrollController!.animateTo(
+  //     0,
+  //     duration: const Duration(milliseconds: 300),
+  //     curve: Curves.easeInOut,
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
+    // _scrollController!.position.toString();
     return Scaffold(
       backgroundColor: AppColors.mainColor,
       appBar: AppBar(
@@ -152,14 +164,14 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
               ),
             ),
       bottomNavigationBar: AnimatedContainer(
-        duration: Duration(
+        duration: const Duration(
           milliseconds: 200,
         ),
-        margin: EdgeInsets.only(
+        margin: const EdgeInsets.only(
           left: 15,
           right: 15,
         ),
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
           top: 8,
           bottom: 8,
           left: 12,
@@ -169,11 +181,13 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           gap: 8,
           activeColor: AppColors.white,
           iconSize: 24,
-          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          duration: Duration(milliseconds: 400),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          duration: const Duration(milliseconds: 300),
           tabBackgroundColor: AppColors.backgroundColour.withOpacity(0.55),
           color: Colors.black,
           onTabChange: ((tabIndex) {
+            // log(screenTabIndex.toString());
+            // _scrollToTop();
             setState(() {
               screenTabIndex = tabIndex;
             });
@@ -224,7 +238,6 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
               });
             }
           }
-
           if (notification.direction == ScrollDirection.forward) {
             if (isDownwards) {
               setState(() {
@@ -234,7 +247,6 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           }
           // log(isDownwards.toString());
           // if (notification.metrics.)
-
           return true;
         },
         child: Stack(

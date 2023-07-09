@@ -961,7 +961,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                   ),
                   child: DetectableTextField(
                     textCapitalization: TextCapitalization.sentences,
-                    detectionRegExp: detectionRegExp()!,
+                    detectionRegExp: detectionRegExp(url: false)!,
                     controller: _reportNameController,
                     keyboardType: TextInputType.multiline,
                     basicStyle: TextStyle(
@@ -1015,8 +1015,9 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                     ),
                     maxLines: 2,
                     minLines: 1,
+                    maxLength: 50,
                     onDetectionTyped: ((text) async {
-                      log(text);
+                      // log(text);
                       nameHashtagDetect = true;
                       // hashtags = await fetchHashtags(text);
                       String token = await StorageServices.getUsrToken();
