@@ -754,14 +754,66 @@ class _NewsScreenState extends State<NewsScreen> {
                                 .format(reports[index].reportComments)
                                 .toString(),
                             saved: saved,
-                            reportOnTap: (() {}),
-                            blocDetailsOnTap: (() {}),
-                            likeBtnOnTap: ((liked) async {
-                              return true;
+                            reportOnTap: (() {
+                              log(reports[index].reportId);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (newsDetailsScreenContext) =>
+                                      NewsDetailsScreen(
+                                    reportID: reports[index].reportId,
+                                    reportUsrID: reports[index].reportUsrId,
+                                    usrID: uid,
+                                  ),
+                                ),
+                              );
                             }),
-                            commentBtnOnTap: (() {}),
+                            blocDetailsOnTap: (() {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (profileDetailsContext) =>
+                                      ReporterPublicProfile(
+                                    blockUID: reports[index].blocId,
+                                  ),
+                                ),
+                              );
+                            }),
+                            likeBtnOnTap: ((liked) async {
+                              if (reports[index].liked!) {
+                                return false;
+                              } else {
+                                return true;
+                              }
+                            }),
+                            commentBtnOnTap: (() {
+                              showModalBottomSheet(
+                                backgroundColor: AppColors.mainColor,
+                                context: context,
+                                isScrollControlled: true,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
+                                  ),
+                                ),
+                                builder: (commentModelContext) =>
+                                    CommentModalSheet(
+                                  commentController: commentController,
+                                  reporterProfilePic:
+                                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                  blocID: 'Rupam Karmakar',
+                                  commentTime: '12h',
+                                  comment:
+                                      "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                  commentModelContext: commentModelContext,
+                                ),
+                              );
+                            }),
                             saveBtnOnTap: (() {}),
                             followedOnTap: (() {}),
+                            liked: reports[index].liked!,
+                            commented: reports[index].commented!,
                           );
                         } else if (pageCount < totalPage) {
                           return const Center(
@@ -1584,10 +1636,12 @@ class ReportContainer extends StatelessWidget {
     required this.followed,
     required this.followedOnTap,
     required this.saved,
+    required this.liked,
+    required this.commented,
   });
 
   final int followers, likeCount;
-  final bool followed, saved;
+  final bool followed, saved, liked, commented;
   final String blocName,
       blocProfile,
       reportCat,
@@ -1660,6 +1714,7 @@ class ReportContainer extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ReportLikeBtn(
+                            isLiked: liked,
                             likeCount: likeCount,
                             onTap: likeBtnOnTap,
                           ),

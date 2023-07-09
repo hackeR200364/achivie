@@ -3,14 +3,13 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:achivie/models/top_reports_model.dart';
-import 'package:achivie/providers/news_searching_provider.dart';
+import 'package:achivie/models/top_reports_search_model.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:achivie/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../models/news_category_model.dart';
 import '../services/keys.dart';
@@ -24,8 +23,8 @@ class SearchScreen extends StatefulWidget {
     this.initialIndex,
     this.query,
   });
-  int? initialIndex;
-  String? query;
+  final int? initialIndex;
+  final String? query;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -62,10 +61,11 @@ class _SearchScreenState extends State<SearchScreen>
   late TextEditingController _searchController;
   late TextEditingController commentController;
   late TabController _tabController;
-  bool followed = false, saved = false;
+  bool followed = false, saved = false, loading = false;
   int likeCount = 1000000, _hintIndex = 0, pageCount = 1, limitCount = 10;
   Timer? timer;
   List<Report> reports = <Report>[];
+  List<TopReportSearch> searchReports = <TopReportSearch>[];
   String uid = "", token = "", query = "";
 
   @override
@@ -73,7 +73,8 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController = TextEditingController(
       text: widget.query,
     );
-    // _searchController.addListener(_onTextChanged);
+
+    _searchController.addListener(_onTextChanged);
     commentController = TextEditingController();
     _tabController = TabController(
       initialIndex: widget.initialIndex ?? 0,
@@ -92,17 +93,17 @@ class _SearchScreenState extends State<SearchScreen>
     super.dispose();
   }
 
-  // void _onTextChanged() {
-  //   // Update the value in real-time
-  //   // String updatedValue = _searchController.text.toUpperCase();
-  //   _searchController.value = _searchController.value.copyWith(
-  //     text: _searchController.text.trim(),
-  //     selection:
-  //         TextSelection.collapsed(offset: _searchController.text.trim().length),
-  //   );
-  //
-  //   // log(_searchController.text.trim());
-  // }
+  void _onTextChanged() {
+    // Update the value in real-time
+    // String updatedValue = _searchController.text.toUpperCase();
+    _searchController.value = _searchController.value.copyWith(
+      text: _searchController.text.trim(),
+      selection:
+          TextSelection.collapsed(offset: _searchController.text.trim().length),
+    );
+
+    // log(_searchController.text.trim());
+  }
 
   void _startTimer() {
     if (timer != null && timer!.isActive) return;
@@ -119,17 +120,25 @@ class _SearchScreenState extends State<SearchScreen>
     // log(_tabController.index.toString());
     setState(() {});
 
-    if (_tabController.index == 0 && query.isEmpty) {
+    if (_tabController.index == 0 && widget.query == null) {
       refreshTopReports();
     }
 
-    if (_tabController.index == 0 && query.isNotEmpty) {
-      refreshTopReportsSearch();
+    if (widget.query != null) {
+      refreshTopReportsSearch(widget.query!);
     }
+    setState(() {});
+
+    // if (_tabController.index == 0 && query.isNotEmpty) {
+    //   refreshTopReportsSearch();
+    // }
   }
 
   Future<void> refreshTopReports() async {
     pageCount = 1;
+    _searchController.clear();
+    searchReports.clear();
+    loading = true;
     setState(() {});
 
     http.Response topResponse = await http.get(
@@ -149,18 +158,26 @@ class _SearchScreenState extends State<SearchScreen>
         reports = topReports.reports;
       }
     }
+
+    loading = false;
     setState(() {});
     // log(reports.toString());
     // setState(() {});
   }
 
-  Future<void> refreshTopReportsSearch() async {
+  Future<void> refreshTopReportsSearch(String query) async {
     pageCount = 1;
+    loading = true;
+    reports.clear();
+
+    if (query.startsWith("#")) {
+      query = Uri.encodeComponent(query);
+    }
     setState(() {});
 
-    http.Response topResponse = await http.get(
+    http.Response topSearchResponse = await http.get(
       Uri.parse(
-        "${Keys.apiReportsBaseUrl}/reports/top/$uid?page=$pageCount&limit=$limitCount",
+        "${Keys.apiReportsBaseUrl}/reports/top/search/$uid?page=$pageCount&limit=$limitCount&q=$query",
       ),
       headers: {
         'content-Type': 'application/json',
@@ -168,16 +185,17 @@ class _SearchScreenState extends State<SearchScreen>
       },
     );
 
-    if (topResponse.statusCode == 200) {
-      Map<String, dynamic> topResponseJson = jsonDecode(topResponse.body);
-      if (topResponseJson["success"]) {
-        TopReports topReports = topReportsFromJson(topResponse.body);
-        reports = topReports.reports;
+    if (topSearchResponse.statusCode == 200) {
+      Map<String, dynamic> topSearchResponseJson =
+          jsonDecode(topSearchResponse.body);
+      if (topSearchResponseJson["success"]) {
+        TopReportsSearch topSearchReports =
+            topReportsSearchFromJson(topSearchResponse.body);
+        searchReports = topSearchReports.reports;
       }
     }
+    loading = false;
     setState(() {});
-    // log(reports.toString());
-    // setState(() {});
   }
 
   Future<void> refreshReporters() async {
@@ -249,85 +267,84 @@ class _SearchScreenState extends State<SearchScreen>
                       width: 10,
                     ),
                     Expanded(
-                      child: Consumer<NewsSearchingProvider>(
-                        builder: (newsSearchingContext, newsSearchingProvider,
-                            newsSearchingChild) {
-                          return AnimatedContainer(
-                            duration: Duration(
-                              milliseconds: 100,
+                      child: AnimatedContainer(
+                        duration: Duration(
+                          milliseconds: 100,
+                        ),
+                        child: TextFormField(
+                          textInputAction: TextInputAction.search,
+                          textCapitalization: TextCapitalization.sentences,
+                          scrollPhysics: AppColors.scrollPhysics,
+                          decoration: InputDecoration(
+                            errorStyle: const TextStyle(
+                              overflow: TextOverflow.clip,
                             ),
-                            child: TextFormField(
-                              textInputAction: TextInputAction.search,
-                              textCapitalization: TextCapitalization.sentences,
-                              scrollPhysics: AppColors.scrollPhysics,
-                              decoration: InputDecoration(
-                                errorStyle: const TextStyle(
-                                  overflow: TextOverflow.clip,
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: AppColors.white.withOpacity(0.6),
-                                ),
-                                prefixStyle: const TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 16,
-                                ),
-                                hintText:
-                                    " Search ${newsCategory[_hintIndex].category}",
-                                hintStyle: TextStyle(
-                                  color: AppColors.white.withOpacity(0.5),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Colors.white,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    width: 1,
-                                    color: AppColors.white,
-                                  ),
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    width: 1,
-                                    color: AppColors.white,
-                                  ),
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                contentPadding: const EdgeInsets.only(
-                                  left: 15,
-                                  right: 15,
-                                ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: AppColors.white.withOpacity(0.6),
+                            ),
+                            prefixStyle: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                            ),
+                            hintText:
+                                " Search ${newsCategory[_hintIndex].category}",
+                            hintStyle: TextStyle(
+                              color: AppColors.white.withOpacity(0.5),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                color: Colors.white,
+                                width: 1.0,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              controller: _searchController,
-                              keyboardType: TextInputType.text,
-                              cursorColor: AppColors.white,
-                              style: const TextStyle(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                width: 1,
                                 color: AppColors.white,
                               ),
-                              onFieldSubmitted: ((String inputQuery) {
-                                // log(query);
-                                // newsSearchingProvider.queryFunc(query);
-                                setState(() {
-                                  query = inputQuery;
-                                });
-                              }),
-                              onChanged: ((String inputQuery) {
-                                // log(query);
-                                // newsSearchingProvider.queryFunc(query);
-                                setState(() {
-                                  query = inputQuery;
-                                });
-                              }),
+                              borderRadius: BorderRadius.circular(15.0),
                             ),
-                          );
-                        },
+                            border: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                width: 1,
+                                color: AppColors.white,
+                              ),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            contentPadding: const EdgeInsets.only(
+                              left: 15,
+                              right: 15,
+                            ),
+                          ),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          controller: _searchController,
+                          keyboardType: TextInputType.text,
+                          cursorColor: AppColors.white,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                          ),
+                          onFieldSubmitted: ((String inputQuery) {
+                            refreshTopReportsSearch(
+                                _searchController.text.trim());
+                          }),
+                          onChanged: ((String inputQuery) {
+                            log(inputQuery);
+                            if (inputQuery.isNotEmpty) {
+                              refreshTopReportsSearch(
+                                  _searchController.text.trim());
+                            }
+
+                            if (inputQuery.isEmpty) {
+                              loading = false;
+                              refreshTopReports();
+                              setState(() {});
+                            }
+                            // log(inputQuery);
+                            // setState(() {});
+                          }),
+                        ),
                       ),
                     ),
                   ],
@@ -382,49 +399,128 @@ class _SearchScreenState extends State<SearchScreen>
                 controller: _tabController,
                 children: [
                   RefreshIndicator(
-                    onRefresh: (query.isEmpty)
-                        ? refreshTopReports
-                        : refreshTopReportsSearch,
+                    onRefresh: refreshTopReports,
                     child: ListView.builder(
-                      itemCount: reports.length,
+                      itemCount: (_searchController.text.trim().isNotEmpty)
+                          ? searchReports.length
+                          : reports.length,
                       itemBuilder: ((topNewsContext, topNewsIndex) {
-                        return ReportContainer(
-                          followers: reports[topNewsIndex].followers,
-                          likeCount: reports[topNewsIndex].reportLikes,
-                          blocName: reports[topNewsIndex].blocName,
-                          blocProfile: reports[topNewsIndex].blocProfile,
-                          reportCat: reports[topNewsIndex].reportCat,
-                          reportHeadline: reports[topNewsIndex].reportHeadline,
-                          reportUploadTime:
-                              "${DateFormat('EEEE').format(reports[topNewsIndex].reportUploadTime)}, ${reports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(reports[topNewsIndex].reportUploadTime)} ${reports[topNewsIndex].reportUploadTime.year}", //"Monday, 26 September 2022",
-                          reportTime: "${DateFormat('EEEE').format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                              int.parse(reports[topNewsIndex].reportTime),
-                            ),
-                          )}, ${DateTime.fromMillisecondsSinceEpoch(
-                            int.parse(reports[topNewsIndex].reportTime),
-                          ).day} ${DateFormat('MMMM').format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                              int.parse(reports[topNewsIndex].reportTime),
-                            ),
-                          )} ${DateTime.fromMillisecondsSinceEpoch(
-                            int.parse(reports[topNewsIndex].reportTime),
-                          ).year}",
-                          reportThumbPic: reports[topNewsIndex].reportTumbImage,
-                          commentCount: NumberFormat.compact()
-                              .format(reports[topNewsIndex].reportComments)
-                              .toString(),
-                          reportOnTap: (() {}),
-                          blocDetailsOnTap: (() {}),
-                          likeBtnOnTap: ((liked) async {
-                            return true;
-                          }),
-                          commentBtnOnTap: (() {}),
-                          saveBtnOnTap: (() {}),
-                          followed: followed,
-                          followedOnTap: (() {}),
-                          saved: saved,
-                        );
+                        // log(searchReports.length.toString());
+                        return (_searchController.text.isNotEmpty ||
+                                searchReports.isNotEmpty)
+                            ? ReportContainer(
+                                followers:
+                                    searchReports[topNewsIndex].followers,
+                                likeCount:
+                                    searchReports[topNewsIndex].reportLikes,
+                                blocName: searchReports[topNewsIndex].blocName,
+                                blocProfile:
+                                    searchReports[topNewsIndex].blocProfile,
+                                reportCat:
+                                    searchReports[topNewsIndex].reportCat,
+                                reportHeadline:
+                                    searchReports[topNewsIndex].reportHeadline,
+                                reportUploadTime:
+                                    "${DateFormat('EEEE').format(searchReports[topNewsIndex].reportUploadTime)}, ${searchReports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(searchReports[topNewsIndex].reportUploadTime)} ${searchReports[topNewsIndex].reportUploadTime.year}", //"Monday, 26 September 2022",
+                                reportTime: "${DateFormat('EEEE').format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                    int.parse(
+                                        searchReports[topNewsIndex].reportTime),
+                                  ),
+                                )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                  int.parse(
+                                      searchReports[topNewsIndex].reportTime),
+                                ).day} ${DateFormat('MMMM').format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                    int.parse(
+                                        searchReports[topNewsIndex].reportTime),
+                                  ),
+                                )} ${DateTime.fromMillisecondsSinceEpoch(
+                                  int.parse(
+                                      searchReports[topNewsIndex].reportTime),
+                                ).year}",
+                                reportThumbPic:
+                                    searchReports[topNewsIndex].reportTumbImage,
+                                commentCount: NumberFormat.compact()
+                                    .format(searchReports[topNewsIndex]
+                                        .reportComments)
+                                    .toString(),
+                                reportOnTap: (() {}),
+                                blocDetailsOnTap: (() {}),
+                                likeBtnOnTap: ((liked) async {
+                                  return true;
+                                }),
+                                commentBtnOnTap: (() {}),
+                                saveBtnOnTap: (() {}),
+                                followed: searchReports[topNewsIndex].followed,
+                                followedOnTap: (() {}),
+                                saved: searchReports[topNewsIndex].saved,
+                                liked: searchReports[topNewsIndex].liked,
+                                commented:
+                                    searchReports[topNewsIndex].commented,
+                              )
+                            : (_searchController.text.isEmpty &&
+                                    reports.isNotEmpty)
+                                ? ReportContainer(
+                                    followers: reports[topNewsIndex].followers,
+                                    likeCount:
+                                        reports[topNewsIndex].reportLikes,
+                                    blocName: reports[topNewsIndex].blocName,
+                                    blocProfile:
+                                        reports[topNewsIndex].blocProfile,
+                                    reportCat: reports[topNewsIndex].reportCat,
+                                    reportHeadline:
+                                        reports[topNewsIndex].reportHeadline,
+                                    reportUploadTime:
+                                        "${DateFormat('EEEE').format(reports[topNewsIndex].reportUploadTime)}, ${reports[topNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(reports[topNewsIndex].reportUploadTime)} ${reports[topNewsIndex].reportUploadTime.year}", //"Monday, 26 September 2022",
+                                    reportTime: "${DateFormat('EEEE').format(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(
+                                            reports[topNewsIndex].reportTime),
+                                      ),
+                                    )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(
+                                          reports[topNewsIndex].reportTime),
+                                    ).day} ${DateFormat('MMMM').format(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(
+                                            reports[topNewsIndex].reportTime),
+                                      ),
+                                    )} ${DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(
+                                          reports[topNewsIndex].reportTime),
+                                    ).year}",
+                                    reportThumbPic:
+                                        reports[topNewsIndex].reportTumbImage,
+                                    commentCount: NumberFormat.compact()
+                                        .format(reports[topNewsIndex]
+                                            .reportComments)
+                                        .toString(),
+                                    reportOnTap: (() {}),
+                                    blocDetailsOnTap: (() {}),
+                                    likeBtnOnTap: ((liked) async {
+                                      return true;
+                                    }),
+                                    commentBtnOnTap: (() {}),
+                                    saveBtnOnTap: (() {}),
+                                    followed: reports[topNewsIndex].followed,
+                                    followedOnTap: (() {}),
+                                    saved: reports[topNewsIndex].saved,
+                                    liked: reports[topNewsIndex].liked,
+                                    commented: reports[topNewsIndex].commented,
+                                  )
+                                : (searchReports.isEmpty &&
+                                        _searchController.text
+                                            .trim()
+                                            .isNotEmpty)
+                                    ? Text(
+                                        "No reports found",
+                                        style: TextStyle(
+                                          color:
+                                              AppColors.white.withOpacity(0.7),
+                                        ),
+                                      )
+                                    : Container();
                       }),
                     ),
                   ),
@@ -504,6 +600,8 @@ class _SearchScreenState extends State<SearchScreen>
                           followed: followed,
                           followedOnTap: (() {}),
                           saved: saved,
+                          liked: false,
+                          commented: false,
                         );
                       }),
                       itemCount: 10,
