@@ -576,8 +576,9 @@ class ReportHeadText extends StatelessWidget {
                 : matchedText.startsWith("@")
                     ? TextStyle(
                         color: AppColors.mentionText,
-                        // fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 2,
                       )
                     : TextStyle(
                         color: AppColors.white,

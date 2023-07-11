@@ -2222,9 +2222,9 @@ class HomeScreenCarouselReportHead extends StatelessWidget {
                 : matchedText.startsWith("@")
                     ? TextStyle(
                         color: AppColors.mentionText,
-                        // fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      )
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        letterSpacing: 2)
                     : TextStyle(
                         color: AppColors.white,
                         fontSize: 17,
@@ -2304,6 +2304,7 @@ class HomeScreenCarouselReportHead extends StatelessWidget {
 
     return RichText(
       text: TextSpan(children: spans),
+      textAlign: TextAlign.justify,
     );
   }
 }

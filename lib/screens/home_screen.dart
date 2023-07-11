@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:circular_clip_route/circular_clip_route.dart';
 // import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -75,6 +76,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       notificationCount = 0;
   // RewardedAd? rewardedAd;
   bool activeConnection = false;
+  final _newTaskBtnKey = GlobalKey();
+  final _notificationBtnKey = GlobalKey();
 
   @override
   void initState() {
@@ -288,20 +291,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             borderGradient: AppColors.customGlassIconButtonBorderGradient,
             child: Center(
               child: IconButton(
+                key: _newTaskBtnKey,
                 onPressed: () {
                   HapticFeedback.lightImpact();
 
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (nextPageContext) {
-                        return const NewTaskScreen();
-                      },
-                    ),
+                    CircularClipRoute(
+                      expandFrom: _newTaskBtnKey.currentContext!,
+                      curve: Curves.fastOutSlowIn,
+                      reverseCurve: Curves.fastOutSlowIn.flipped,
+                      opacity: ConstantTween(1),
+                      transitionDuration: const Duration(milliseconds: 650),
+                      builder: ((_) => const NewTaskScreen()),
+                    ), // CustomPageTransitionAnimation(
+                    //   enterWidget: SearchScreen(),
+                    //   x: 0.5,
+                    //   y: -0.85,
+                    // ),
                   ).then((value) {
                     refresh();
                     // setState(() {});
                   });
+
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (nextPageContext) {
+                  //       return const NewTaskScreen();
+                  //     },
+                  //   ),
+                  // ).then((value) {
+                  //   refresh();
+                  //   // setState(() {});
+                  // });
                 },
                 icon: const Icon(
                   Icons.add,
@@ -363,14 +386,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                     badgeAnimation: const badges.BadgeAnimation.slide(),
                     child: CustomGlassIconButton(
+                      key: _notificationBtnKey,
                       onPressed: (() {
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (notificationContext) =>
+                        //         const NotificationScreen(),
+                        //   ),
+                        // );
+
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (notificationContext) =>
-                                const NotificationScreen(),
-                          ),
-                        );
+                          CircularClipRoute(
+                            expandFrom: _notificationBtnKey.currentContext!,
+                            curve: Curves.fastOutSlowIn,
+                            reverseCurve: Curves.fastOutSlowIn.flipped,
+                            opacity: ConstantTween(1),
+                            transitionDuration:
+                                const Duration(milliseconds: 650),
+                            builder: ((_) => const NotificationScreen()),
+                          ), // CustomPageTransitionAnimation(
+                          //   enterWidget: SearchScreen(),
+                          //   x: 0.5,
+                          //   y: -0.85,
+                          // ),
+                        ).then((value) {
+                          refresh();
+                          // setState(() {});
+                        });
                       }),
                       icon: Icons.notifications,
                     ),

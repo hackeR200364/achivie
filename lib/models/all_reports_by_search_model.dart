@@ -1,42 +1,44 @@
 // To parse this JSON data, do
 //
-//     final allReports = allReportsFromJson(jsonString);
+//     final reportsAllBySearch = reportsAllBySearchFromJson(jsonString);
 
 import 'dart:convert';
 
-AllReports allReportsFromJson(String str) =>
-    AllReports.fromJson(json.decode(str));
+ReportsAllBySearch reportsAllBySearchFromJson(String str) =>
+    ReportsAllBySearch.fromJson(json.decode(str));
 
-String allReportsToJson(AllReports data) => json.encode(data.toJson());
+String reportsAllBySearchToJson(ReportsAllBySearch data) =>
+    json.encode(data.toJson());
 
-class AllReports {
+class ReportsAllBySearch {
   bool success;
-  List<Report> reports;
   int totalPage;
+  List<ReportAllBySearch> reports;
 
-  AllReports({
+  ReportsAllBySearch({
     required this.success,
-    required this.reports,
     required this.totalPage,
+    required this.reports,
   });
 
-  factory AllReports.fromJson(Map<String, dynamic> json) => AllReports(
+  factory ReportsAllBySearch.fromJson(Map<String, dynamic> json) =>
+      ReportsAllBySearch(
         success: json["success"],
-        reports:
-            List<Report>.from(json["reports"].map((x) => Report.fromJson(x))),
         totalPage: json["totalPage"],
+        reports: List<ReportAllBySearch>.from(
+            json["reports"].map((x) => ReportAllBySearch.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "success": success,
-        "reports": List<dynamic>.from(reports.map((x) => x.toJson())),
         "totalPage": totalPage,
+        "reports": List<dynamic>.from(reports.map((x) => x.toJson())),
       };
 }
 
-class Report {
+class ReportAllBySearch {
   String reportId;
-  // List<String> reportImages;
+  List<String> reportImages;
   String reportTumbImage;
   String reportDate;
   String reportTime;
@@ -63,14 +65,14 @@ class Report {
   String blocProfile;
   double blocLat;
   double blocLong;
-  bool followed;
   bool liked;
   bool commented;
+  bool followed;
   bool saved;
 
-  Report({
+  ReportAllBySearch({
     required this.reportId,
-    // required this.reportImages,
+    required this.reportImages,
     required this.reportTumbImage,
     required this.reportDate,
     required this.reportTime,
@@ -97,15 +99,16 @@ class Report {
     required this.blocProfile,
     required this.blocLat,
     required this.blocLong,
-    required this.followed,
     required this.liked,
     required this.commented,
+    required this.followed,
     required this.saved,
   });
 
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
+  factory ReportAllBySearch.fromJson(Map<String, dynamic> json) =>
+      ReportAllBySearch(
         reportId: json["reportID"],
-        // reportImages: List<String>.from(json["reportImages"].map((x) => x)),
+        reportImages: List<String>.from(json["reportImages"].map((x) => x)),
         reportTumbImage: json["reportTumbImage"],
         reportDate: json["reportDate"],
         reportTime: json["reportTime"],
@@ -132,14 +135,15 @@ class Report {
         blocProfile: json["blocProfile"],
         blocLat: json["blocLat"]?.toDouble(),
         blocLong: json["blocLong"]?.toDouble(),
-        followed: json["followed"] ?? false,
         liked: json["liked"] ?? false,
-        commented: json["commented"] ?? false, saved: json["saved"] ?? false,
+        commented: json["commented"] ?? false,
+        followed: json["followed"] ?? false,
+        saved: json["saved"] ?? false,
       );
 
   Map<String, dynamic> toJson() => {
         "reportID": reportId,
-        // "reportImages": List<dynamic>.from(reportImages.map((x) => x)),
+        "reportImages": List<dynamic>.from(reportImages.map((x) => x)),
         "reportTumbImage": reportTumbImage,
         "reportDate": reportDate,
         "reportTime": reportTime,
@@ -166,9 +170,9 @@ class Report {
         "blocProfile": blocProfile,
         "blocLat": blocLat,
         "blocLong": blocLong,
-        "followed": followed,
         "liked": liked,
         "commented": commented,
+        "followed": followed,
         "saved": saved,
       };
 }

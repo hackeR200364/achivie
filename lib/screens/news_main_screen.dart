@@ -127,7 +127,7 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
                         curve: Curves.fastOutSlowIn,
                         reverseCurve: Curves.fastOutSlowIn.flipped,
                         opacity: ConstantTween(1),
-                        transitionDuration: const Duration(milliseconds: 700),
+                        transitionDuration: const Duration(milliseconds: 650),
                         builder: ((_) => SearchScreen()),
                       ), // CustomPageTransitionAnimation(
                       //   enterWidget: SearchScreen(),
