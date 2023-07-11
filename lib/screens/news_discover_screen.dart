@@ -26,9 +26,11 @@ class NewsDiscoverScreen extends StatefulWidget {
   State<NewsDiscoverScreen> createState() => _NewsDiscoverScreenState();
 }
 
-class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
-  final List<Ticker> _tickers = [];
+class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
+    with TickerProviderStateMixin {
   bool followed = false, saved = false, loading = false;
+
+  final List<Ticker> _tickers = [];
   int newsSliderIndex = 0,
       newsListIndex = 0,
       topItemIndex = 0,
@@ -54,6 +56,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
     _pageScrollController = ScrollController();
     _pageScrollController.addListener(_updateScreenOffset);
     _newsScrollController.addListener(_updateState);
+
     getUsrDetails();
     super.initState();
   }
@@ -64,6 +67,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
     _newsScrollController.removeListener(_updateState);
     _newsScrollController.dispose();
     commentController.dispose();
+
     for (var ticker in _tickers) {
       ticker.dispose();
     }
@@ -84,6 +88,20 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
       //   reports.addAll(reports);
       // });
     }
+
+    // log(_pageScrollController.offset.toString());
+
+    // if (_pageScrollController.offset > 0 && _pageScrollController.offset < 10) {
+    //   setState(() {
+    //     isTopVisible = false;
+    //   });
+    // }
+    // if (_pageScrollController.offset > 100 &&
+    //     _pageScrollController.offset < 101) {
+    //   setState(() {
+    //     isTopVisible = true;
+    //   });
+    // }
     // setState(() {
     //   topItemIndex = _getIndexInView();
     //   screenOffset = _pageScrollController.offset;
@@ -221,7 +239,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                         top: 10,
                       ),
                       child: const DiscoverPageHeading(
-                        head: "Trending Reporters",
+                        head: "Top Reporters",
                       ),
                     ),
                   ),
@@ -429,7 +447,11 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                               itemCount: categoryList.length,
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (newsCatContext, index) {
-                                return GestureDetector(
+                                return CategoryContainer(
+                                  newsSelectedCategoryIndex:
+                                      newsSelectedCategoryIndex,
+                                  categoryList: categoryList,
+                                  index: index,
                                   onTap: (() {
                                     // log(newsCategory[index].category);
                                     setState(() {
@@ -438,38 +460,6 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                                       newsSelectedCategoryIndex = index;
                                     });
                                   }),
-                                  child: Container(
-                                    padding: const EdgeInsets.only(
-                                      left: 20,
-                                      right: 20,
-                                      top: 5,
-                                      bottom: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          (index == newsSelectedCategoryIndex)
-                                              ? AppColors.backgroundColour
-                                              : AppColors.backgroundColour
-                                                  .withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: const Border.fromBorderSide(
-                                        BorderSide(
-                                          width: 0.7,
-                                          color: AppColors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        categoryList[index].reportCat,
-                                        style: TextStyle(
-                                          color: AppColors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 );
                               },
                               separatorBuilder:
@@ -545,6 +535,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                                 return SizedBox(
                                   width: 10,
                                 );
+                                //               .reportTumbImage,
                               },
                             ),
                           ),
@@ -561,9 +552,34 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                       childCount: trendingReportsList.length + 1,
                       (context, index) {
                         if (index < trendingReportsList.length) {
-                          return GestureDetector(
-                            onTap: (() {
-                              log(trendingReportsList[index].saved.toString());
+                          return ReportContainer(
+                            followers: trendingReportsList[index].followers,
+                            blocName: trendingReportsList[index].blocName,
+                            blocProfile: trendingReportsList[index].blocProfile,
+                            followed: trendingReportsList[index].followed,
+                            reportCat: trendingReportsList[index].reportCat,
+                            reportHeadline:
+                                trendingReportsList[index].reportHeadline,
+                            reportUploadTime:
+                                "${DateFormat('EEEE').format(trendingReportsList[index].reportUploadTime)}, ${trendingReportsList[index].reportUploadTime.day} ${DateFormat('MMMM').format(trendingReportsList[index].reportUploadTime)} ${trendingReportsList[index].reportUploadTime.year}",
+                            //"Monday, 26 September 2022",
+                            reportTime:
+                                "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)))}, ${DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)).day} ${DateFormat('MMMM').format(DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)))} ${DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)).year}",
+                            //"Monday, 26 September 2022",,
+                            // "${trendingReportsList[index].reportTime}, ${trendingReportsList[index].reportDate}",
+                            reportThumbPic:
+                                trendingReportsList[index].reportTumbImage,
+                            liked: trendingReportsList[index].liked,
+                            likeCount: trendingReportsList[index].reportLikes,
+                            likeBtnOnTap: ((liked) async {
+                              return false;
+                            }),
+                            commentCount: NumberFormat.compact()
+                                .format(
+                                    trendingReportsList[index].reportComments)
+                                .toString(),
+                            reportOnTap: (() {
+                              // log(trendingReportsList[index].saved.toString());
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -578,150 +594,45 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen> {
                                 ),
                               );
                             }),
-                            child: Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 10,
-                              ),
-                              padding: const EdgeInsets.only(
-                                left: 10,
-                                right: 10,
-                                top: 15,
-                                bottom: 15,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    AppColors.backgroundColour.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                children: [
-                                  BlocDetailsRow(
-                                    followers:
-                                        trendingReportsList[index].followers,
-                                    blocName:
-                                        trendingReportsList[index].blocName,
-                                    blocProfilePic:
-                                        trendingReportsList[index].blocProfile,
-                                    followed:
-                                        trendingReportsList[index].followed,
-                                    followedOnTap: (() {}),
-                                    onTap: (() {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (profileDetailsContext) =>
-                                              const ReporterPublicProfile(
-                                            blockUID: "",
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                            blocDetailsOnTap: (() {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (profileDetailsContext) =>
+                                      ReporterPublicProfile(
+                                    blockUID: trendingReportsList[index].blocId,
                                   ),
-                                  const SizedBox(
-                                    height: 25,
+                                ),
+                              );
+                            }),
+                            commentBtnOnTap: (() {
+                              showModalBottomSheet(
+                                backgroundColor: AppColors.mainColor,
+                                context: context,
+                                isScrollControlled: true,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
                                   ),
-                                  ReportDetailsColumn(
-                                    category:
-                                        trendingReportsList[index].reportCat,
-                                    reportHeading: trendingReportsList[index]
-                                        .reportHeadline,
-                                    reportUploadTime:
-                                        "${DateFormat('EEEE').format(trendingReportsList[index].reportUploadTime)}, ${trendingReportsList[index].reportUploadTime.day} ${DateFormat('MMMM').format(trendingReportsList[index].reportUploadTime)} ${trendingReportsList[index].reportUploadTime.year}",
-                                    //"Monday, 26 September 2022",
-                                    reportTime:
-                                        "${DateFormat('EEEE').format(DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)))}, ${DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)).day} ${DateFormat('MMMM').format(DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)))} ${DateTime.fromMillisecondsSinceEpoch(int.parse(trendingReportsList[index].reportTime)).year}",
-                                    //"Monday, 26 September 2022",,
-                                    // "${trendingReportsList[index].reportTime}, ${trendingReportsList[index].reportDate}",
-                                    reportThumbPic: trendingReportsList[index]
-                                        .reportTumbImage,
-                                  ),
-                                  const SizedBox(
-                                    height: 25,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            ReportLikeBtn(
-                                              isLiked:
-                                                  trendingReportsList[index]
-                                                      .liked,
-                                              likeCount:
-                                                  trendingReportsList[index]
-                                                      .reportLikes,
-                                              onTap: ((liked) async {
-                                                return false;
-                                              }),
-                                            ),
-                                            const SizedBox(
-                                              width: 10,
-                                            ),
-                                            ReactBtn(
-                                              head: NumberFormat.compact()
-                                                  .format(
-                                                      trendingReportsList[index]
-                                                          .reportComments)
-                                                  .toString(),
-                                              icon: (trendingReportsList[index]
-                                                      .commented)
-                                                  ? Icons.comment
-                                                  : Icons.comment_outlined,
-                                              onPressed: (() {
-                                                showModalBottomSheet(
-                                                  backgroundColor:
-                                                      AppColors.mainColor,
-                                                  context: context,
-                                                  isScrollControlled: true,
-                                                  shape:
-                                                      const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      topLeft:
-                                                          Radius.circular(10),
-                                                      topRight:
-                                                          Radius.circular(10),
-                                                    ),
-                                                  ),
-                                                  builder:
-                                                      (commentModelContext) =>
-                                                          CommentModalSheet(
-                                                    commentController:
-                                                        commentController,
-                                                    reporterProfilePic:
-                                                        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                                    blocID: 'Rupam Karmakar',
-                                                    commentTime: '12h',
-                                                    comment:
-                                                        "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                                                    commentModelContext:
-                                                        commentModelContext,
-                                                  ),
-                                                );
-                                              }),
-                                            ),
-                                          ],
-                                        ),
-                                        ReportSaveBtn(
-                                          saved:
-                                              trendingReportsList[index].saved,
-                                          onTap: (() {}),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                                ),
+                                builder: (commentModelContext) =>
+                                    CommentModalSheet(
+                                  commentController: commentController,
+                                  reporterProfilePic:
+                                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                  blocID: 'Rupam Karmakar',
+                                  commentTime: '12h',
+                                  comment:
+                                      "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                  commentModelContext: commentModelContext,
+                                ),
+                              );
+                            }),
+                            saveBtnOnTap: (() {}),
+                            followedOnTap: (() {}),
+                            saved: saved,
+                            commented: trendingReportsList[index].commented,
                           );
                         } else if (pageCount < totalPage) {
                           return const Center(

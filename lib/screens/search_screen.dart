@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:achivie/models/reporters_search_model.dart';
 import 'package:achivie/models/top_reports_model.dart';
 import 'package:achivie/models/top_reports_search_model.dart';
 import 'package:achivie/screens/reporter_public_profile.dart';
@@ -12,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../models/news_category_model.dart';
+import '../models/trending_reporters_model.dart';
 import '../services/keys.dart';
 import '../widgets/email_us_screen_widgets.dart';
 import '../widgets/news_bloc_profile_widgets.dart';
@@ -62,17 +64,19 @@ class _SearchScreenState extends State<SearchScreen>
   late TextEditingController commentController;
   late TabController _tabController;
   late ScrollController _pageScrollController;
-  bool followed = false, saved = false, loading = false;
+  bool followed = false, saved = false, loading = false, backPressed = false;
   int likeCount = 1000000,
       _hintIndex = 0,
       pageCount = 1,
       pageCountSearch = 1,
-      limitCount = 2,
+      limitCount = 10,
       totalPage = 0,
       totalPageSearch = 0;
   Timer? timer;
   List<Report> reports = <Report>[];
   List<TopReportSearch> searchReports = <TopReportSearch>[];
+  List<Reporter> searchReporters = <Reporter>[];
+  List<TrendingReporter> reporters = [];
   String uid = "", token = "";
 
   @override
@@ -92,6 +96,7 @@ class _SearchScreenState extends State<SearchScreen>
     );
     getUsrDetails();
     _startTimer();
+
     super.initState();
   }
 
@@ -100,6 +105,8 @@ class _SearchScreenState extends State<SearchScreen>
     _pageScrollController.removeListener(_updateScreenOffset);
     _searchController.dispose();
     timer?.cancel();
+    // controllerToIncreasingCurve.dispose();
+    // controllerToDecreasingCurve.dispose();
     super.dispose();
   }
 
@@ -223,13 +230,22 @@ class _SearchScreenState extends State<SearchScreen>
     // log(_tabController.index.toString());
     setState(() {});
 
-    if (_tabController.index == 0 && widget.query == null) {
+    if (widget.query == null) {
       refreshTopReports();
+      refreshReporters();
     }
 
     if (widget.query != null) {
       refreshTopReportsSearch(widget.query!);
+      refreshReportersSearch(widget.query!);
     }
+
+    // if (_tabController.index == 1 && widget.query == null) {
+    // }
+
+    // if (_tabController.index == 1 && widget.query != null) {
+    // }
+
     setState(() {});
 
     // if (_tabController.index == 0 && query.isNotEmpty) {
@@ -306,7 +322,71 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Future<void> refreshReporters() async {
-    log("refreshing");
+    pageCount = 1;
+    _searchController.clear();
+    searchReporters.clear();
+    loading = true;
+    setState(() {});
+
+    http.Response trendingReportersResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/trending/$uid?page=$pageCount&limit=$limitCount",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (trendingReportersResponse.statusCode == 200) {
+      Map<String, dynamic> trendingReportersJson =
+          jsonDecode(trendingReportersResponse.body);
+      if (trendingReportersJson["success"]) {
+        TrendingReporters trendingReporters =
+            trendingReportersFromJson(trendingReportersResponse.body);
+        reporters = trendingReporters.reporters;
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future<void> refreshReportersSearch(String query) async {
+    pageCountSearch = 1;
+    totalPageSearch = 0;
+    loading = true;
+    reporters.clear();
+    // setState(() {});
+
+    // if (query.startsWith("@")) {
+    //   query = Uri.encodeComponent(query);
+    // }
+    setState(() {});
+
+    http.Response topSearchResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/search/$uid?page=$pageCountSearch&limit=$limitCount&q=$query",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topSearchResponse.statusCode == 200) {
+      Map<String, dynamic> topSearchResponseJson =
+          jsonDecode(topSearchResponse.body);
+      // log(topSearchResponse.toString());
+      if (topSearchResponseJson["success"]) {
+        SearchReporters topSearchReports =
+            searchReportersFromJson(topSearchResponse.body);
+        searchReporters = topSearchReports.reports;
+        totalPageSearch = topSearchReports.totalPage;
+        // log(topSe.toString());
+      }
+    }
+    loading = false;
+    setState(() {});
   }
 
   Future<void> refreshAllReports() async {
@@ -366,6 +446,8 @@ class _SearchScreenState extends State<SearchScreen>
                   children: [
                     CustomAppBarLeading(
                       onPressed: (() {
+                        backPressed = true;
+                        // controllerToDecreasingCurve.forward();
                         Navigator.pop(context);
                         // print(isPlaying);
                       }),
@@ -376,7 +458,7 @@ class _SearchScreenState extends State<SearchScreen>
                     ),
                     Expanded(
                       child: AnimatedContainer(
-                        duration: Duration(
+                        duration: const Duration(
                           milliseconds: 100,
                         ),
                         child: TextFormField(
@@ -434,21 +516,47 @@ class _SearchScreenState extends State<SearchScreen>
                             color: AppColors.white,
                           ),
                           onFieldSubmitted: ((String inputQuery) {
-                            refreshTopReportsSearch(
-                                _searchController.text.trim());
-                          }),
-                          onChanged: ((String inputQuery) {
-                            log(inputQuery);
-                            if (inputQuery.isNotEmpty) {
+                            if (inputQuery.isNotEmpty &&
+                                _tabController.index == 0) {
                               refreshTopReportsSearch(
                                   _searchController.text.trim());
                             }
 
-                            if (inputQuery.isEmpty) {
-                              loading = false;
-                              refreshTopReports();
-                              setState(() {});
+                            if (inputQuery.isEmpty &&
+                                _tabController.index == 0) {
+                              // loading = false;
+                              refreshReporters();
+                              // setState(() {});
                             }
+                          }),
+                          onChanged: ((String inputQuery) {
+                            // log(inputQuery);
+                            if (inputQuery.isNotEmpty &&
+                                _tabController.index == 0) {
+                              refreshTopReportsSearch(
+                                  _searchController.text.trim());
+                            }
+
+                            if (inputQuery.isEmpty &&
+                                _tabController.index == 0) {
+                              // loading = false;
+                              refreshTopReports();
+                              // setState(() {});
+                            }
+
+                            if (inputQuery.isEmpty &&
+                                _tabController.index == 1) {
+                              // loading = false;
+                              refreshReporters();
+                              // setState(() {});
+                            }
+
+                            if (inputQuery.isNotEmpty &&
+                                _tabController.index == 1) {
+                              refreshReportersSearch(inputQuery);
+                              // setState(() {});
+                            }
+
                             // log(inputQuery);
                             // setState(() {});
                           }),
@@ -514,7 +622,6 @@ class _SearchScreenState extends State<SearchScreen>
                           ? searchReports.length + 1
                           : reports.length + 1,
                       itemBuilder: ((topNewsContext, topNewsIndex) {
-                        // log(_searchController.text.isEmpty.toString());
                         if ((_searchController.text.trim().isNotEmpty &&
                                 topNewsIndex < searchReports.length) ||
                             (_searchController.text.trim().isEmpty &&
@@ -661,37 +768,118 @@ class _SearchScreenState extends State<SearchScreen>
                   RefreshIndicator(
                     onRefresh: refreshReporters,
                     child: ListView.separated(
-                      itemBuilder: ((topNewsContext, topNewsIndex) {
-                        return Container(
-                          margin: const EdgeInsets.only(
-                            left: 10,
-                            right: 10,
-                          ),
-                          child: BlocDetailsRow(
-                            followers: 10000,
-                            blocName: "Rupam Karmakar",
-                            blocProfilePic:
-                                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                            radius: 30,
-                            followed: followed,
-                            followedOnTap: (() {
-                              setState(() {
-                                followed = !followed;
-                              });
-                            }),
-                            onTap: (() {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (profileDetailsContext) =>
-                                      const ReporterPublicProfile(
-                                    blockUID: "",
+                      itemCount: (_searchController.text.trim().isNotEmpty)
+                          ? searchReporters.length
+                          : reporters.length,
+                      itemBuilder: ((topReportersContext, topReportersIndex) {
+                        if ((_searchController.text.trim().isNotEmpty &&
+                                topReportersIndex < searchReporters.length) ||
+                            (_searchController.text.trim().isEmpty &&
+                                topReportersIndex < reporters.length)) {
+                          return (_searchController.text.isNotEmpty ||
+                                  searchReporters.isNotEmpty)
+                              ? Container(
+                                  margin: const EdgeInsets.only(
+                                    left: 15,
+                                    right: 15,
                                   ),
-                                ),
-                              );
-                            }),
-                          ),
-                        );
+                                  child: BlocDetailsRow(
+                                    followers:
+                                        searchReporters[topReportersIndex]
+                                            .followers,
+                                    blocName: searchReporters[topReportersIndex]
+                                        .blocName,
+                                    blocProfilePic:
+                                        searchReporters[topReportersIndex]
+                                            .blocProfile,
+                                    radius: 30,
+                                    followed: searchReporters[topReportersIndex]
+                                        .followed,
+                                    followedOnTap: (() {
+                                      setState(() {
+                                        followed = !followed;
+                                      });
+                                    }),
+                                    onTap: (() {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (profileDetailsContext) =>
+                                              ReporterPublicProfile(
+                                            blockUID: searchReporters[
+                                                    topReportersIndex]
+                                                .blocId,
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                )
+                              : (_searchController.text.isEmpty &&
+                                      reporters.isNotEmpty)
+                                  ? Container(
+                                      margin: const EdgeInsets.only(
+                                        left: 15,
+                                        right: 15,
+                                      ),
+                                      child: BlocDetailsRow(
+                                        followers: reporters[topReportersIndex]
+                                            .followers,
+                                        blocName: reporters[topReportersIndex]
+                                            .blocName,
+                                        blocProfilePic:
+                                            reporters[topReportersIndex]
+                                                .blocProfile,
+                                        radius: 30,
+                                        followed: reporters[topReportersIndex]
+                                            .followed,
+                                        followedOnTap: (() {
+                                          setState(() {
+                                            followed = !followed;
+                                          });
+                                        }),
+                                        onTap: (() {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (profileDetailsContext) =>
+                                                      ReporterPublicProfile(
+                                                blockUID:
+                                                    reporters[topReportersIndex]
+                                                        .blocId,
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    )
+                                  : (searchReporters.isEmpty &&
+                                          _searchController.text
+                                              .trim()
+                                              .isNotEmpty)
+                                      ? Text(
+                                          "No reports found",
+                                          style: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.7),
+                                          ),
+                                        )
+                                      : Container();
+                        } else if ((_searchController.text.trim().isEmpty &&
+                                (pageCount < totalPage)) ||
+                            (_searchController.text.trim().isNotEmpty &&
+                                (pageCountSearch < totalPageSearch))) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
+                            ),
+                          );
+                        }
+                        return Container();
                       }),
                       separatorBuilder:
                           ((topNewsSeparatorContext, topNewsSeparatorIndex) {
@@ -703,7 +891,6 @@ class _SearchScreenState extends State<SearchScreen>
                           child: const ReportsDivider(),
                         );
                       }),
-                      itemCount: 10,
                     ),
                   ),
                   RefreshIndicator(
