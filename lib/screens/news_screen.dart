@@ -895,7 +895,7 @@ class _NewsScreenState extends State<NewsScreen> {
                     ),
                   ),
                 if ((reports.isEmpty && newsSelectedCategory == "All") ||
-                    reportsByCat.isEmpty && newsSelectedCategory != "All")
+                    (reportsByCat.isEmpty && newsSelectedCategory != "All"))
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       childCount: 50,

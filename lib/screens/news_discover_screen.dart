@@ -9,6 +9,7 @@ import 'package:achivie/styles.dart';
 import 'package:achivie/widgets/news_bloc_profile_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -48,7 +49,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
       _catScrollController;
   List<Category> categoryList = [];
   List<ReportByCat> reportsByCat = <ReportByCat>[];
-  List<TrendingReport> trendingReportsList = [];
+  List<TrendingReport> trendingReportsList = <TrendingReport>[];
   List<TrendingReporter> reporters = [];
   DateTime? dateTime;
 
@@ -86,6 +87,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
   void _updateScreenOffset() {
     if (_pageScrollController.position.maxScrollExtent ==
         _pageScrollController.offset) {
+      log(newsSelectedCategory);
       if (pageCount < totalPage) {
         fetchTrendingReports(selectedCat: newsSelectedCategory);
       }
@@ -115,7 +117,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
   }
 
   Future fetchTrendingReports({
-    String? selectedCat,
+    required String selectedCat,
   }) async {
     if (pageCount < totalPage) {
       pageCount++;
@@ -137,20 +139,17 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
         TrendingReports trendingReports =
             trendingReportsFromJson(response.body);
         if (trendingReports.success) {
-          log(pageCount.toString());
-          log(totalPage.toString());
-          setState(() {
-            trendingReportsList.addAll(trendingReports.reports);
-          });
+          // log(pageCount.toString());
+          // log(totalPage.toString());
+          trendingReportsList.addAll(trendingReports.reports);
         } else {
           message = "No reports found";
           loading = false;
         }
       }
     }
-
     setState(() {});
-    log(newsSelectedCategory);
+
     if (newsSelectedCategory != "All" && selectedCat != "All") {
       selectedCat = Uri.encodeComponent(selectedCat!);
       http.Response response = await http.get(
@@ -177,7 +176,6 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
         }
       }
     }
-
     setState(() {});
   }
 
@@ -227,7 +225,6 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
         reporters = trendingReporters.reporters;
       }
     }
-
     setState(() {});
 
     http.Response catResponse = await http.get(
@@ -245,10 +242,10 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
         categoryList = blocAllCategories.categories;
       }
     }
-
     setState(() {});
 
     await allReportsAPICall();
+    setState(() {});
 
     // http.Response trendingResponse = await http.get(
     //   Uri.parse(
@@ -268,11 +265,13 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     //     totalPage = trendingReports.totalPage;
     //   }
     // }
-
-    setState(() {});
   }
 
   Future<void> allReportsAPICall() async {
+    // trendingReportsList.clear();
+    reportsByCat.clear();
+    pageCount = 1;
+
     http.Response response = await http.get(
       Uri.parse(
           "${Keys.apiReportsBaseUrl}/reports/trending/$uid?page=$pageCount&limit=$limitCount"),
@@ -283,27 +282,30 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     );
 
     if (response.statusCode == 200) {
-      TrendingReports trendingReports = trendingReportsFromJson(response.body);
-      if (trendingReports.success) {
-        log(pageCount.toString());
-        log(totalPage.toString());
-        setState(() {
-          trendingReportsList.addAll(trendingReports.reports);
-        });
+      Map<String, dynamic> allReportsJson = jsonDecode(response.body);
+      if (allReportsJson["success"]) {
+        TrendingReports trendingReports =
+            trendingReportsFromJson(response.body);
+
+        trendingReportsList = trendingReports.reports;
+        totalPage = trendingReports.totalPage;
+        // log(trendingReportsList.first.blocName);
+        // setState(() {});
       } else {
         message = "No reports found";
-        loading = false;
+        // loading = false;
       }
     }
-
     setState(() {});
+
+    // log("${trendingReportsList.length.toString()} 87");
   }
 
   Future<void> allReportsByCatAPICall(String selectedCat) async {
     trendingReportsList.clear();
     reportsByCat.clear();
     selectedCat = Uri.encodeComponent(selectedCat);
-    log(selectedCat.toString());
+    // log(selectedCat.toString());
 
     http.Response response = await http.get(
       Uri.parse(
@@ -560,18 +562,22 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                                       newsSelectedCategoryIndex,
                                   categoryList: categoryList,
                                   index: index,
-                                  onTap: (() {
-                                    // log(newsCategory[index].category);
+                                  onTap: (() async {
                                     pageCount = 1;
                                     newsSelectedCategory =
                                         categoryList[index].reportCat;
-                                    newsSelectedCategoryIndex = index;
-                                    setState(() {});
+
                                     if (categoryList[index].reportCat ==
                                         "All") {
                                       allReportsAPICall();
+                                      // log(trendingReportsList[index].blocId);
                                     }
-                                    allReportsByCatAPICall(
+                                    newsSelectedCategoryIndex = index;
+                                    setState(() {});
+                                    // log(categoryList[index].reportCat);
+                                    HapticFeedback.heavyImpact();
+
+                                    await allReportsByCatAPICall(
                                         categoryList[index].reportCat);
                                     // setState(() {});
                                   }),
@@ -760,13 +766,265 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                       },
                     ),
                   ),
-                if ((trendingReportsList.isEmpty &&
-                        newsSelectedCategory == "All") ||
-                    reportsByCat.isEmpty && newsSelectedCategory != "All")
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.backgroundColour,
+                if ((newsSelectedCategory == "All" &&
+                        trendingReportsList.isEmpty) ||
+                    (newsSelectedCategory != "All" && reportsByCat.isEmpty))
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: 1,
+                      (context, index) => Container(
+                        height: 530,
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.only(
+                          left: 10,
+                          right: 10,
+                          top: 10,
+                        ),
+                        padding: const EdgeInsets.only(
+                          left: 0,
+                          right: 0,
+                          top: 10,
+                          bottom: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.backgroundColour.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const ReporterShimmer(),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(left: 15),
+                              height: 30,
+                              width: MediaQuery.of(context).size.width / 4,
+                              decoration: BoxDecoration(
+                                // shape: shape,
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.white.withOpacity(0.08),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 25,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                children: [
+                                  ShimmerChild(
+                                    height: 17,
+                                    width:
+                                        MediaQuery.of(context).size.width / 1.9,
+                                    radius: 10,
+                                  ),
+                                  SizedBox(width: 5),
+                                  Container(
+                                    height: 17,
+                                    width:
+                                        MediaQuery.of(context).size.width / 4,
+                                    decoration: BoxDecoration(
+                                      // shape: shape,
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: AppColors.backgroundColour
+                                          .withOpacity(0.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 17,
+                                    width:
+                                        MediaQuery.of(context).size.width / 4,
+                                    decoration: BoxDecoration(
+                                      // shape: shape,
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: AppColors.backgroundColour
+                                          .withOpacity(0.4),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  ShimmerChild(
+                                    height: 17,
+                                    width:
+                                        MediaQuery.of(context).size.width / 3,
+                                    radius: 10,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    height: 17,
+                                    width:
+                                        MediaQuery.of(context).size.width / 4,
+                                    decoration: BoxDecoration(
+                                      // shape: shape,
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: AppColors.backgroundColour
+                                          .withOpacity(0.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                children: [
+                                  ShimmerChild(
+                                    height: 10,
+                                    width:
+                                        MediaQuery.of(context).size.width / 6,
+                                    radius: 10,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  ShimmerChild(
+                                    height: 10,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.5,
+                                    radius: 10,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                children: [
+                                  ShimmerChild(
+                                    height: 10,
+                                    width:
+                                        MediaQuery.of(context).size.width / 6,
+                                    radius: 10,
+                                  ),
+                                  SizedBox(
+                                    width: 5,
+                                  ),
+                                  ShimmerChild(
+                                    height: 10,
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.5,
+                                    radius: 10,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: ShimmerChild(
+                                height: 200,
+                                width: MediaQuery.of(context).size.width,
+                                radius: 15,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: 40,
+                              padding: const EdgeInsets.only(
+                                left: 15,
+                                right: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.thumb_up,
+                                            color: AppColors.white
+                                                .withOpacity(0.2),
+                                          ),
+                                          SizedBox(
+                                            width: 5,
+                                          ),
+                                          ShimmerChild(
+                                            height: 15,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                8,
+                                            radius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width /
+                                                25,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.comment,
+                                            color: AppColors.white
+                                                .withOpacity(0.2),
+                                          ),
+                                          SizedBox(
+                                            width: 5,
+                                          ),
+                                          ShimmerChild(
+                                            height: 15,
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                8,
+                                            radius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  ShimmerChild(
+                                    height: 25,
+                                    width:
+                                        MediaQuery.of(context).size.width / 3.5,
+                                    radius: 15,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

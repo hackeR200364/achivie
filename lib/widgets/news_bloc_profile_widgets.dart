@@ -551,7 +551,7 @@ class ReportHeadText extends StatelessWidget {
   });
 
   final String head;
-  final _globalKey = GlobalKey();
+  // final _globalKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -675,7 +675,6 @@ class ReportHeadText extends StatelessWidget {
     // );
 
     return RichText(
-      key: _globalKey,
       text: TextSpan(children: spans),
     );
   }
