@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import '../models/categories_models.dart';
+import '../models/reports_by_category_model.dart';
 import '../services/keys.dart';
 import '../services/shared_preferences.dart';
 import '../widgets/news_discover_screen_widget.dart';
@@ -38,13 +39,15 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 10,
+      limitCount = 2,
       totalPage = 0;
   String newsSelectedCategory = "All", token = "", uid = "", message = "";
   late TextEditingController commentController;
-  late ScrollController _newsScrollController;
-  late ScrollController _pageScrollController;
+  late ScrollController _newsScrollController,
+      _pageScrollController,
+      _catScrollController;
   List<Category> categoryList = [];
+  List<ReportByCat> reportsByCat = <ReportByCat>[];
   List<TrendingReport> trendingReportsList = [];
   List<TrendingReporter> reporters = [];
   DateTime? dateTime;
@@ -54,6 +57,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     commentController = TextEditingController();
     _newsScrollController = ScrollController();
     _pageScrollController = ScrollController();
+    _catScrollController = ScrollController();
     _pageScrollController.addListener(_updateScreenOffset);
     _newsScrollController.addListener(_updateState);
 
@@ -66,6 +70,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     _pageScrollController.dispose();
     _newsScrollController.removeListener(_updateState);
     _newsScrollController.dispose();
+    _catScrollController.dispose();
     commentController.dispose();
 
     for (var ticker in _tickers) {
@@ -82,7 +87,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     if (_pageScrollController.position.maxScrollExtent ==
         _pageScrollController.offset) {
       if (pageCount < totalPage) {
-        fetchTrendingReports();
+        fetchTrendingReports(selectedCat: newsSelectedCategory);
       }
       // setState(() {
       //   reports.addAll(reports);
@@ -109,32 +114,70 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
     // });
   }
 
-  Future fetchTrendingReports() async {
+  Future fetchTrendingReports({
+    String? selectedCat,
+  }) async {
     if (pageCount < totalPage) {
       pageCount++;
     }
-    http.Response response = await http.get(
-      Uri.parse(
-          "${Keys.apiReportsBaseUrl}/reports/trending/$uid?page=$pageCount&limit=$limitCount"),
-      headers: {
-        'content-Type': 'application/json',
-        'authorization': 'Bearer $token',
-      },
-    );
 
-    if (response.statusCode == 200) {
-      TrendingReports trendingReports = trendingReportsFromJson(response.body);
-      if (trendingReports.success) {
-        log(pageCount.toString());
-        log(totalPage.toString());
-        setState(() {
-          trendingReportsList.addAll(trendingReports.reports);
-        });
-      } else {
-        message = "No reports found";
-        loading = false;
+    if (newsSelectedCategory == "All" && selectedCat == "All") {
+      // log("message");
+
+      http.Response response = await http.get(
+        Uri.parse(
+            "${Keys.apiReportsBaseUrl}/reports/trending/$uid?page=$pageCount&limit=$limitCount"),
+        headers: {
+          'content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        TrendingReports trendingReports =
+            trendingReportsFromJson(response.body);
+        if (trendingReports.success) {
+          log(pageCount.toString());
+          log(totalPage.toString());
+          setState(() {
+            trendingReportsList.addAll(trendingReports.reports);
+          });
+        } else {
+          message = "No reports found";
+          loading = false;
+        }
       }
     }
+
+    setState(() {});
+    log(newsSelectedCategory);
+    if (newsSelectedCategory != "All" && selectedCat != "All") {
+      selectedCat = Uri.encodeComponent(selectedCat!);
+      http.Response response = await http.get(
+        Uri.parse(
+            "${Keys.apiReportsBaseUrl}/reports/category/search/$uid?page=$pageCount&limit=$limitCount&cat=$selectedCat"),
+        headers: {
+          'content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final ReportsByCat allReports = reportsByCatFromJson(response.body);
+        if (allReports.success) {
+          log(pageCount.toString());
+          log(totalPage.toString());
+
+          setState(() {
+            reportsByCat.addAll(allReports.reports);
+          });
+        } else {
+          message = "No reports found";
+          loading = false;
+        }
+      }
+    }
+
     setState(() {});
   }
 
@@ -156,6 +199,13 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
 
   Future<void> refresh() async {
     pageCount = 1;
+    newsSelectedCategory = "All";
+    newsSelectedCategoryIndex = 0;
+    _catScrollController.animateTo(
+      0,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.fastOutSlowIn,
+    );
     setState(() {});
 
     http.Response trendingReportersResponse = await http.get(
@@ -198,7 +248,32 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
 
     setState(() {});
 
-    http.Response trendingResponse = await http.get(
+    await allReportsAPICall();
+
+    // http.Response trendingResponse = await http.get(
+    //   Uri.parse(
+    //       "${Keys.apiReportsBaseUrl}/reports/trending/$uid?page=$pageCount&limit=$limitCount"),
+    //   headers: {
+    //     'content-Type': 'application/json',
+    //     'authorization': 'Bearer $token',
+    //   },
+    // );
+    //
+    // if (trendingResponse.statusCode == 200) {
+    //   if (jsonDecode(trendingResponse.body)["success"]) {
+    //     TrendingReports trendingReports =
+    //         trendingReportsFromJson(trendingResponse.body);
+    //     // log(trendingReports.message);
+    //     trendingReportsList = trendingReports.reports;
+    //     totalPage = trendingReports.totalPage;
+    //   }
+    // }
+
+    setState(() {});
+  }
+
+  Future<void> allReportsAPICall() async {
+    http.Response response = await http.get(
       Uri.parse(
           "${Keys.apiReportsBaseUrl}/reports/trending/$uid?page=$pageCount&limit=$limitCount"),
       headers: {
@@ -207,13 +282,47 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
       },
     );
 
-    if (trendingResponse.statusCode == 200) {
-      if (jsonDecode(trendingResponse.body)["success"]) {
-        TrendingReports trendingReports =
-            trendingReportsFromJson(trendingResponse.body);
-        // log(trendingReports.message);
-        trendingReportsList = trendingReports.reports;
-        totalPage = trendingReports.totalPage;
+    if (response.statusCode == 200) {
+      TrendingReports trendingReports = trendingReportsFromJson(response.body);
+      if (trendingReports.success) {
+        log(pageCount.toString());
+        log(totalPage.toString());
+        setState(() {
+          trendingReportsList.addAll(trendingReports.reports);
+        });
+      } else {
+        message = "No reports found";
+        loading = false;
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future<void> allReportsByCatAPICall(String selectedCat) async {
+    trendingReportsList.clear();
+    reportsByCat.clear();
+    selectedCat = Uri.encodeComponent(selectedCat);
+    log(selectedCat.toString());
+
+    http.Response response = await http.get(
+      Uri.parse(
+          "${Keys.apiReportsBaseUrl}/reports/category/search/$uid?page=$pageCount&limit=$limitCount&cat=$selectedCat"),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> reportsByCatJson = jsonDecode(response.body);
+      if (reportsByCatJson["success"]) {
+        ReportsByCat allReports = reportsByCatFromJson(response.body);
+        reportsByCat = allReports.reports;
+        totalPage = allReports.totalPage;
+        setState(() {});
+      } else {
+        message = "No reports found";
       }
     }
 
@@ -224,9 +333,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: refresh,
-      child: (reporters.isNotEmpty &&
-              categoryList.isNotEmpty &&
-              trendingReportsList.isNotEmpty)
+      child: (reporters.isNotEmpty && categoryList.isNotEmpty)
           ? CustomScrollView(
               controller: _pageScrollController,
               slivers: [
@@ -446,6 +553,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                             child: ListView.separated(
                               itemCount: categoryList.length,
                               scrollDirection: Axis.horizontal,
+                              controller: _catScrollController,
                               itemBuilder: (newsCatContext, index) {
                                 return CategoryContainer(
                                   newsSelectedCategoryIndex:
@@ -454,11 +562,18 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                                   index: index,
                                   onTap: (() {
                                     // log(newsCategory[index].category);
-                                    setState(() {
-                                      newsSelectedCategory =
-                                          categoryList[index].reportCat;
-                                      newsSelectedCategoryIndex = index;
-                                    });
+                                    pageCount = 1;
+                                    newsSelectedCategory =
+                                        categoryList[index].reportCat;
+                                    newsSelectedCategoryIndex = index;
+                                    setState(() {});
+                                    if (categoryList[index].reportCat ==
+                                        "All") {
+                                      allReportsAPICall();
+                                    }
+                                    allReportsByCatAPICall(
+                                        categoryList[index].reportCat);
+                                    // setState(() {});
                                   }),
                                 );
                               },
@@ -645,14 +760,126 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                       },
                     ),
                   ),
-                if (trendingReportsList.isEmpty)
+                if ((trendingReportsList.isEmpty &&
+                        newsSelectedCategory == "All") ||
+                    reportsByCat.isEmpty && newsSelectedCategory != "All")
                   const SliverFillRemaining(
                     child: Center(
                       child: CircularProgressIndicator(
                         color: AppColors.backgroundColour,
                       ),
                     ),
-                  )
+                  ),
+                if (reportsByCat.isNotEmpty)
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: reportsByCat.length + 1,
+                      (context, index) {
+                        if (index < reportsByCat.length) {
+                          return ReportContainer(
+                            followers: reportsByCat[index].followers,
+                            blocName: reportsByCat[index].blocName,
+                            blocProfile: reportsByCat[index].blocProfile,
+                            followed: reportsByCat[index].followed ?? false,
+                            reportCat: reportsByCat[index].reportCat,
+                            reportHeadline: reportsByCat[index].reportHeadline,
+                            reportUploadTime:
+                                "${DateFormat('EEEE').format(reportsByCat[index].reportUploadTime)}, ${reportsByCat[index].reportUploadTime.day} ${DateFormat('MMMM').format(reportsByCat[index].reportUploadTime)} ${reportsByCat[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                            reportTime: "${DateFormat('EEEE').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(reportsByCat[index].reportTime),
+                              ),
+                            )}, ${DateTime.fromMillisecondsSinceEpoch(
+                              int.parse(reportsByCat[index].reportTime),
+                            ).day} ${DateFormat('MMMM').format(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(reportsByCat[index].reportTime),
+                              ),
+                            )} ${DateTime.fromMillisecondsSinceEpoch(
+                              int.parse(reportsByCat[index].reportTime),
+                            ).year}",
+                            reportThumbPic: reportsByCat[index].reportTumbImage,
+                            likeCount: reportsByCat[index].reportLikes,
+                            commentCount: NumberFormat.compact()
+                                .format(reportsByCat[index].reportComments)
+                                .toString(),
+                            saved: saved,
+                            reportOnTap: (() {
+                              log(reportsByCat[index].reportId);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (newsDetailsScreenContext) =>
+                                      NewsDetailsScreen(
+                                    reportID: reportsByCat[index].reportId,
+                                    reportUsrID:
+                                        reportsByCat[index].reportUsrId,
+                                    usrID: uid,
+                                  ),
+                                ),
+                              );
+                            }),
+                            blocDetailsOnTap: (() {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (profileDetailsContext) =>
+                                      ReporterPublicProfile(
+                                    blockUID: reportsByCat[index].blocId,
+                                  ),
+                                ),
+                              );
+                            }),
+                            likeBtnOnTap: ((liked) async {
+                              if (reportsByCat[index].liked!) {
+                                return false;
+                              } else {
+                                return true;
+                              }
+                            }),
+                            commentBtnOnTap: (() {
+                              showModalBottomSheet(
+                                backgroundColor: AppColors.mainColor,
+                                context: context,
+                                isScrollControlled: true,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
+                                  ),
+                                ),
+                                builder: (commentModelContext) =>
+                                    CommentModalSheet(
+                                  commentController: commentController,
+                                  reporterProfilePic:
+                                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                  blocID: 'Rupam Karmakar',
+                                  commentTime: '12h',
+                                  comment:
+                                      "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                  commentModelContext: commentModelContext,
+                                ),
+                              );
+                            }),
+                            saveBtnOnTap: (() {}),
+                            followedOnTap: (() {}),
+                            liked: reportsByCat[index].liked!,
+                            commented: reportsByCat[index].commented!,
+                          );
+                        } else if (pageCount < totalPage) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
+                            ),
+                          );
+                        }
+                        return Container();
+                      },
+                    ),
+                  ),
               ],
             )
           : CustomScrollView(
