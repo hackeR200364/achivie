@@ -13,7 +13,7 @@ class TopReports {
   bool success;
   String message;
   int totalPage;
-  List<Report> reports;
+  List<TopReport> reports;
 
   TopReports({
     required this.success,
@@ -26,8 +26,8 @@ class TopReports {
         success: json["success"],
         message: json["message"],
         totalPage: json["totalPage"],
-        reports:
-            List<Report>.from(json["reports"].map((x) => Report.fromJson(x))),
+        reports: List<TopReport>.from(
+            json["reports"].map((x) => TopReport.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
@@ -38,7 +38,7 @@ class TopReports {
       };
 }
 
-class Report {
+class TopReport {
   String reportId;
   List<String> reportImages;
   String reportTumbImage;
@@ -72,7 +72,7 @@ class Report {
   bool saved;
   bool followed;
 
-  Report({
+  TopReport({
     required this.reportId,
     required this.reportImages,
     required this.reportTumbImage,
@@ -107,7 +107,7 @@ class Report {
     required this.followed,
   });
 
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
+  factory TopReport.fromJson(Map<String, dynamic> json) => TopReport(
         reportId: json["reportID"],
         reportImages: List<String>.from(json["reportImages"].map((x) => x)),
         reportTumbImage: json["reportTumbImage"],

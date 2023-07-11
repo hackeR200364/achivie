@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:achivie/models/all_reports_by_search_model.dart';
+import 'package:achivie/models/all_reports_model.dart';
 import 'package:achivie/models/reporters_search_model.dart';
 import 'package:achivie/models/top_reports_model.dart';
 import 'package:achivie/models/top_reports_search_model.dart';
@@ -69,14 +71,18 @@ class _SearchScreenState extends State<SearchScreen>
       _hintIndex = 0,
       pageCount = 1,
       pageCountSearch = 1,
-      limitCount = 10,
-      totalPage = 0,
+      limitCount = 2,
+      totalPageTopReports = 0,
+      totalPageReporters = 0,
+      totalPageAllReports = 0,
       totalPageSearch = 0;
   Timer? timer;
-  List<Report> reports = <Report>[];
+  List<TopReport> reports = <TopReport>[];
   List<TopReportSearch> searchReports = <TopReportSearch>[];
   List<Reporter> searchReporters = <Reporter>[];
   List<TrendingReporter> reporters = [];
+  List<ReportAllBySearch> allReportsBySearch = [];
+  List<Report> allReports = [];
   String uid = "", token = "";
 
   @override
@@ -119,28 +125,43 @@ class _SearchScreenState extends State<SearchScreen>
       //   });
       // }
 
-      if (_searchController.text.trim().isEmpty) {
-        log("top fetch");
-
-        if (pageCount < totalPage) {
+      if (_searchController.text.trim().isEmpty && _tabController.index == 0) {
+        if (pageCount < totalPageTopReports) {
           fetchTopReports();
+          log("message");
         }
       }
-      if (_searchController.text.trim().isNotEmpty) {
+      if (_searchController.text.trim().isNotEmpty &&
+          _tabController.index == 0) {
         if (pageCountSearch < totalPageSearch) {
-          log("search fetch");
           fetchTopReportsSearch();
         }
       }
-      // setState(() {
-      //   reports.addAll(reports);
-      // });
+
+      if (_searchController.text.trim().isEmpty && _tabController.index == 1) {
+        if (pageCount < totalPageReporters) {
+          fetchReporters();
+        }
+      }
+      if (_searchController.text.trim().isNotEmpty &&
+          _tabController.index == 1) {
+        if (pageCountSearch < totalPageSearch) {
+          fetchReportersSearch();
+        }
+      }
+
+      if (_searchController.text.trim().isEmpty && _tabController.index == 2) {
+        if (pageCount < totalPageAllReports) {
+          fetchAllReports();
+        }
+      }
+      if (_searchController.text.trim().isNotEmpty &&
+          _tabController.index == 2) {
+        if (pageCountSearch < totalPageSearch) {
+          fetchAllReportsSearch();
+        }
+      }
     }
-    // setState(() {
-    //   topItemIndex = _getIndexInView();
-    //   screenOffset = _pageScrollController.offset;
-    //   log(screenOffset.toString());
-    // });
   }
 
   Future fetchTopReportsSearch() async {
@@ -179,8 +200,9 @@ class _SearchScreenState extends State<SearchScreen>
 
   Future fetchTopReports() async {
     pageCount++;
-    log(pageCount.toString());
-    http.Response topReportsResponse = await http.get(
+    // log(pageCount.toString());
+
+    http.Response trendingReportsResponse = await http.get(
       Uri.parse(
         "${Keys.apiReportsBaseUrl}/reports/top/$uid?page=$pageCount&limit=$limitCount",
       ),
@@ -190,13 +212,131 @@ class _SearchScreenState extends State<SearchScreen>
       },
     );
 
-    if (topReportsResponse.statusCode == 200) {
-      Map<String, dynamic> topSearchResponseJson =
-          jsonDecode(topReportsResponse.body);
-      if (topSearchResponseJson["success"]) {
-        TopReports topReports = topReportsFromJson(topReportsResponse.body);
+    if (trendingReportsResponse.statusCode == 200) {
+      Map<String, dynamic> topResponseJson =
+          jsonDecode(trendingReportsResponse.body);
+      if (topResponseJson["success"]) {
+        TopReports topReports =
+            topReportsFromJson(trendingReportsResponse.body);
         reports.addAll(topReports.reports);
         // totalPage = topReports.totalPage;
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future fetchReportersSearch() async {
+    pageCountSearch++;
+
+    _searchController.text = Uri.encodeComponent(_searchController.text.trim());
+    setState(() {});
+
+    http.Response topSearchResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/search/$uid?page=$pageCountSearch&limit=$limitCount&q=${_searchController.text.trim()}",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topSearchResponse.statusCode == 200) {
+      Map<String, dynamic> topSearchResponseJson =
+          jsonDecode(topSearchResponse.body);
+      // log(topSearchResponse.toString());
+      if (topSearchResponseJson["success"]) {
+        SearchReporters topSearchReports =
+            searchReportersFromJson(topSearchResponse.body);
+        searchReporters.addAll(topSearchReports.reports);
+        // totalPageSearch = topSearchReports.totalPage;
+        // log(topSe.toString());
+      }
+    }
+    loading = false;
+    setState(() {});
+  }
+
+  Future fetchReporters() async {
+    pageCount++;
+    log(pageCount.toString());
+    http.Response topReportersResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/trending/$uid?page=$pageCount&limit=$limitCount",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topReportersResponse.statusCode == 200) {
+      Map<String, dynamic> trendingReportersJson =
+          jsonDecode(topReportersResponse.body);
+      if (trendingReportersJson["success"]) {
+        TrendingReporters trendingReporters =
+            trendingReportersFromJson(topReportersResponse.body);
+        reporters.addAll(trendingReporters.reporters);
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future fetchAllReportsSearch() async {
+    pageCountSearch++;
+
+    _searchController.text = Uri.encodeComponent(_searchController.text.trim());
+    setState(() {});
+
+    http.Response allReportsSearchResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/search/$uid?page=$pageCountSearch&limit=$limitCount&q=${_searchController.text.trim()}",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (allReportsSearchResponse.statusCode == 200) {
+      Map<String, dynamic> allSearchResponseJson =
+          jsonDecode(allReportsSearchResponse.body);
+      // log(topSearchResponse.toString());
+      if (allSearchResponseJson["success"]) {
+        ReportsAllBySearch allSearchReports =
+            reportsAllBySearchFromJson(allReportsSearchResponse.body);
+        allReportsBySearch.addAll(allSearchReports.reports);
+        // totalPageSearch = allSearchReports.totalPage;
+        // log(topSe.toString());
+      }
+    }
+
+    loading = false;
+    setState(() {});
+  }
+
+  Future fetchAllReports() async {
+    pageCount++;
+    log(pageCount.toString());
+
+    http.Response topResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reports/all/$uid?page=$pageCount&limit=$limitCount",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topResponse.statusCode == 200) {
+      Map<String, dynamic> topResponseJson = jsonDecode(topResponse.body);
+      if (topResponseJson["success"]) {
+        AllReports allReportsRes = allReportsFromJson(topResponse.body);
+        allReports.addAll(allReportsRes.reports);
+        // totalPage = allReportsRes.totalPage;
       }
     }
 
@@ -233,24 +373,15 @@ class _SearchScreenState extends State<SearchScreen>
     if (widget.query == null) {
       refreshTopReports();
       refreshReporters();
+      refreshAllReports();
     }
 
     if (widget.query != null) {
       refreshTopReportsSearch(widget.query!);
       refreshReportersSearch(widget.query!);
+      refreshAllReportsSearch(widget.query!);
     }
-
-    // if (_tabController.index == 1 && widget.query == null) {
-    // }
-
-    // if (_tabController.index == 1 && widget.query != null) {
-    // }
-
     setState(() {});
-
-    // if (_tabController.index == 0 && query.isNotEmpty) {
-    //   refreshTopReportsSearch();
-    // }
   }
 
   Future<void> refreshTopReports() async {
@@ -258,7 +389,7 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController.clear();
     searchReports.clear();
     loading = true;
-    totalPage = 0;
+    totalPageTopReports = 0;
     setState(() {});
 
     http.Response topResponse = await http.get(
@@ -276,7 +407,7 @@ class _SearchScreenState extends State<SearchScreen>
       if (topResponseJson["success"]) {
         TopReports topReports = topReportsFromJson(topResponse.body);
         reports = topReports.reports;
-        totalPage = topReports.totalPage;
+        totalPageTopReports = topReports.totalPage;
       }
     }
 
@@ -325,6 +456,7 @@ class _SearchScreenState extends State<SearchScreen>
     pageCount = 1;
     _searchController.clear();
     searchReporters.clear();
+    totalPageReporters = 0;
     loading = true;
     setState(() {});
 
@@ -345,6 +477,7 @@ class _SearchScreenState extends State<SearchScreen>
         TrendingReporters trendingReporters =
             trendingReportersFromJson(trendingReportersResponse.body);
         reporters = trendingReporters.reporters;
+        totalPageReporters = trendingReporters.totalPage;
       }
     }
 
@@ -361,6 +494,7 @@ class _SearchScreenState extends State<SearchScreen>
     // if (query.startsWith("@")) {
     //   query = Uri.encodeComponent(query);
     // }
+    query = Uri.encodeComponent(query);
     setState(() {});
 
     http.Response topSearchResponse = await http.get(
@@ -390,7 +524,73 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Future<void> refreshAllReports() async {
-    log("refreshing");
+    pageCount = 1;
+    _searchController.clear();
+    allReports.clear();
+    loading = true;
+    totalPageAllReports = 0;
+    setState(() {});
+
+    http.Response topResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reports/all/$uid?page=$pageCount&limit=$limitCount",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topResponse.statusCode == 200) {
+      Map<String, dynamic> topResponseJson = jsonDecode(topResponse.body);
+      if (topResponseJson["success"]) {
+        AllReports allReportsRes = allReportsFromJson(topResponse.body);
+        allReports = allReportsRes.reports;
+        totalPageAllReports = allReportsRes.totalPage;
+      }
+    }
+
+    loading = false;
+    setState(() {});
+  }
+
+  Future<void> refreshAllReportsSearch(String query) async {
+    pageCountSearch = 1;
+    totalPageSearch = 0;
+    loading = true;
+    allReportsBySearch.clear();
+    // setState(() {});
+
+    // if (query.startsWith("@")) {
+    //   query = Uri.encodeComponent(query);
+    // }
+    query = Uri.encodeComponent(query);
+    setState(() {});
+
+    http.Response topSearchResponse = await http.get(
+      Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reports/all/search/$uid?page=$pageCountSearch&limit=$limitCount&q=$query",
+      ),
+      headers: {
+        'content-Type': 'application/json',
+        'authorization': 'Bearer $token',
+      },
+    );
+
+    if (topSearchResponse.statusCode == 200) {
+      Map<String, dynamic> allSearchResponseJson =
+          jsonDecode(topSearchResponse.body);
+      // log(topSearchResponse.toString());
+      if (allSearchResponseJson["success"]) {
+        ReportsAllBySearch allSearchReports =
+            reportsAllBySearchFromJson(topSearchResponse.body);
+        allReportsBySearch = allSearchReports.reports;
+        totalPageSearch = allSearchReports.totalPage;
+        // log(topSe.toString());
+      }
+    }
+    loading = false;
+    setState(() {});
   }
 
   @override
@@ -557,6 +757,19 @@ class _SearchScreenState extends State<SearchScreen>
                               // setState(() {});
                             }
 
+                            if (inputQuery.isEmpty &&
+                                _tabController.index == 2) {
+                              // loading = false;
+                              refreshAllReports();
+                              // setState(() {});
+                            }
+
+                            if (inputQuery.isNotEmpty &&
+                                _tabController.index == 2) {
+                              refreshAllReportsSearch(inputQuery);
+                              // setState(() {});
+                            }
+
                             // log(inputQuery);
                             // setState(() {});
                           }),
@@ -580,6 +793,13 @@ class _SearchScreenState extends State<SearchScreen>
                 ),
                 child: TabBar(
                   enableFeedback: true,
+                  onTap: ((index) {
+                    _pageScrollController.animateTo(
+                      _pageScrollController.position.minScrollExtent,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.fastLinearToSlowEaseIn,
+                    );
+                  }),
                   splashBorderRadius: BorderRadius.circular(50),
                   splashFactory: NoSplash.splashFactory,
                   physics: AppColors.scrollPhysics,
@@ -749,7 +969,7 @@ class _SearchScreenState extends State<SearchScreen>
                                         )
                                       : Container();
                         } else if ((_searchController.text.trim().isEmpty &&
-                                (pageCount < totalPage)) ||
+                                (pageCount < totalPageTopReports)) ||
                             (_searchController.text.trim().isNotEmpty &&
                                 (pageCountSearch < totalPageSearch))) {
                           return const Center(
@@ -768,9 +988,10 @@ class _SearchScreenState extends State<SearchScreen>
                   RefreshIndicator(
                     onRefresh: refreshReporters,
                     child: ListView.separated(
+                      controller: _pageScrollController,
                       itemCount: (_searchController.text.trim().isNotEmpty)
-                          ? searchReporters.length
-                          : reporters.length,
+                          ? searchReporters.length + 1
+                          : reporters.length + 1,
                       itemBuilder: ((topReportersContext, topReportersIndex) {
                         if ((_searchController.text.trim().isNotEmpty &&
                                 topReportersIndex < searchReporters.length) ||
@@ -867,7 +1088,7 @@ class _SearchScreenState extends State<SearchScreen>
                                         )
                                       : Container();
                         } else if ((_searchController.text.trim().isEmpty &&
-                                (pageCount < totalPage)) ||
+                                (pageCount < totalPageReporters)) ||
                             (_searchController.text.trim().isNotEmpty &&
                                 (pageCountSearch < totalPageSearch))) {
                           return const Center(
@@ -896,36 +1117,157 @@ class _SearchScreenState extends State<SearchScreen>
                   RefreshIndicator(
                     onRefresh: refreshAllReports,
                     child: ListView.builder(
-                      itemBuilder: ((topNewsContext, topNewsIndex) {
-                        return ReportContainer(
-                          followers: 10000,
-                          likeCount: 1000000,
-                          blocName: "blocName",
-                          blocProfile:
-                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                          reportCat: "reportCat",
-                          reportHeadline: "reportHeadline",
-                          reportUploadTime: "reportUploadTime",
-                          reportTime: "reportTime",
-                          reportThumbPic:
-                              "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                          commentCount:
-                              NumberFormat.compact().format(90010).toString(),
-                          reportOnTap: (() {}),
-                          blocDetailsOnTap: (() {}),
-                          likeBtnOnTap: ((liked) async {
-                            return true;
-                          }),
-                          commentBtnOnTap: (() {}),
-                          saveBtnOnTap: (() {}),
-                          followed: followed,
-                          followedOnTap: (() {}),
-                          saved: saved,
-                          liked: false,
-                          commented: false,
-                        );
+                      controller: _pageScrollController,
+                      itemCount: (_searchController.text.trim().isNotEmpty)
+                          ? allReportsBySearch.length + 1
+                          : allReports.length + 1,
+                      itemBuilder: ((allNewsContext, allNewsIndex) {
+                        if ((_searchController.text.trim().isNotEmpty &&
+                                allNewsIndex < allReportsBySearch.length) ||
+                            (_searchController.text.trim().isEmpty &&
+                                allNewsIndex < allReports.length)) {
+                          // log(pageCount.toString());
+                          return (_searchController.text.isNotEmpty ||
+                                  allReportsBySearch.isNotEmpty)
+                              ? ReportContainer(
+                                  followers: allReportsBySearch[allNewsIndex]
+                                      .followers,
+                                  likeCount: allReportsBySearch[allNewsIndex]
+                                      .reportLikes,
+                                  blocName:
+                                      allReportsBySearch[allNewsIndex].blocName,
+                                  blocProfile: allReportsBySearch[allNewsIndex]
+                                      .blocProfile,
+                                  reportCat: allReportsBySearch[allNewsIndex]
+                                      .reportCat,
+                                  reportHeadline:
+                                      allReportsBySearch[allNewsIndex]
+                                          .reportHeadline,
+                                  reportUploadTime:
+                                      "${DateFormat('EEEE').format(allReportsBySearch[allNewsIndex].reportUploadTime)}, ${allReportsBySearch[allNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(allReportsBySearch[allNewsIndex].reportUploadTime)} ${allReportsBySearch[allNewsIndex].reportUploadTime.year}",
+                                  //"Monday, 26 September 2022",
+                                  reportTime: "${DateFormat('EEEE').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(allReportsBySearch[allNewsIndex]
+                                          .reportTime),
+                                    ),
+                                  )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                    int.parse(allReportsBySearch[allNewsIndex]
+                                        .reportTime),
+                                  ).day} ${DateFormat('MMMM').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                      int.parse(allReportsBySearch[allNewsIndex]
+                                          .reportTime),
+                                    ),
+                                  )} ${DateTime.fromMillisecondsSinceEpoch(
+                                    int.parse(allReportsBySearch[allNewsIndex]
+                                        .reportTime),
+                                  ).year}",
+                                  reportThumbPic:
+                                      allReportsBySearch[allNewsIndex]
+                                          .reportTumbImage,
+                                  commentCount: NumberFormat.compact()
+                                      .format(allReportsBySearch[allNewsIndex]
+                                          .reportComments)
+                                      .toString(),
+                                  reportOnTap: (() {}),
+                                  blocDetailsOnTap: (() {}),
+                                  likeBtnOnTap: ((liked) async {
+                                    return true;
+                                  }),
+                                  commentBtnOnTap: (() {}),
+                                  saveBtnOnTap: (() {}),
+                                  followed:
+                                      allReportsBySearch[allNewsIndex].followed,
+                                  followedOnTap: (() {}),
+                                  saved: allReportsBySearch[allNewsIndex].saved,
+                                  liked: allReportsBySearch[allNewsIndex].liked,
+                                  commented: allReportsBySearch[allNewsIndex]
+                                      .commented,
+                                )
+                              : (_searchController.text.isEmpty &&
+                                      allReports.isNotEmpty)
+                                  ? ReportContainer(
+                                      followers:
+                                          allReports[allNewsIndex].followers,
+                                      likeCount:
+                                          allReports[allNewsIndex].reportLikes,
+                                      blocName:
+                                          allReports[allNewsIndex].blocName,
+                                      blocProfile:
+                                          allReports[allNewsIndex].blocProfile,
+                                      reportCat:
+                                          allReports[allNewsIndex].reportCat,
+                                      reportHeadline: allReports[allNewsIndex]
+                                          .reportHeadline,
+                                      reportUploadTime:
+                                          "${DateFormat('EEEE').format(allReports[allNewsIndex].reportUploadTime)}, ${allReports[allNewsIndex].reportUploadTime.day} ${DateFormat('MMMM').format(allReports[allNewsIndex].reportUploadTime)} ${allReports[allNewsIndex].reportUploadTime.year}",
+                                      //"Monday, 26 September 2022",
+                                      reportTime: "${DateFormat('EEEE').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(allReports[allNewsIndex]
+                                              .reportTime),
+                                        ),
+                                      )}, ${DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(allReports[allNewsIndex]
+                                            .reportTime),
+                                      ).day} ${DateFormat('MMMM').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          int.parse(allReports[allNewsIndex]
+                                              .reportTime),
+                                        ),
+                                      )} ${DateTime.fromMillisecondsSinceEpoch(
+                                        int.parse(allReports[allNewsIndex]
+                                            .reportTime),
+                                      ).year}",
+                                      reportThumbPic: allReports[allNewsIndex]
+                                          .reportTumbImage,
+                                      commentCount: NumberFormat.compact()
+                                          .format(allReports[allNewsIndex]
+                                              .reportComments)
+                                          .toString(),
+                                      reportOnTap: (() {}),
+                                      blocDetailsOnTap: (() {}),
+                                      likeBtnOnTap: ((liked) async {
+                                        return true;
+                                      }),
+                                      commentBtnOnTap: (() {}),
+                                      saveBtnOnTap: (() {}),
+                                      followed:
+                                          allReports[allNewsIndex].followed,
+                                      followedOnTap: (() {}),
+                                      saved: allReports[allNewsIndex].saved,
+                                      liked: allReports[allNewsIndex].liked,
+                                      commented:
+                                          allReports[allNewsIndex].commented,
+                                    )
+                                  : (allReportsBySearch.isEmpty &&
+                                          _searchController.text
+                                              .trim()
+                                              .isNotEmpty)
+                                      ? Text(
+                                          "No reports found",
+                                          style: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.7),
+                                          ),
+                                        )
+                                      : Container();
+                        } else if ((_searchController.text.trim().isEmpty &&
+                                (pageCount < totalPageAllReports)) ||
+                            (_searchController.text.trim().isNotEmpty &&
+                                (pageCountSearch < totalPageSearch))) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.backgroundColour,
+                              ),
+                            ),
+                          );
+                        }
+                        return Container();
                       }),
-                      itemCount: 10,
                     ),
                   ),
                 ],
