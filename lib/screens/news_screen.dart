@@ -14,6 +14,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -612,7 +613,11 @@ class _NewsScreenState extends State<NewsScreen> {
                               itemCount: categoryList.length,
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (newsCatContext, index) {
-                                return GestureDetector(
+                                return CategoryContainer(
+                                  newsSelectedCategoryIndex:
+                                      newsSelectedCategoryIndex,
+                                  categoryList: categoryList,
+                                  index: index,
                                   onTap: (() {
                                     // log(newsCategory[index].category);
                                     setState(() {
@@ -620,39 +625,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                           categoryList[index].reportCat;
                                       newsSelectedCategoryIndex = index;
                                     });
+                                    HapticFeedback.heavyImpact();
                                   }),
-                                  child: Container(
-                                    padding: const EdgeInsets.only(
-                                      left: 20,
-                                      right: 20,
-                                      top: 5,
-                                      bottom: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          (index == newsSelectedCategoryIndex)
-                                              ? AppColors.backgroundColour
-                                              : AppColors.backgroundColour
-                                                  .withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(8),
-                                      // border: const Border.fromBorderSide(
-                                      //   BorderSide(
-                                      //     width: 0.7,
-                                      //     color: AppColors.white,
-                                      //   ),
-                                      // ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        categoryList[index].reportCat,
-                                        style: TextStyle(
-                                          color: AppColors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 );
                               },
                               separatorBuilder:
@@ -1611,6 +1585,57 @@ class _NewsScreenState extends State<NewsScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+class CategoryContainer extends StatelessWidget {
+  const CategoryContainer({
+    super.key,
+    required this.newsSelectedCategoryIndex,
+    required this.categoryList,
+    required this.index,
+    required this.onTap,
+  });
+
+  final int newsSelectedCategoryIndex, index;
+  final List<Category> categoryList;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 5,
+          bottom: 5,
+        ),
+        decoration: BoxDecoration(
+          color: (index == newsSelectedCategoryIndex)
+              ? AppColors.backgroundColour
+              : AppColors.backgroundColour.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(8),
+          // border: const Border.fromBorderSide(
+          //   BorderSide(
+          //     width: 0.7,
+          //     color: AppColors.white,
+          //   ),
+          // ),
+        ),
+        child: Center(
+          child: Text(
+            categoryList[index].reportCat,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

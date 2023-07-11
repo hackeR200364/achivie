@@ -545,12 +545,13 @@ class ReportTimeText extends StatelessWidget {
 }
 
 class ReportHeadText extends StatelessWidget {
-  const ReportHeadText({
+  ReportHeadText({
     super.key,
     required this.head,
   });
 
   final String head;
+  final _globalKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -585,6 +586,28 @@ class ReportHeadText extends StatelessWidget {
                       ),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
+                // Navigator.push(
+                //   context,
+                //   CircularClipRoute(
+                //     expandFrom: _globalKey.currentContext!,
+                //     curve: Curves.fastOutSlowIn,
+                //     reverseCurve: Curves.fastOutSlowIn.flipped,
+                //     opacity: ConstantTween(1),
+                //     transitionDuration: const Duration(milliseconds: 700),
+                //     builder: ((_) => SearchScreen(
+                //       initialIndex: matchedText.startsWith("#")
+                //           ? 0
+                //           : matchedText.startsWith("@")
+                //           ? 1
+                //           : 0,
+                //       query: matchedText,
+                //     )),
+                //   ), // CustomPageTransitionAnimation(
+                //   //   enterWidget: SearchScreen(),
+                //   //   x: 0.5,
+                //   //   y: -0.85,
+                //   // ),
+                // );
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -652,6 +675,7 @@ class ReportHeadText extends StatelessWidget {
     // );
 
     return RichText(
+      key: _globalKey,
       text: TextSpan(children: spans),
     );
   }

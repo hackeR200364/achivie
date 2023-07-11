@@ -93,6 +93,8 @@ dependencies:
   detectable_text_field:
   hidable:
   webview_flutter:
+  animated_icon_button:
+  circular_clip_route:
 #  rename: any
 #  pinput:
 

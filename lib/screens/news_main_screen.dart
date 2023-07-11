@@ -1,6 +1,7 @@
 import 'package:achivie/screens/reports_upload_screen.dart';
 import 'package:achivie/screens/search_screen.dart';
 import 'package:achivie/services/shared_preferences.dart';
+import 'package:circular_clip_route/circular_clip_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
@@ -27,11 +28,41 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
   int screenTabIndex = 0;
   String usrName = "", blocName = "";
   bool hasBloc = false, isDownwards = false;
+  // late AnimationController controllerToIncreasingCurve;
+  // late AnimationController controllerToDecreasingCurve;
+  // late Animation<double> animationIncreasingCurve;
+  // late Animation<double> animationDecreasingCurve;
   // ScrollController? _scrollController;
 
   @override
   void initState() {
     // _scrollController = ScrollController();
+    // controllerToIncreasingCurve = AnimationController(
+    //   duration: const Duration(milliseconds: 400),
+    //   vsync: this,
+    // );
+    // controllerToDecreasingCurve = AnimationController(
+    //   duration: const Duration(milliseconds: 400),
+    //   vsync: this,
+    // );
+    //
+    // animationIncreasingCurve = Tween<double>(begin: 0, end: 100).animate(
+    //   CurvedAnimation(
+    //     parent: controllerToIncreasingCurve,
+    //     curve: Curves.fastLinearToSlowEaseIn,
+    //   ),
+    // )..addListener(() {
+    //     setState(() {});
+    //   });
+    // animationDecreasingCurve = Tween<double>(begin: 100, end: 0).animate(
+    //   CurvedAnimation(
+    //     parent: controllerToDecreasingCurve,
+    //     curve: Curves.fastLinearToSlowEaseIn,
+    //   ),
+    // )..addListener(() {
+    //     setState(() {});
+    //   });
+
     getUserDetails();
     super.initState();
   }
@@ -44,6 +75,11 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
     }
     setState(() {});
   }
+
+  final _searchBtnKey = GlobalKey();
+  final _notificationBtnKey = GlobalKey();
+  final _uploadBtnKey = GlobalKey();
+  // final _avatarKey = GlobalKey();
 
   // void _scrollToTop() {
   //   _scrollController!.animateTo(
@@ -74,12 +110,30 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
               padding: const EdgeInsets.only(right: 15),
               child: Center(
                 child: CustomGlassIconButton(
+                  key: _searchBtnKey,
                   onPressed: (() {
+                    // RenderBox renderbox = _searchBtnKey.currentContext!
+                    //     .findRenderObject() as RenderBox;
+                    // Offset position = renderbox.localToGlobal(Offset.zero);
+                    // double x = position.dx;
+                    // double y = position.dy;
+                    // log("x = $x");
+                    // log("y = $y");
+                    // controllerToIncreasingCurve.forward();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (notificationContext) => SearchScreen(),
-                      ),
+                      CircularClipRoute(
+                        expandFrom: _searchBtnKey.currentContext!,
+                        curve: Curves.fastOutSlowIn,
+                        reverseCurve: Curves.fastOutSlowIn.flipped,
+                        opacity: ConstantTween(1),
+                        transitionDuration: const Duration(milliseconds: 700),
+                        builder: ((_) => SearchScreen()),
+                      ), // CustomPageTransitionAnimation(
+                      //   enterWidget: SearchScreen(),
+                      //   x: 0.5,
+                      //   y: -0.85,
+                      // ),
                     );
                   }),
                   icon: Icons.search,
@@ -90,14 +144,31 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
             padding: const EdgeInsets.only(right: 15),
             child: Center(
               child: CustomGlassIconButton(
+                key: _notificationBtnKey,
                 onPressed: (() {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (notificationContext) =>
-                          const NewsNotificationScreen(),
-                    ),
+                    CircularClipRoute(
+                      expandFrom: _notificationBtnKey.currentContext!,
+                      curve: Curves.fastOutSlowIn,
+                      reverseCurve: Curves.fastOutSlowIn.flipped,
+                      opacity: ConstantTween(1),
+                      transitionDuration: const Duration(milliseconds: 700),
+                      builder: ((_) => NewsNotificationScreen()),
+                    ), // CustomPageTransitionAnimation(
+                    //   enterWidget: SearchScreen(),
+                    //   x: 0.5,
+                    //   y: -0.85,
+                    // ),
                   );
+
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (notificationContext) =>
+                  //         const NewsNotificationScreen(),
+                  //   ),
+                  // );
                 }),
                 icon: Icons.notifications,
               ),
@@ -134,15 +205,16 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
       floatingActionButton: (isDownwards)
           ? null
           : AnimatedContainer(
+              key: _uploadBtnKey,
               duration: Duration(
                 milliseconds: 100,
               ),
               height: 50,
               width: 50,
               decoration: BoxDecoration(
-                color: AppColors.backgroundColour,
-                borderRadius: BorderRadius.circular(20),
-              ),
+                  color: AppColors.backgroundColour, shape: BoxShape.circle
+                  // borderRadius: BorderRadius.circular(20),
+                  ),
               child: Center(
                 child: IconButton(
                   icon: Center(
@@ -155,10 +227,26 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
                   onPressed: (() {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (c0ntextNext) => ReportUploadScreen(),
-                      ),
+                      CircularClipRoute(
+                        expandFrom: _uploadBtnKey.currentContext!,
+                        curve: Curves.fastOutSlowIn,
+                        reverseCurve: Curves.fastOutSlowIn.flipped,
+                        opacity: ConstantTween(1),
+                        transitionDuration: const Duration(milliseconds: 700),
+                        builder: ((_) => ReportUploadScreen()),
+                      ), // CustomPageTransitionAnimation(
+                      //   enterWidget: SearchScreen(),
+                      //   x: 0.5,
+                      //   y: -0.85,
+                      // ),
                     );
+
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (contextNext) => ReportUploadScreen(),
+                    //   ),
+                    // );
                   }),
                 ),
               ),
