@@ -50,12 +50,12 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 2,
+      limitCount = 20,
       totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
 
-  bool followed = false, saved = false, loading = false;
+  bool followed = false, saved = false, loading = false, isNativeLoaded = false;
   String newsSelectedCategory = "All";
   List<Report> reports = <Report>[];
   List<ReportByCat> reportsByCat = <ReportByCat>[];
@@ -65,21 +65,49 @@ class _NewsScreenState extends State<NewsScreen> {
   // String timeDifference = '';
   String newsDes =
       "Crypto investors should be prepared to lose all their money, BOE governor says sdfbkd sjfbd shbcshb ckxc mzxcnidush yeihewjhfjdsk fjsdnkcv jdsfjkdsf iusdfhjsdff";
+  // NativeAd? nativeAd;
+
+  static final _kAdIndex = 4;
 
   @override
   void initState() {
     // _reportsCatController = ScrollController();
+    // MobileAds.instance.updateRequestConfiguration(RequestConfiguration(
+    //   testDeviceIds: ['17ED2EE7DC2A08B4FDAAEBBD1F08602C'],
+    // ));
+    //
+    // nativeAd = NativeAd(
+    //   adUnitId: "ca-app-pub-7050103229809241/9680336245",
+    //   factoryId: "ReportContainer",
+    //   // nativeAdOptions: NativeAdOptions(
+    //   //   adChoicesPlacement: AdChoicesPlacement.bottomRightCorner,
+    //   //   videoOptions: VideoOptions(
+    //   //     startMuted: true,
+    //   //     clickToExpandRequested: true,
+    //   //   ),
+    //   // ),
+    //   listener: NativeAdListener(
+    //     onAdLoaded: ((ad) {
+    //       setState(() {
+    //         isNativeLoaded = true;
+    //       });
+    //     }),
+    //     onAdFailedToLoad: ((ad, error) {
+    //       log(error.toString());
+    //       log(ad.adUnitId.toString());
+    //       ad.dispose();
+    //     }),
+    //   ),
+    //   request: const AdRequest(),
+    // );
+    // nativeAd!.load();
     _pageScrollController = ScrollController();
     _catScrollController = ScrollController();
     _recentScrollController = ScrollController();
     _pageScrollController.addListener(_updateScreenOffset);
-    // _pageScrollController.addListener(_updateNewsOffset);
     commentController = TextEditingController();
+
     getUserDetails();
-    // timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   updateTimeDifference();
-    // });
-    // refresh();
     super.initState();
   }
 
@@ -91,6 +119,7 @@ class _NewsScreenState extends State<NewsScreen> {
     _catScrollController.dispose();
     _recentScrollController.dispose();
     commentController.dispose();
+    // nativeAd!.dispose();
     // for (var ticker in _tickers) {
     //   ticker.dispose();
     // }
@@ -273,6 +302,7 @@ class _NewsScreenState extends State<NewsScreen> {
       curve: Curves.fastLinearToSlowEaseIn,
     );
     carouselController.animateToPage(0);
+    // nativeAd!.dispose();
     setState(() {});
 
     http.Response recentResponse = await http.get(
@@ -316,6 +346,8 @@ class _NewsScreenState extends State<NewsScreen> {
 
     setState(() {});
 
+    // log(isNativeLoaded.toString());
+
     await allReportsAPICall();
 
     // log(message);
@@ -357,6 +389,13 @@ class _NewsScreenState extends State<NewsScreen> {
       final formatter = DateFormat.yMd().add_jm();
       return formatter.format(dateTime);
     }
+  }
+
+  int getDestinationItemIndex(int rawIndex) {
+    if (rawIndex >= _kAdIndex && isNativeLoaded) {
+      return rawIndex - 1;
+    }
+    return rawIndex;
   }
 
   @override
@@ -790,6 +829,8 @@ class _NewsScreenState extends State<NewsScreen> {
                     delegate: SliverChildBuilderDelegate(
                       childCount: reports.length + 1,
                       (context, index) {
+                        reports[index] =
+                            reports[getDestinationItemIndex(index)];
                         if (index < reports.length) {
                           return ReportContainer(
                             followers: reports[index].followers,
@@ -890,7 +931,6 @@ class _NewsScreenState extends State<NewsScreen> {
                             ),
                           );
                         }
-                        return Container();
                       },
                     ),
                   ),
