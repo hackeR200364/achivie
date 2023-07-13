@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:achivie/models/all_reports_by_search_model.dart';
 import 'package:achivie/models/all_reports_model.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../Utils/snackbar_utils.dart';
 import '../models/news_category_model.dart';
 import '../models/trending_reporters_model.dart';
 import '../services/keys.dart';
@@ -22,7 +24,7 @@ import '../widgets/news_bloc_profile_widgets.dart';
 import 'news_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  SearchScreen({
+  const SearchScreen({
     super.key,
     this.initialIndex,
     this.query,
@@ -101,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen>
       vsync: this,
     );
     getUsrDetails();
-    _startTimer();
+    // _startTimer();
 
     super.initState();
   }
@@ -292,7 +294,7 @@ class _SearchScreenState extends State<SearchScreen>
 
     http.Response allReportsSearchResponse = await http.get(
       Uri.parse(
-        "${Keys.apiReportsBaseUrl}/reporters/search/$uid?page=$pageCountSearch&limit=$limitCount&q=${_searchController.text.trim()}",
+        "${Keys.apiReportsBaseUrl}/reports/all/search/$uid?page=$pageCountSearch&limit=$limitCount&q=${_searchController.text.trim()}",
       ),
       headers: {
         'content-Type': 'application/json',
@@ -304,16 +306,19 @@ class _SearchScreenState extends State<SearchScreen>
       Map<String, dynamic> allSearchResponseJson =
           jsonDecode(allReportsSearchResponse.body);
       // log(topSearchResponse.toString());
+      log(allSearchResponseJson["message"].toString());
+
       if (allSearchResponseJson["success"]) {
         ReportsAllBySearch allSearchReports =
             reportsAllBySearchFromJson(allReportsSearchResponse.body);
+        log(allSearchReports.reports.length.toString());
+
         allReportsBySearch.addAll(allSearchReports.reports);
         // totalPageSearch = allSearchReports.totalPage;
         // log(topSe.toString());
       }
     }
 
-    loading = false;
     setState(() {});
   }
 
@@ -355,14 +360,14 @@ class _SearchScreenState extends State<SearchScreen>
     // log(_searchController.text.trim());
   }
 
-  void _startTimer() {
-    if (timer != null && timer!.isActive) return;
-    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      setState(() {
-        _hintIndex = (_hintIndex + 1) % newsCategory.length;
-      });
-    });
-  }
+  // void _startTimer() {
+  //   if (timer != null && timer!.isActive) return;
+  //   timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+  //     setState(() {
+  //       _hintIndex = (_hintIndex + 1) % newsCategory.length;
+  //     });
+  //   });
+  // }
 
   void getUsrDetails() async {
     uid = await StorageServices.getUID();
@@ -591,6 +596,28 @@ class _SearchScreenState extends State<SearchScreen>
     }
     loading = false;
     setState(() {});
+  }
+
+  Future<String> printIps() async {
+    List<Map<String, dynamic>> ipList = [];
+
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        var ipDetails = {
+          'address': addr.address,
+          'isLoopback': addr.isLoopback,
+          'rawAddress': addr.rawAddress,
+          'type': addr.type.name,
+        };
+
+        ipList.add(ipDetails);
+      }
+    }
+
+    String ipDetails = jsonEncode(ipList);
+    // print(ipDetails);
+
+    return ipDetails;
   }
 
   @override
@@ -890,7 +917,112 @@ class _SearchScreenState extends State<SearchScreen>
                                   reportOnTap: (() {}),
                                   blocDetailsOnTap: (() {}),
                                   likeBtnOnTap: ((liked) async {
-                                    return true;
+                                    String usrAddress = await printIps();
+                                    if (reports[topNewsIndex].liked) {
+                                      return false;
+                                    } else if (!reports[topNewsIndex].liked) {
+                                      // usrAddress = Uri.encodeComponent(usrAddress);
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[topNewsIndex].reportId}/${reports[topNewsIndex].reportBlocId}/$usrAddress",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          reports[topNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          reports[topNewsIndex].reportLikes =
+                                              reports[topNewsIndex]
+                                                      .reportLikes +
+                                                  1;
+                                          setState(() {});
+                                          return true;
+                                        }
+                                        reports[topNewsIndex].liked =
+                                            recentsResponseJson["success"];
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                recentsResponseJson["message"],
+                                            context: context,
+                                          ),
+                                        );
+                                        setState(() {});
+                                        return false;
+                                      }
+                                      reports[topNewsIndex].liked = false;
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message: "Something went wrong",
+                                          context: context,
+                                        ),
+                                      );
+                                      setState(() {});
+                                      return false;
+                                    }
+                                  }),
+                                  reportOnDoubleTap: (() async {
+                                    String usrAddress = await printIps();
+                                    if (reports[topNewsIndex].liked) {
+                                    } else if (!reports[topNewsIndex].liked) {
+                                      // usrAddress = Uri.encodeComponent(usrAddress);
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[topNewsIndex].reportId}/${reports[topNewsIndex].reportBlocId}/$usrAddress",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          reports[topNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          reports[topNewsIndex].reportLikes =
+                                              reports[topNewsIndex]
+                                                      .reportLikes +
+                                                  1;
+                                        } else {
+                                          reports[topNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: recentsResponseJson[
+                                                  "message"],
+                                              context: context,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        reports[topNewsIndex].liked = false;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: "Something went wrong",
+                                            context: context,
+                                          ),
+                                        );
+                                      }
+                                      setState(() {});
+                                    }
                                   }),
                                   commentBtnOnTap: (() {}),
                                   saveBtnOnTap: (() {}),
@@ -945,7 +1077,130 @@ class _SearchScreenState extends State<SearchScreen>
                                       reportOnTap: (() {}),
                                       blocDetailsOnTap: (() {}),
                                       likeBtnOnTap: ((liked) async {
-                                        return true;
+                                        String usrAddress = await printIps();
+                                        if (reports[topNewsIndex].liked) {
+                                          return false;
+                                        } else if (!reports[topNewsIndex]
+                                            .liked) {
+                                          // usrAddress = Uri.encodeComponent(usrAddress);
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[topNewsIndex].reportId}/${reports[topNewsIndex].reportBlocId}/$usrAddress",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              reports[topNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              reports[topNewsIndex]
+                                                      .reportLikes =
+                                                  reports[topNewsIndex]
+                                                          .reportLikes +
+                                                      1;
+                                              setState(() {});
+                                              return true;
+                                            }
+                                            reports[topNewsIndex].liked =
+                                                recentsResponseJson["success"];
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: recentsResponseJson[
+                                                    "message"],
+                                                context: context,
+                                              ),
+                                            );
+                                            setState(() {});
+                                            return false;
+                                          }
+                                          reports[topNewsIndex].liked = false;
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: "Something went wrong",
+                                              context: context,
+                                            ),
+                                          );
+                                          setState(() {});
+                                          return false;
+                                        }
+                                      }),
+                                      reportOnDoubleTap: (() async {
+                                        String usrAddress = await printIps();
+                                        if (reports[topNewsIndex].liked) {
+                                        } else if (!reports[topNewsIndex]
+                                            .liked) {
+                                          // usrAddress = Uri.encodeComponent(usrAddress);
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[topNewsIndex].reportId}/${reports[topNewsIndex].reportBlocId}/$usrAddress",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              reports[topNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              reports[topNewsIndex]
+                                                      .reportLikes =
+                                                  reports[topNewsIndex]
+                                                          .reportLikes +
+                                                      1;
+                                            } else {
+                                              reports[topNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: recentsResponseJson[
+                                                      "message"],
+                                                  context: context,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            reports[topNewsIndex].liked = false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: "Something went wrong",
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                          setState(() {});
+                                        }
                                       }),
                                       commentBtnOnTap: (() {}),
                                       saveBtnOnTap: (() {}),
@@ -987,7 +1242,7 @@ class _SearchScreenState extends State<SearchScreen>
                   ),
                   RefreshIndicator(
                     onRefresh: refreshReporters,
-                    child: ListView.separated(
+                    child: ListView.builder(
                       controller: _pageScrollController,
                       itemCount: (_searchController.text.trim().isNotEmpty)
                           ? searchReporters.length + 1
@@ -1102,16 +1357,6 @@ class _SearchScreenState extends State<SearchScreen>
                         }
                         return Container();
                       }),
-                      separatorBuilder:
-                          ((topNewsSeparatorContext, topNewsSeparatorIndex) {
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                            top: 10,
-                            bottom: 10,
-                          ),
-                          child: const ReportsDivider(),
-                        );
-                      }),
                     ),
                   ),
                   RefreshIndicator(
@@ -1127,7 +1372,8 @@ class _SearchScreenState extends State<SearchScreen>
                             (_searchController.text.trim().isEmpty &&
                                 allNewsIndex < allReports.length)) {
                           // log(pageCount.toString());
-                          return (_searchController.text.isNotEmpty ||
+                          // log(allReportsBySearch.isNotEmpty.toString());
+                          return (_searchController.text.isNotEmpty &&
                                   allReportsBySearch.isNotEmpty)
                               ? ReportContainer(
                                   followers: allReportsBySearch[allNewsIndex]
@@ -1173,7 +1419,112 @@ class _SearchScreenState extends State<SearchScreen>
                                   reportOnTap: (() {}),
                                   blocDetailsOnTap: (() {}),
                                   likeBtnOnTap: ((liked) async {
-                                    return true;
+                                    String usrAddress = await printIps();
+                                    if (reports[allNewsIndex].liked) {
+                                      return false;
+                                    } else if (!reports[allNewsIndex].liked) {
+                                      // usrAddress = Uri.encodeComponent(usrAddress);
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[allNewsIndex].reportId}/${reports[allNewsIndex].reportBlocId}/$usrAddress",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          reports[allNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          reports[allNewsIndex].reportLikes =
+                                              reports[allNewsIndex]
+                                                      .reportLikes +
+                                                  1;
+                                          setState(() {});
+                                          return true;
+                                        }
+                                        reports[allNewsIndex].liked =
+                                            recentsResponseJson["success"];
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                recentsResponseJson["message"],
+                                            context: context,
+                                          ),
+                                        );
+                                        setState(() {});
+                                        return false;
+                                      }
+                                      reports[allNewsIndex].liked = false;
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        AppSnackbar().customizedAppSnackbar(
+                                          message: "Something went wrong",
+                                          context: context,
+                                        ),
+                                      );
+                                      setState(() {});
+                                      return false;
+                                    }
+                                  }),
+                                  reportOnDoubleTap: (() async {
+                                    String usrAddress = await printIps();
+                                    if (reports[allNewsIndex].liked) {
+                                    } else if (!reports[allNewsIndex].liked) {
+                                      // usrAddress = Uri.encodeComponent(usrAddress);
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[allNewsIndex].reportId}/${reports[allNewsIndex].reportBlocId}/$usrAddress",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          reports[allNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          reports[allNewsIndex].reportLikes =
+                                              reports[allNewsIndex]
+                                                      .reportLikes +
+                                                  1;
+                                        } else {
+                                          reports[allNewsIndex].liked =
+                                              recentsResponseJson["success"];
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: recentsResponseJson[
+                                                  "message"],
+                                              context: context,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        reports[allNewsIndex].liked = false;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: "Something went wrong",
+                                            context: context,
+                                          ),
+                                        );
+                                      }
+                                      setState(() {});
+                                    }
                                   }),
                                   commentBtnOnTap: (() {}),
                                   saveBtnOnTap: (() {}),
@@ -1229,7 +1580,130 @@ class _SearchScreenState extends State<SearchScreen>
                                       reportOnTap: (() {}),
                                       blocDetailsOnTap: (() {}),
                                       likeBtnOnTap: ((liked) async {
-                                        return true;
+                                        String usrAddress = await printIps();
+                                        if (reports[allNewsIndex].liked) {
+                                          return false;
+                                        } else if (!reports[allNewsIndex]
+                                            .liked) {
+                                          // usrAddress = Uri.encodeComponent(usrAddress);
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[allNewsIndex].reportId}/${reports[allNewsIndex].reportBlocId}/$usrAddress",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              reports[allNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              reports[allNewsIndex]
+                                                      .reportLikes =
+                                                  reports[allNewsIndex]
+                                                          .reportLikes +
+                                                      1;
+                                              setState(() {});
+                                              return true;
+                                            }
+                                            reports[allNewsIndex].liked =
+                                                recentsResponseJson["success"];
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: recentsResponseJson[
+                                                    "message"],
+                                                context: context,
+                                              ),
+                                            );
+                                            setState(() {});
+                                            return false;
+                                          }
+                                          reports[allNewsIndex].liked = false;
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: "Something went wrong",
+                                              context: context,
+                                            ),
+                                          );
+                                          setState(() {});
+                                          return false;
+                                        }
+                                      }),
+                                      reportOnDoubleTap: (() async {
+                                        String usrAddress = await printIps();
+                                        if (reports[allNewsIndex].liked) {
+                                        } else if (!reports[allNewsIndex]
+                                            .liked) {
+                                          // usrAddress = Uri.encodeComponent(usrAddress);
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[allNewsIndex].reportId}/${reports[allNewsIndex].reportBlocId}/$usrAddress",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              reports[allNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              reports[allNewsIndex]
+                                                      .reportLikes =
+                                                  reports[allNewsIndex]
+                                                          .reportLikes +
+                                                      1;
+                                            } else {
+                                              reports[allNewsIndex].liked =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: recentsResponseJson[
+                                                      "message"],
+                                                  context: context,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            reports[allNewsIndex].liked = false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: "Something went wrong",
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                          setState(() {});
+                                        }
                                       }),
                                       commentBtnOnTap: (() {}),
                                       saveBtnOnTap: (() {}),

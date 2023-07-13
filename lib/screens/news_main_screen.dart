@@ -337,16 +337,18 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           // if (notification.metrics.)
           return true;
         },
-        child: Stack(
-          children: [
-            if (screenTabIndex == 0) const NewsScreen(),
-            if (screenTabIndex == 1) const NewsDiscoverScreen(),
-            if (screenTabIndex == 2) const NewsSavedScreen(),
-            if (screenTabIndex == 3)
-              NewsBlocProfile(
-                hasBloc: hasBloc,
-              ),
-          ],
+        child: SafeArea(
+          child: Stack(
+            children: [
+              if (screenTabIndex == 0) const NewsScreen(),
+              if (screenTabIndex == 1) const NewsDiscoverScreen(),
+              if (screenTabIndex == 2) const NewsSavedScreen(),
+              if (screenTabIndex == 3)
+                NewsBlocProfile(
+                  hasBloc: hasBloc,
+                ),
+            ],
+          ),
         ),
       ),
     );

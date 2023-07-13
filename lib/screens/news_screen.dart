@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:achivie/models/all_reports_model.dart';
 import 'package:achivie/models/recent_reports_model.dart';
@@ -19,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../Utils/snackbar_utils.dart';
 import '../models/categories_models.dart';
 import '../services/shared_preferences.dart';
 import 'news_discover_screen.dart';
@@ -50,7 +52,7 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 20,
+      limitCount = 5,
       totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
@@ -66,8 +68,6 @@ class _NewsScreenState extends State<NewsScreen> {
   String newsDes =
       "Crypto investors should be prepared to lose all their money, BOE governor says sdfbkd sjfbd shbcshb ckxc mzxcnidush yeihewjhfjdsk fjsdnkcv jdsfjkdsf iusdfhjsdff";
   // NativeAd? nativeAd;
-
-  static final _kAdIndex = 4;
 
   @override
   void initState() {
@@ -391,11 +391,33 @@ class _NewsScreenState extends State<NewsScreen> {
     }
   }
 
-  int getDestinationItemIndex(int rawIndex) {
-    if (rawIndex >= _kAdIndex && isNativeLoaded) {
-      return rawIndex - 1;
+  // int getDestinationItemIndex(int rawIndex) {
+  //   if (rawIndex >= _kAdIndex && isNativeLoaded) {
+  //     return rawIndex - 1;
+  //   }
+  //   return rawIndex;
+  // }
+
+  Future<String> printIps() async {
+    List<Map<String, dynamic>> ipList = [];
+
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        var ipDetails = {
+          'address': addr.address,
+          'isLoopback': addr.isLoopback,
+          'rawAddress': addr.rawAddress,
+          'type': addr.type.name,
+        };
+
+        ipList.add(ipDetails);
+      }
     }
-    return rawIndex;
+
+    String ipDetails = jsonEncode(ipList);
+    // print(ipDetails);
+
+    return ipDetails;
   }
 
   @override
@@ -829,8 +851,6 @@ class _NewsScreenState extends State<NewsScreen> {
                     delegate: SliverChildBuilderDelegate(
                       childCount: reports.length + 1,
                       (context, index) {
-                        reports[index] =
-                            reports[getDestinationItemIndex(index)];
                         if (index < reports.length) {
                           return ReportContainer(
                             followers: reports[index].followers,
@@ -855,7 +875,6 @@ class _NewsScreenState extends State<NewsScreen> {
                               int.parse(reports[index].reportTime),
                             ).year}",
                             reportThumbPic: reports[index].reportTumbImage,
-                            likeCount: reports[index].reportLikes,
                             commentCount: NumberFormat.compact()
                                 .format(reports[index].reportComments)
                                 .toString(),
@@ -885,11 +904,106 @@ class _NewsScreenState extends State<NewsScreen> {
                                 ),
                               );
                             }),
+                            likeCount: reports[index].reportLikes,
+                            liked: reports[index].liked,
                             likeBtnOnTap: ((liked) async {
-                              if (reports[index].liked!) {
+                              String usrAddress = await printIps();
+                              if (reports[index].liked) {
                                 return false;
-                              } else {
-                                return true;
+                              } else if (!reports[index].liked) {
+                                // usrAddress = Uri.encodeComponent(usrAddress);
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[index].reportId}/${reports[index].reportBlocId}/$usrAddress",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reports[index].liked =
+                                        recentsResponseJson["success"];
+                                    reports[index].reportLikes =
+                                        reports[index].reportLikes + 1;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                    setState(() {});
+                                    return true;
+                                  }
+                                  reports[index].liked =
+                                      recentsResponseJson["success"];
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: recentsResponseJson["message"],
+                                      context: context,
+                                    ),
+                                  );
+                                  setState(() {});
+                                  return false;
+                                }
+                                reports[index].liked = false;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Something went wrong",
+                                    context: context,
+                                  ),
+                                );
+                                setState(() {});
+                                return false;
+                              }
+                            }),
+                            reportOnDoubleTap: (() async {
+                              String usrAddress = await printIps();
+                              if (reports[index].liked) {
+                              } else if (!reports[index].liked) {
+                                // usrAddress = Uri.encodeComponent(usrAddress);
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[index].reportId}/${reports[index].reportBlocId}/$usrAddress",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reports[index].liked =
+                                        recentsResponseJson["success"];
+                                    reports[index].reportLikes =
+                                        reports[index].reportLikes + 1;
+                                  } else {
+                                    reports[index].liked =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  reports[index].liked = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                                setState(() {});
                               }
                             }),
                             commentBtnOnTap: (() {
@@ -918,7 +1032,6 @@ class _NewsScreenState extends State<NewsScreen> {
                             }),
                             saveBtnOnTap: (() {}),
                             followedOnTap: (() {}),
-                            liked: reports[index].liked!,
                             commented: reports[index].commented!,
                           );
                         } else if (pageCount < totalPage) {
@@ -931,6 +1044,7 @@ class _NewsScreenState extends State<NewsScreen> {
                             ),
                           );
                         }
+                        return Container();
                       },
                     ),
                   ),
@@ -1908,6 +2022,7 @@ class ReportContainer extends StatelessWidget {
     required this.saved,
     required this.liked,
     required this.commented,
+    this.reportOnDoubleTap,
   });
 
   final int followers, likeCount;
@@ -1927,6 +2042,8 @@ class ReportContainer extends StatelessWidget {
       saveBtnOnTap,
       followedOnTap;
 
+  final VoidCallback? reportOnDoubleTap;
+
   final Future<bool?> Function(bool)? likeBtnOnTap;
 
   @override
@@ -1935,6 +2052,7 @@ class ReportContainer extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: reportOnTap,
+          onDoubleTap: reportOnDoubleTap,
           child: Container(
             width: MediaQuery.of(context).size.width,
             margin: const EdgeInsets.only(
