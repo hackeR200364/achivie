@@ -178,7 +178,7 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
   }
 
   void getUsrDetails() async {
-    // widget.hasBloc = false;
+    widget.hasBloc = true;
     isLoading = true;
     setState(() {});
     if (widget.hasBloc) {
@@ -335,149 +335,152 @@ class _NewsBlocProfileState extends State<NewsBlocProfile>
                     ),
                   ),
                 ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    childCount: blocAllReports!.reports.length,
-                    (context, index) => GestureDetector(
-                      onTap: (() {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (newsDetailsScreenContext) =>
-                                const NewsDetailsScreen(
-                              reportID: "",
-                            ),
-                          ),
-                        );
-                      }),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 15,
-                          bottom: 15,
-                        ),
-                        margin: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
-                          top: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.backgroundColour.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            if (newsSelectedCategoryIndex != 0)
-                              BlocDetailsRow(
-                                onTap: (() {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (profileDetailsContext) =>
-                                          const ReporterPublicProfile(
-                                        blockUID: "",
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                blocName: 'Rupam Karmakar',
-                                blocProfilePic:
-                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                followed: true,
-                                followedOnTap: (() {}),
+                if (blocAllReports != null)
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: blocAllReports!.reports.length,
+                      (context, index) => GestureDetector(
+                        onTap: (() {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (newsDetailsScreenContext) =>
+                                  const NewsDetailsScreen(
+                                reportID: "",
                               ),
-                            if (newsSelectedCategoryIndex != 0)
+                            ),
+                          );
+                        }),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                            top: 15,
+                            bottom: 15,
+                          ),
+                          margin: const EdgeInsets.only(
+                            left: 10,
+                            right: 10,
+                            top: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundColour.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            children: [
+                              if (newsSelectedCategoryIndex != 0)
+                                BlocDetailsRow(
+                                  onTap: (() {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (profileDetailsContext) =>
+                                            const ReporterPublicProfile(
+                                          blockUID: "",
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  blocName: 'Rupam Karmakar',
+                                  blocProfilePic:
+                                      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                  followed: true,
+                                  followedOnTap: (() {}),
+                                ),
+                              if (newsSelectedCategoryIndex != 0)
+                                const SizedBox(
+                                  height: 25,
+                                ),
+                              ReportDetailsColumn(
+                                category:
+                                    blocAllReports!.reports[index].reportCat,
+                                reportHeading: blocAllReports!
+                                    .reports[index].reportHeadline,
+                                reportUploadTime:
+                                    "${DateFormat('EEEE').format(blocAllReports!.reports[index].reportUploadTime)}, ${blocAllReports!.reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(blocAllReports!.reports[index].reportUploadTime)} ${blocAllReports!.reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
+                                reportTime:
+                                    "${blocAllReports!.reports[index].reportTime}, ${blocAllReports!.reports[index].reportDate}",
+                                reportThumbPic: blocAllReports!
+                                    .reports[index].reportTumbImage,
+                              ),
                               const SizedBox(
                                 height: 25,
                               ),
-                            ReportDetailsColumn(
-                              category:
-                                  blocAllReports!.reports[index].reportCat,
-                              reportHeading:
-                                  blocAllReports!.reports[index].reportHeadline,
-                              reportUploadTime:
-                                  "${DateFormat('EEEE').format(blocAllReports!.reports[index].reportUploadTime)}, ${blocAllReports!.reports[index].reportUploadTime.day} ${DateFormat('MMMM').format(blocAllReports!.reports[index].reportUploadTime)} ${blocAllReports!.reports[index].reportUploadTime.year}", //"Monday, 26 September 2022",
-                              reportTime:
-                                  "${blocAllReports!.reports[index].reportTime}, ${blocAllReports!.reports[index].reportDate}",
-                              reportThumbPic: blocAllReports!
-                                  .reports[index].reportTumbImage,
-                            ),
-                            const SizedBox(
-                              height: 25,
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      ReportLikeBtn(
-                                        likeCount: blocAllReports!
-                                            .reports[index].reportLikes,
-                                        onTap: ((liked) async {
-                                          log(liked.toString());
-                                          return false;
-                                        }),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      ReactBtn(
-                                        head: NumberFormat.compact()
-                                            .format(blocAllReports!
-                                                .reports[index].reportComments)
-                                            .toString(),
-                                        icon: Icons.comment_outlined,
-                                        onPressed: (() {
-                                          showModalBottomSheet(
-                                            backgroundColor:
-                                                AppColors.mainColor,
-                                            context: context,
-                                            isScrollControlled: true,
-                                            shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(10),
-                                                topRight: Radius.circular(10),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        ReportLikeBtn(
+                                          likeCount: blocAllReports!
+                                              .reports[index].reportLikes,
+                                          onTap: ((liked) async {
+                                            log(liked.toString());
+                                            return false;
+                                          }),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        ReactBtn(
+                                          head: NumberFormat.compact()
+                                              .format(blocAllReports!
+                                                  .reports[index]
+                                                  .reportComments)
+                                              .toString(),
+                                          icon: Icons.comment_outlined,
+                                          onPressed: (() {
+                                            showModalBottomSheet(
+                                              backgroundColor:
+                                                  AppColors.mainColor,
+                                              context: context,
+                                              isScrollControlled: true,
+                                              shape:
+                                                  const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(10),
+                                                  topRight: Radius.circular(10),
+                                                ),
                                               ),
-                                            ),
-                                            builder: (commentModelContext) =>
-                                                CommentModalSheet(
-                                              commentController:
-                                                  commentController,
-                                              reporterProfilePic:
-                                                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
-                                              blocID: 'Rupam Karmakar',
-                                              commentTime: '12h',
-                                              comment:
-                                                  "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
-                                              commentModelContext:
-                                                  commentModelContext,
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                    ],
-                                  ),
-                                  ReportSaveBtn(
-                                    saved: true,
-                                    onTap: (() {}),
-                                  )
-                                ],
+                                              builder: (commentModelContext) =>
+                                                  CommentModalSheet(
+                                                commentController:
+                                                    commentController,
+                                                reporterProfilePic:
+                                                    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2670&q=80",
+                                                blocID: 'Rupam Karmakar',
+                                                commentTime: '12h',
+                                                comment:
+                                                    "commentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdfcommentdfvxc dfg dfdfgdfg dkasdjh kjsdfghsef uiadsfyhiuejsf ksdjfuhuisfkjsd kidsuyfuisfb kadjsfhyuoisdf",
+                                                commentModelContext:
+                                                    commentModelContext,
+                                              ),
+                                            );
+                                          }),
+                                        ),
+                                      ],
+                                    ),
+                                    ReportSaveBtn(
+                                      saved: true,
+                                      onTap: (() {}),
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
               ],
             )
           : Center(

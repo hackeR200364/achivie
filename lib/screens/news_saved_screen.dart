@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../models/categories_models.dart';
@@ -82,6 +85,28 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
     //     categoryList = blocAllCategories.categories;
     //   }
     // }
+  }
+
+  Future<String> printIps() async {
+    List<Map<String, dynamic>> ipList = [];
+
+    for (var interface in await NetworkInterface.list()) {
+      for (var addr in interface.addresses) {
+        var ipDetails = {
+          'address': addr.address,
+          'isLoopback': addr.isLoopback,
+          'rawAddress': addr.rawAddress,
+          'type': addr.type.name,
+        };
+
+        ipList.add(ipDetails);
+      }
+    }
+
+    String ipDetails = jsonEncode(ipList);
+    // print(ipDetails);
+
+    return ipDetails;
   }
 
   @override

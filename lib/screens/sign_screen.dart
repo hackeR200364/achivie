@@ -1212,6 +1212,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                                   .data][Keys
                                                               .usrProfession]);
 
+                                                  if (responseJson[Keys.data]
+                                                              [Keys.hasBloc] ==
+                                                          1 ||
+                                                      responseJson[Keys.data]
+                                                              [Keys.hasBloc] ==
+                                                          true) {
+                                                    StorageServices
+                                                        .setUsrHasBloc(true);
+                                                  } else {
+                                                    StorageServices
+                                                        .setUsrHasBloc(false);
+                                                  }
+                                                  StorageServices.setUsrBlocID(
+                                                      responseJson[Keys.data]
+                                                              [Keys.blocID] ??
+                                                          "");
+
+                                                  StorageServices.setUsrBlocName(
+                                                      responseJson[Keys.data]
+                                                              [Keys.blocName] ??
+                                                          "");
+
                                                   StorageServices.setSignStatus(
                                                       true);
                                                   StorageServices.setSignInType(
