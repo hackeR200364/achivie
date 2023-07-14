@@ -24,7 +24,7 @@ class Hashtags {
   factory Hashtags.fromJson(Map<String, dynamic> json) => Hashtags(
         success: json["success"],
         message: json["message"],
-        totalPage: json["totalPage"],
+        totalPage: json["totalPage"] ?? 0,
         hashtags: List<Hashtag>.from(
             json["hashtags"].map((x) => Hashtag.fromJson(x))),
       );

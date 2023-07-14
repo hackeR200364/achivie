@@ -96,6 +96,7 @@ dependencies:
   animated_icon_button:
   circular_clip_route:
   multi_trigger_autocomplete:
+  flutter_emoji:
 #  rename: any
 #  pinput:
 
