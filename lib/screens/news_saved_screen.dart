@@ -167,6 +167,7 @@ class _NewsSavedScreenState extends State<NewsSavedScreen> {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) => ReportContainer(
+                tag: "tag",
                 followers: 100000,
                 likeCount: likeCount,
                 blocName: "blocName",

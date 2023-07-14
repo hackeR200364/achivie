@@ -11,8 +11,8 @@ String hashtagsToJson(Hashtags data) => json.encode(data.toJson());
 class Hashtags {
   bool success;
   String message;
-  int? totalPage;
-  List<String> hashtags;
+  int totalPage;
+  List<Hashtag> hashtags;
 
   Hashtags({
     required this.success,
@@ -25,13 +25,34 @@ class Hashtags {
         success: json["success"],
         message: json["message"],
         totalPage: json["totalPage"],
-        hashtags: List<String>.from(json["hashtags"].map((x) => x)),
+        hashtags: List<Hashtag>.from(
+            json["hashtags"].map((x) => Hashtag.fromJson(x))),
       );
 
   Map<String, dynamic> toJson() => {
         "success": success,
         "message": message,
         "totalPage": totalPage,
-        "hashtags": List<dynamic>.from(hashtags.map((x) => x)),
+        "hashtags": List<dynamic>.from(hashtags.map((x) => x.toJson())),
+      };
+}
+
+class Hashtag {
+  String hashtag;
+  int timesUsed;
+
+  Hashtag({
+    required this.hashtag,
+    required this.timesUsed,
+  });
+
+  factory Hashtag.fromJson(Map<String, dynamic> json) => Hashtag(
+        hashtag: json["hashtag"],
+        timesUsed: json["timesUsed"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "hashtag": hashtag,
+        "timesUsed": timesUsed,
       };
 }

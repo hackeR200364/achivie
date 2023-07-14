@@ -3,7 +3,6 @@ import 'package:achivie/screens/search_screen.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:circular_clip_route/circular_clip_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -24,7 +23,8 @@ class NewsMainScreen extends StatefulWidget {
   State<NewsMainScreen> createState() => _NewsMainScreenState();
 }
 
-class _NewsMainScreenState extends State<NewsMainScreen> {
+class _NewsMainScreenState extends State<NewsMainScreen>
+    with TickerProviderStateMixin {
   int screenTabIndex = 0;
   String usrName = "", blocName = "";
   bool hasBloc = false, isDownwards = false;
@@ -33,6 +33,9 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
   // late Animation<double> animationIncreasingCurve;
   // late Animation<double> animationDecreasingCurve;
   // ScrollController? _scrollController;
+
+  Animatable<double>? nextScreenOpacity;
+  late AnimationController _animationController;
 
   @override
   void initState() {
@@ -63,6 +66,17 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
     //     setState(() {});
     //   });
 
+    nextScreenOpacity = Tween<double>(begin: 0.0, end: 1.0);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1000), // Set the desired duration
+    );
+    nextScreenOpacity = TweenSequence<double>([
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        weight: 1.0,
+      ),
+    ]);
     getUserDetails();
     super.initState();
   }
@@ -202,55 +216,64 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
         ),
       ),
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: (isDownwards)
-          ? null
-          : AnimatedContainer(
-              key: _uploadBtnKey,
-              duration: Duration(
-                milliseconds: 100,
-              ),
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                  color: AppColors.backgroundColour, shape: BoxShape.circle
-                  // borderRadius: BorderRadius.circular(20),
-                  ),
-              child: Center(
-                child: IconButton(
-                  icon: Center(
-                    child: const Icon(
-                      Icons.add,
-                      size: 30,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  onPressed: (() {
-                    Navigator.push(
-                      context,
-                      CircularClipRoute(
-                        expandFrom: _uploadBtnKey.currentContext!,
-                        curve: Curves.fastOutSlowIn,
-                        reverseCurve: Curves.fastOutSlowIn.flipped,
-                        opacity: ConstantTween(1),
-                        transitionDuration: const Duration(milliseconds: 700),
-                        builder: ((_) => ReportUploadScreen()),
-                      ), // CustomPageTransitionAnimation(
-                      //   enterWidget: SearchScreen(),
-                      //   x: 0.5,
-                      //   y: -0.85,
-                      // ),
-                    );
-
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (contextNext) => ReportUploadScreen(),
-                    //   ),
-                    // );
-                  }),
-                ),
+      floatingActionButton: AnimatedContainer(
+        key: _uploadBtnKey,
+        duration: Duration(
+          milliseconds: 100,
+        ),
+        height: 50,
+        width: 50,
+        decoration: BoxDecoration(
+            color: AppColors.backgroundColour, shape: BoxShape.circle
+            // borderRadius: BorderRadius.circular(20),
+            ),
+        child: Center(
+          child: IconButton(
+            icon: Center(
+              child: const Icon(
+                Icons.add,
+                size: 30,
+                color: AppColors.white,
               ),
             ),
+            onPressed: (() {
+              _animationController.forward();
+              Navigator.push(
+                context,
+                CircularClipRoute(
+                  border: Border.all(
+                    width: 0,
+                    color: AppColors.transparent,
+                  ),
+                  shadow: [
+                    BoxShadow(
+                      color: AppColors.transparent,
+                      blurRadius: 100,
+                    )
+                  ],
+                  expandFrom: _uploadBtnKey.currentContext!,
+                  curve: Curves.ease,
+                  reverseCurve: Curves.fastOutSlowIn.flipped,
+                  opacity: nextScreenOpacity,
+                  transitionDuration: const Duration(milliseconds: 600),
+                  builder: ((_) => const ReportUploadScreen()),
+                ), // CustomPageTransitionAnimation(
+                //   enterWidget: SearchScreen(),
+                //   x: 0.5,
+                //   y: -0.85,
+                // ),
+              );
+
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (contextNext) => ReportUploadScreen(),
+              //   ),
+              // );
+            }),
+          ),
+        ),
+      ),
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(
           milliseconds: 200,
@@ -316,41 +339,37 @@ class _NewsMainScreenState extends State<NewsMainScreen> {
           ],
         ),
       ),
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          // log(notification.metrics.pixels.toString());
-          if (notification.direction == ScrollDirection.reverse) {
-            if (!isDownwards) {
-              setState(() {
-                isDownwards = true;
-              });
-            }
-          }
-          if (notification.direction == ScrollDirection.forward) {
-            if (isDownwards) {
-              setState(() {
-                isDownwards = false;
-              });
-            }
-          }
-          // log(isDownwards.toString());
-          // if (notification.metrics.)
-          return true;
-        },
-        child: SafeArea(
-          child: Stack(
-            children: [
-              if (screenTabIndex == 0) const NewsScreen(),
-              if (screenTabIndex == 1) const NewsDiscoverScreen(),
-              if (screenTabIndex == 2) const NewsSavedScreen(),
-              if (screenTabIndex == 3)
-                NewsBlocProfile(
-                  hasBloc: hasBloc,
-                ),
-            ],
-          ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            if (screenTabIndex == 0) const NewsScreen(),
+            if (screenTabIndex == 1) const NewsDiscoverScreen(),
+            if (screenTabIndex == 2) const NewsSavedScreen(),
+            if (screenTabIndex == 3)
+              NewsBlocProfile(
+                hasBloc: hasBloc,
+              ),
+          ],
         ),
       ),
     );
   }
 }
+
+// log(notification.metrics.pixels.toString());
+// if (notification.direction == ScrollDirection.reverse) {
+//   if (!isDownwards) {
+//     setState(() {
+//       isDownwards = true;
+//     });
+//   }
+// }
+// if (notification.direction == ScrollDirection.forward) {
+//   if (isDownwards) {
+//     setState(() {
+//       isDownwards = false;
+//     });
+//   }
+// }
+// log(isDownwards.toString());
+// if (notification.metrics.)

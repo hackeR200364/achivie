@@ -338,7 +338,7 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                         height: 14,
                       ),
                       Container(
-                        height: 200,
+                        height: 300,
                         width: MediaQuery.of(context).size.width,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -359,7 +359,7 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                                     );
                                   }),
                                   child: Container(
-                                    height: 200,
+                                    height: 300,
                                     width: MediaQuery.of(context).size.width,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(10),
@@ -375,17 +375,15 @@ class _NewsDetailsScreenState extends State<NewsDetailsScreen> {
                               )
                               .toList(),
                           options: CarouselOptions(
-                            viewportFraction: 0.85,
-                            height: 250,
+                            padEnds: false,
+                            viewportFraction: 0.94,
+                            height: 230,
                             enlargeCenterPage: true,
                             enableInfiniteScroll: false,
-                            // autoPlay: true,
+                            disableCenter: true,
+                            enlargeFactor: 0.25,
                             scrollPhysics: AppColors.scrollPhysics,
-                            onPageChanged: ((index, reason) {
-                              setState(() {
-                                // newsSliderIndex = index;
-                              });
-                            }),
+                            onPageChanged: ((index, reason) {}),
                           ),
                         ),
                       ),
