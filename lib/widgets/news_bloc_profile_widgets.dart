@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:like_button/like_button.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../screens/search_screen.dart';
 import '../styles.dart';
@@ -34,15 +35,105 @@ class IfHasBlocProfileDetails extends StatelessWidget {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width,
-            child: Text(
-              blocDes,
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: 15,
-              ),
-            ),
+            child: BlocDesText(blocDes: blocDes),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class BlocDesText extends StatelessWidget {
+  BlocDesText({
+    super.key,
+    required this.blocDes,
+  });
+
+  String blocDes;
+
+  @override
+  Widget build(BuildContext context) {
+    final regex = RegExp(r'(#[\w]+)|(https?:\/\/[\w.\/?=]+)|(@[\w]+)');
+    final List<TextSpan> spans = [];
+
+    blocDes.splitMapJoin(
+      regex,
+      onMatch: (Match match) {
+        final matchedText = match.group(0);
+        spans.add(
+          TextSpan(
+            text: matchedText,
+            style: matchedText!.startsWith("#")
+                ? const TextStyle(
+                    color: AppColors.mentionTextDark,
+                    fontSize: 14,
+                  )
+                : (matchedText.startsWith("https") ||
+                        matchedText.startsWith("http"))
+                    ? const TextStyle(
+                        color: AppColors.mentionText,
+                        fontSize: 14,
+                      )
+                    : matchedText.startsWith("@")
+                        ? const TextStyle(
+                            color: AppColors.mentionText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 2,
+                          )
+                        : const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = (() async {
+                if (matchedText.startsWith("#")) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (searchPageCtx) => SearchScreen(
+                        query: matchedText,
+                      ),
+                    ),
+                  );
+                }
+
+                if (matchedText.startsWith("https") ||
+                    matchedText.startsWith("http")) {
+                  if (await canLaunchUrlString(matchedText)) {
+                    await launchUrlString(matchedText);
+                  }
+                }
+              }),
+          ),
+        );
+        return matchedText;
+      },
+      onNonMatch: (String nonMatch) {
+        spans.add(
+          TextSpan(
+            text: nonMatch,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 15,
+              height: 2,
+            ),
+          ),
+        );
+
+        return nonMatch;
+      },
+    );
+    blocDes = blocDes.replaceAllMapped(
+      RegExp(r'\\u\{([\dA-Fa-f ]+)\}'),
+      (match) => String.fromCharCode(
+        int.parse(match.group(1)!, radix: 16),
+      ),
+    );
+    return RichText(
+      text: TextSpan(
+        children: spans,
       ),
     );
   }
@@ -545,7 +636,7 @@ class ReportTimeText extends StatelessWidget {
 }
 
 class ReportHeadText extends StatelessWidget {
-  ReportHeadText({
+  const ReportHeadText({
     super.key,
     required this.head,
   });

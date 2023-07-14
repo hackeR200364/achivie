@@ -95,6 +95,7 @@ dependencies:
   webview_flutter:
   animated_icon_button:
   circular_clip_route:
+  multi_trigger_autocomplete:
 #  rename: any
 #  pinput:
 

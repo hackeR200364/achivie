@@ -52,7 +52,7 @@ class _NewsScreenState extends State<NewsScreen> {
       newsSelectedCategoryIndex = 0,
       likeCount = 9999,
       pageCount = 1,
-      limitCount = 5,
+      limitCount = 10,
       totalPage = 0;
 
   double screenOffset = 0.0, newsOffset = 0.0;
@@ -449,6 +449,7 @@ class _NewsScreenState extends State<NewsScreen> {
                             (RecentReport e) {
                               // updateTimeDifference(e.reportUploadTime);
                               return HomeScreenCarouselItem(
+                                tag: e.reportId,
                                 newsHead: e.reportHeadline,
                                 newsDes: e.reportDes,
                                 category: e.reportCat,
@@ -492,7 +493,7 @@ class _NewsScreenState extends State<NewsScreen> {
                             height: 230,
                             enlargeCenterPage: true,
                             enableInfiniteScroll: false,
-                            // autoPlay: true,
+                            autoPlay: true,
                             disableCenter: true,
                             enlargeFactor: 0.25,
                             scrollPhysics: AppColors.scrollPhysics,
@@ -853,6 +854,7 @@ class _NewsScreenState extends State<NewsScreen> {
                       (context, index) {
                         if (index < reports.length) {
                           return ReportContainer(
+                            tag: reports[index].blocId,
                             followers: reports[index].followers,
                             blocName: reports[index].blocName,
                             blocProfile: reports[index].blocProfile,
@@ -909,6 +911,47 @@ class _NewsScreenState extends State<NewsScreen> {
                             likeBtnOnTap: ((liked) async {
                               String usrAddress = await printIps();
                               if (reports[index].liked) {
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/delete/$uid/${reports[index].reportId}",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reports[index].liked =
+                                        recentsResponseJson["liked"];
+                                    reports[index].reportLikes =
+                                        reports[index].reportLikes - 1;
+
+                                    setState(() {});
+                                    return recentsResponseJson["liked"];
+                                  } else {
+                                    reports[index].liked =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                  setState(() {});
+                                } else {
+                                  reports[index].liked = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                                setState(() {});
                                 return false;
                               } else if (!reports[index].liked) {
                                 // usrAddress = Uri.encodeComponent(usrAddress);
@@ -930,12 +973,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                         recentsResponseJson["success"];
                                     reports[index].reportLikes =
                                         reports[index].reportLikes + 1;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      AppSnackbar().customizedAppSnackbar(
-                                        message: recentsResponseJson["message"],
-                                        context: context,
-                                      ),
-                                    );
+                                    HapticFeedback.heavyImpact();
                                     setState(() {});
                                     return true;
                                   }
@@ -958,14 +996,13 @@ class _NewsScreenState extends State<NewsScreen> {
                                   ),
                                 );
                                 setState(() {});
-                                return false;
                               }
+                              return false;
                             }),
                             reportOnDoubleTap: (() async {
-                              String usrAddress = await printIps();
-                              if (reports[index].liked) {
-                              } else if (!reports[index].liked) {
+                              if (!reports[index].liked) {
                                 // usrAddress = Uri.encodeComponent(usrAddress);
+                                String usrAddress = await printIps();
                                 http.Response recentResponse = await http.post(
                                   Uri.parse(
                                     "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reports[index].reportId}/${reports[index].reportBlocId}/$usrAddress",
@@ -980,6 +1017,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                   Map<String, dynamic> recentsResponseJson =
                                       jsonDecode(recentResponse.body);
                                   if (recentsResponseJson["success"]) {
+                                    HapticFeedback.heavyImpact();
                                     reports[index].liked =
                                         recentsResponseJson["success"];
                                     reports[index].reportLikes =
@@ -1316,6 +1354,7 @@ class _NewsScreenState extends State<NewsScreen> {
                       (context, index) {
                         if (index < reportsByCat.length) {
                           return ReportContainer(
+                            tag: reportsByCat[index].blocId,
                             followers: reportsByCat[index].followers,
                             blocName: reportsByCat[index].blocName,
                             blocProfile: reportsByCat[index].blocProfile,
@@ -2023,6 +2062,7 @@ class ReportContainer extends StatelessWidget {
     required this.liked,
     required this.commented,
     this.reportOnDoubleTap,
+    required this.tag,
   });
 
   final int followers, likeCount;
@@ -2034,7 +2074,8 @@ class ReportContainer extends StatelessWidget {
       reportUploadTime,
       reportTime,
       reportThumbPic,
-      commentCount;
+      commentCount,
+      tag;
 
   final VoidCallback reportOnTap,
       blocDetailsOnTap,
@@ -2165,12 +2206,14 @@ class HomeScreenCarouselItem extends StatelessWidget {
     required this.blocDetailsProfileOnTap,
     required this.followers,
     required this.timeDifference,
+    required this.tag,
   });
 
   final String newsDes, reportPic, category, newsHead, blocName, blocProfilePic;
   final VoidCallback reportDetailsOnTap, blocDetailsProfileOnTap;
   final int followers;
   final String timeDifference;
+  final String tag;
 
   @override
   Widget build(BuildContext context) {
@@ -2235,6 +2278,7 @@ class HomeScreenCarouselItem extends StatelessWidget {
                       blocProfilePic: blocProfilePic,
                       onTap: blocDetailsProfileOnTap,
                       timeDifference: timeDifference,
+                      tag: tag,
                     ),
                   ],
                 ),
@@ -2255,10 +2299,11 @@ class HomeScreenCarouselReportBlocDetails extends StatelessWidget {
     required this.blocName,
     this.followers,
     this.timeDifference,
+    required this.tag,
   });
 
   final VoidCallback onTap;
-  final String blocProfilePic, blocName;
+  final String blocProfilePic, blocName, tag;
   final int? followers;
   final String? timeDifference;
 

@@ -40,9 +40,8 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
       topItemIndex = 0,
       listLen = 100,
       newsSelectedCategoryIndex = 0,
-      likeCount = 9999,
       pageCount = 1,
-      limitCount = 2,
+      limitCount = 10,
       totalPage = 0;
   String newsSelectedCategory = "All", token = "", uid = "", message = "";
   late TextEditingController commentController;
@@ -698,6 +697,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                       (context, index) {
                         if (index < trendingReportsList.length) {
                           return ReportContainer(
+                            tag: trendingReportsList[index].blocId,
                             followers: trendingReportsList[index].followers,
                             blocName: trendingReportsList[index].blocName,
                             blocProfile: trendingReportsList[index].blocProfile,
@@ -719,6 +719,48 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                             likeBtnOnTap: ((liked) async {
                               String usrAddress = await printIps();
                               if (trendingReportsList[index].liked) {
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/delete/$uid/${trendingReportsList[index].reportId}",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    trendingReportsList[index].liked =
+                                        recentsResponseJson["liked"];
+                                    trendingReportsList[index].reportLikes =
+                                        trendingReportsList[index].reportLikes -
+                                            1;
+                                    setState(() {});
+                                    return recentsResponseJson["liked"];
+                                  } else {
+                                    trendingReportsList[index].liked =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                  setState(() {});
+                                } else {
+                                  trendingReportsList[index].liked = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                                setState(() {});
                                 return false;
                               } else if (!trendingReportsList[index].liked) {
                                 // usrAddress = Uri.encodeComponent(usrAddress);
@@ -741,6 +783,12 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                                     trendingReportsList[index].reportLikes =
                                         trendingReportsList[index].reportLikes +
                                             1;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
                                     setState(() {});
                                     return true;
                                   }
@@ -763,13 +811,12 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                                   ),
                                 );
                                 setState(() {});
-                                return false;
                               }
+                              return false;
                             }),
                             reportOnDoubleTap: (() async {
                               String usrAddress = await printIps();
-                              if (trendingReportsList[index].liked) {
-                              } else if (!trendingReportsList[index].liked) {
+                              if (!trendingReportsList[index].liked) {
                                 // usrAddress = Uri.encodeComponent(usrAddress);
                                 http.Response recentResponse = await http.post(
                                   Uri.parse(
@@ -1152,6 +1199,7 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                       (context, index) {
                         if (index < reportsByCat.length) {
                           return ReportContainer(
+                            tag: reportsByCat[index].blocId,
                             followers: reportsByCat[index].followers,
                             blocName: reportsByCat[index].blocName,
                             blocProfile: reportsByCat[index].blocProfile,
@@ -1206,10 +1254,143 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                               );
                             }),
                             likeBtnOnTap: ((liked) async {
-                              if (reportsByCat[index].liked!) {
+                              String usrAddress = await printIps();
+                              if (reportsByCat[index].liked) {
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/delete/$uid/${reportsByCat[index].reportId}",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reportsByCat[index].liked =
+                                        recentsResponseJson["liked"];
+                                    reportsByCat[index].reportLikes =
+                                        reportsByCat[index].reportLikes - 1;
+                                    setState(() {});
+                                    return recentsResponseJson["liked"];
+                                  } else {
+                                    reportsByCat[index].liked =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                  setState(() {});
+                                } else {
+                                  reportsByCat[index].liked = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                                setState(() {});
                                 return false;
-                              } else {
-                                return true;
+                              } else if (!reportsByCat[index].liked) {
+                                // usrAddress = Uri.encodeComponent(usrAddress);
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reportsByCat[index].reportId}/${reportsByCat[index].reportBlocId}/$usrAddress",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reportsByCat[index].liked =
+                                        recentsResponseJson["success"];
+                                    reportsByCat[index].reportLikes =
+                                        reportsByCat[index].reportLikes + 1;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                    setState(() {});
+                                    return true;
+                                  }
+                                  reportsByCat[index].liked =
+                                      recentsResponseJson["success"];
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: recentsResponseJson["message"],
+                                      context: context,
+                                    ),
+                                  );
+                                  setState(() {});
+                                  return false;
+                                }
+                                reportsByCat[index].liked = false;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "Something went wrong",
+                                    context: context,
+                                  ),
+                                );
+                                setState(() {});
+                              }
+                              return false;
+                            }),
+                            reportOnDoubleTap: (() async {
+                              String usrAddress = await printIps();
+                              if (!reportsByCat[index].liked) {
+                                // usrAddress = Uri.encodeComponent(usrAddress);
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/report/like/add/$uid/${reportsByCat[index].reportId}/${reportsByCat[index].reportBlocId}/$usrAddress",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    reportsByCat[index].liked =
+                                        recentsResponseJson["success"];
+                                    reportsByCat[index].reportLikes =
+                                        reportsByCat[index].reportLikes + 1;
+                                  } else {
+                                    reportsByCat[index].liked =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  reportsByCat[index].liked = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                                setState(() {});
                               }
                             }),
                             commentBtnOnTap: (() {
