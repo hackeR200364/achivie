@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:achivie/models/categories_models.dart';
 import 'package:achivie/models/hashtags_model.dart';
-import 'package:achivie/screens/sign_screen.dart';
+import 'package:achivie/models/mentions_model.dart';
 import 'package:achivie/services/keys.dart';
 import 'package:achivie/styles.dart';
 import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
@@ -13,12 +13,15 @@ import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_emoji/flutter_emoji.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:multi_trigger_autocomplete/multi_trigger_autocomplete.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../Utils/snackbar_utils.dart';
@@ -98,9 +101,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
 
   late TextEditingController _reportCatController,
       _reportNameController,
-      _reportDesController,
-      _reportLocationController,
-      _reportDateController;
+      _reportDesController;
   final ImagePicker imagePicker = ImagePicker();
   List<File> pickedImages = [];
   XFile? thumbnail;
@@ -111,7 +112,8 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
       isCustomDate = false,
       isCatTapped = false,
       desHashtagDetect = false,
-      nameHashtagDetect = false;
+      nameHashtagDetect = false,
+      nameMentionDetect = false;
 
   String token = "";
 
@@ -120,6 +122,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
   TimeOfDay? newTime;
   List<Category> categories = [];
   List<Hashtag> hashtagsLocal = [];
+  List<Reporter> mentionsLocal = [];
   late FocusNode nameFocusNode;
 
   @override
@@ -127,10 +130,9 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
     _reportCatController = TextEditingController();
     _reportNameController = TextEditingController();
     _reportDesController = TextEditingController();
-    _reportLocationController = TextEditingController();
-    _reportDateController = TextEditingController(
-        text:
-            "Date: ${DateFormat("dd/MM/yyyy").format(DateTime.now())}, Time: ${DateFormat.Hm().format(DateTime.now())}");
+    // _reportDateController = TextEditingController(
+    //     text:
+    //         "Date: ${DateFormat("dd/MM/yyyy").format(DateTime.now())}, Time: ${DateFormat.Hm().format(DateTime.now())}");
     nameFocusNode = FocusNode();
     getUsrDetails();
     super.initState();
@@ -141,8 +143,6 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
     _reportCatController.dispose();
     _reportNameController.dispose();
     _reportDesController.dispose();
-    _reportLocationController.dispose();
-    _reportDateController.dispose();
     super.dispose();
   }
 
@@ -153,6 +153,10 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
 
   Future<List<Category>> fetchCategories(String query) async {
     // String token = await StorageServices.getUsrToken();
+    pageCount = 1;
+    limitCount = 10;
+
+    // log(query);
 
     http.Response response = await http.get(
       Uri.parse(
@@ -163,13 +167,14 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
       },
     );
 
+    log(response.statusCode.toString());
+
     if (response.statusCode == 200) {
-      log(response.statusCode.toString());
       final blocAllCategories = blocAllCategoriesFromJson(response.body);
       if (blocAllCategories.success) {
         if (query.isNotEmpty) {
           return blocAllCategories.categories
-              .where((item) => item.reportCat.startsWith(query))
+              .where((item) => item.reportCat.startsWith(query.trim()))
               .toList();
         } else {
           return blocAllCategories.categories;
@@ -184,9 +189,10 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
 
   Future<List<Hashtag>> fetchHashtags(String query) async {
     // String token = await StorageServices.getUsrToken();
+    query = Uri.encodeComponent(query.trim());
 
     var uri = Uri.parse(
-        "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(query)}&page=$pageCount&limit=$limitCount");
+        "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=$query&page=$pageCount&limit=$limitCount");
 
     http.Response response = await http.get(
       uri,
@@ -197,8 +203,10 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
     );
 
     if (response.statusCode == 200) {
-      Hashtags hashtags = hashtagsFromJson(response.body);
-      if (hashtags.success) {
+      final resJson = jsonDecode(response.body);
+      log(resJson["success"].toString());
+      if (resJson["success"]) {
+        Hashtags hashtags = hashtagsFromJson(response.body);
         log(hashtags.message);
         return hashtags.hashtags;
       } else {
@@ -210,8 +218,50 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
     }
   }
 
+  Future<List<Reporter>> fetchMentions(String query) async {
+    query = Uri.encodeComponent(query.substring(1).trim());
+    var uri = Uri.parse(
+        "${Keys.apiReportsBaseUrl}/reporters/autocomplete/search?q=$query&page=$pageCount&limit=$limitCount");
+
+    try {
+      http.Response response = await http.get(
+        uri,
+        headers: {
+          'content-Type': 'application/json',
+          'authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final resJson = jsonDecode(response.body);
+        log(resJson["success"].toString());
+        if (resJson["success"]) {
+          Mentions mentions = mentionsFromJson(response.body);
+          log(mentions.message);
+          return mentions.reporters;
+        } else {
+          throw Exception('Failed to fetch mentions 1');
+        }
+      } else {
+        log(response.statusCode.toString());
+        throw Exception('Failed to fetch mentions');
+      }
+    } catch (e) {
+      log(e.toString());
+      throw Exception('Failed to fetch mentions 2');
+    }
+  }
+
   String replaceText(String currentText, String newText) => currentText
       .replaceAllMapped(RegExp(r'(#\w+)(?!.*#\w+)'), (match) => newText);
+
+  String convertStringToEmojis(String text) {
+    return EmojiParser().unemojify(text.trim());
+  }
+
+  bool containsExactMention(String text, String mention) =>
+      RegExp('${RegExp.escape(mention)}(?![\\w\\d])', caseSensitive: false)
+          .hasMatch(text);
 
   @override
   Widget build(BuildContext context) {
@@ -256,17 +306,16 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                             allAppProvidersProvider.isLoadingFunc(false);
                           })
                         : (() async {
+                            // String encodedText = convertStringToEmojis(
+                            //     _reportDesController.text.trim());
+                            // log(EmojiParser().emojify(encodedText));
                             if (pickedImages.isNotEmpty &&
                                 pickedImages.length > 1 &&
                                 thumbnail != null) {
-                              if (_reportNameController.text.trim().isNotEmpty &&
-                                  _reportDesController.text.trim().isNotEmpty &&
-                                  _reportDateController.text
+                              if (_reportNameController.text
                                       .trim()
                                       .isNotEmpty &&
-                                  _reportLocationController.text
-                                      .trim()
-                                      .isNotEmpty) {
+                                  _reportDesController.text.trim().isNotEmpty) {
                                 newDate = DateTime.now();
                                 newTime = TimeOfDay(
                                   hour: newDate!.hour,
@@ -276,115 +325,136 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                   allAppProvidersProvider.isLoadingFunc(true);
                                   FocusManager.instance.primaryFocus?.unfocus();
 
-                                  if (isCustomDate) {
-                                    newDate = DateTime(
-                                      newDate!.year,
-                                      newDate!.month,
-                                      newDate!.day,
-                                      newTime!.hour,
-                                      newTime!.minute,
-                                    );
-                                  } else {
+                                  var status = await Permission.location.status;
+                                  if (status.isPermanentlyDenied) {
+                                    Permission.location.request();
+                                  }
+                                  if (status.isPermanentlyDenied) {
+                                    await openAppSettings();
+                                  }
+
+                                  if (status.isGranted) {
                                     newDate = DateTime.now();
-                                  }
 
-                                  http.MultipartFile? multipartImagesFile;
-                                  var request = http.MultipartRequest(
-                                    'POST',
-                                    Uri.parse(
-                                      "${Keys.apiReportsBaseUrl}/report/add",
-                                    ),
-                                  );
+                                    Position position =
+                                        await Geolocator.getCurrentPosition();
 
-                                  // for (var i = 0; i < pickedImages.length; i++) {
-                                  //   var imageFile = pickedImages[i];
-                                  //   var stream =
-                                  //       http.ByteStream(imageFile.openRead());
-                                  //   var length = await imageFile.length();
-                                  //
-                                  //   multipartImagesFile = http.MultipartFile(
-                                  //     'reportImages',
-                                  //     stream,
-                                  //     length,
-                                  //     filename: imageFile.path,
-                                  //   );
-                                  // }
+                                    // http.MultipartFile? multipartImagesFile;
+                                    var request = http.MultipartRequest(
+                                      'POST',
+                                      Uri.parse(
+                                        "${Keys.apiReportsBaseUrl}/report/add",
+                                      ),
+                                    );
 
-                                  for (var file in pickedImages) {
-                                    var multipartFile =
-                                        await http.MultipartFile.fromPath(
-                                            "reportImages", file.path);
-                                    request.files.add(multipartFile);
-                                  }
+                                    // for (var i = 0; i < pickedImages.length; i++) {
+                                    //   var imageFile = pickedImages[i];
+                                    //   var stream =
+                                    //       http.ByteStream(imageFile.openRead());
+                                    //   var length = await imageFile.length();
+                                    //
+                                    //   multipartImagesFile = http.MultipartFile(
+                                    //     'reportImages',
+                                    //     stream,
+                                    //     length,
+                                    //     filename: imageFile.path,
+                                    //   );
+                                    // }
 
-                                  var fileStream = http.ByteStream(
-                                    thumbnail!.openRead(),
-                                  );
+                                    for (var file in pickedImages) {
+                                      var multipartFile =
+                                          await http.MultipartFile.fromPath(
+                                              "reportImages", file.path);
+                                      request.files.add(multipartFile);
+                                    }
 
-                                  var thumbLength = await thumbnail!.length();
+                                    var fileStream = http.ByteStream(
+                                      thumbnail!.openRead(),
+                                    );
 
-                                  var multipartThumbFile = http.MultipartFile(
-                                    "reportTumbImage",
-                                    fileStream,
-                                    thumbLength,
-                                    filename: thumbnail!.path.split('/').last,
-                                  );
+                                    var thumbLength = await thumbnail!.length();
 
-                                  request.fields["reportCat"] =
-                                      _reportCatController.text.trim();
+                                    var multipartThumbFile = http.MultipartFile(
+                                      "reportTumbImage",
+                                      fileStream,
+                                      thumbLength,
+                                      filename: thumbnail!.path.split('/').last,
+                                    );
 
-                                  request.fields["reportHeadline"] =
-                                      _reportNameController.text.trim();
+                                    request.fields["reportCat"] =
+                                        convertStringToEmojis(
+                                            _reportCatController.text.trim());
 
-                                  request.fields["reportDes"] =
-                                      _reportDesController.text.trim();
+                                    request.fields["reportHeadline"] =
+                                        convertStringToEmojis(
+                                            _reportNameController.text.trim());
 
-                                  request.fields["reportLocation"] =
-                                      _reportLocationController.text.trim();
+                                    request.fields["reportDes"] =
+                                        convertStringToEmojis(
+                                            _reportDesController.text.trim());
 
-                                  request.fields["reportDate"] = newDate!
-                                      .millisecondsSinceEpoch
-                                      .toString();
+                                    request.fields["reportLocation"] =
+                                        jsonEncode({
+                                      "lat": position.latitude,
+                                      "long": position.longitude,
+                                    });
 
-                                  request.fields["reportTime"] = newDate!
-                                      .millisecondsSinceEpoch
-                                      .toString();
+                                    request.fields["reportDate"] = newDate!
+                                        .millisecondsSinceEpoch
+                                        .toString();
 
-                                  request.fields["reportBlocID"] =
-                                      (await StorageServices.getBlocID())!;
+                                    request.fields["reportTime"] = newDate!
+                                        .millisecondsSinceEpoch
+                                        .toString();
 
-                                  request.fields["reportUsrID"] =
-                                      (await StorageServices.getUID());
+                                    request.fields["reportBlocID"] =
+                                        (await StorageServices.getBlocID())!;
 
-                                  // request.files.add(multipartImagesFile!);
-                                  request.files.add(multipartThumbFile);
+                                    request.fields["reportUsrID"] =
+                                        (await StorageServices.getUID());
 
-                                  http.StreamedResponse streamedResponse =
-                                      await request.send();
+                                    // request.files.add(multipartImagesFile!);
+                                    request.files.add(multipartThumbFile);
 
-                                  http.Response response =
-                                      await http.Response.fromStream(
-                                          streamedResponse);
+                                    http.StreamedResponse streamedResponse =
+                                        await request.send();
 
-                                  log(response.body.toString());
+                                    http.Response response =
+                                        await http.Response.fromStream(
+                                            streamedResponse);
 
-                                  Map<String, dynamic> responseJson =
-                                      await json.decode(response.body);
+                                    log(response.body.toString());
 
-                                  if (response.statusCode == 200) {
-                                    if (responseJson["success"]) {
-                                      ScaffoldMessenger.of(
-                                              allAppProvidersContext)
-                                          .showSnackBar(
-                                        AppSnackbar().customizedAppSnackbar(
-                                          message: responseJson["message"],
-                                          context: allAppProvidersContext,
-                                        ),
-                                      );
-                                      allAppProvidersProvider
-                                          .isLoadingFunc(false);
+                                    Map<String, dynamic> responseJson =
+                                        await json.decode(response.body);
 
-                                      Navigator.pop(context);
+                                    if (response.statusCode == 200) {
+                                      if (responseJson["success"]) {
+                                        ScaffoldMessenger.of(
+                                                allAppProvidersContext)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: responseJson["message"],
+                                            context: allAppProvidersContext,
+                                          ),
+                                        );
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
+
+                                        Navigator.pop(context);
+                                      } else {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
+
+                                        ScaffoldMessenger.of(
+                                                allAppProvidersContext)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: responseJson["message"],
+                                            context: allAppProvidersContext,
+                                          ),
+                                        );
+                                      }
                                     } else {
                                       allAppProvidersProvider
                                           .isLoadingFunc(false);
@@ -393,7 +463,8 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                               allAppProvidersContext)
                                           .showSnackBar(
                                         AppSnackbar().customizedAppSnackbar(
-                                          message: responseJson["message"],
+                                          message:
+                                              response.statusCode.toString(),
                                           context: allAppProvidersContext,
                                         ),
                                       );
@@ -405,7 +476,8 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                                     ScaffoldMessenger.of(allAppProvidersContext)
                                         .showSnackBar(
                                       AppSnackbar().customizedAppSnackbar(
-                                        message: response.statusCode.toString(),
+                                        message:
+                                            "Please give permission to access location",
                                         context: allAppProvidersContext,
                                       ),
                                     );
@@ -616,7 +688,7 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                     width: MediaQuery.of(context).size.width,
                     margin: EdgeInsets.only(
                       top: 15,
-                      bottom: 15,
+                      bottom: 10,
                       left: 10,
                       right: 10,
                     ),
@@ -652,109 +724,109 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                   ),
                 ),
               ),
-            SliverToBoxAdapter(
-              child: GestureDetector(
-                onTap: (() {
-                  setState(() {
-                    isCustomDate = !isCustomDate;
-                    if (isCustomDate) {
-                      thumbnail = XFile(pickedImages[0].path);
-                    } else {
-                      thumbnail = null;
-                    }
-                  });
-                }),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  margin: EdgeInsets.only(
-                    top:
-                        (pickedImages.isNotEmpty || thumbnail != null) ? 0 : 20,
-                    bottom: 15,
-                    left: 10,
-                    right: 10,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            "Use custom date for your report",
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 15,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 2,
-                          ),
-                          Text(
-                            "(Else it will take the current time)",
-                            style: TextStyle(
-                              color: AppColors.white.withOpacity(0.5),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Transform.scale(
-                        scale: 0.8,
-                        child: CupertinoSwitch(
-                          value: isCustomDate,
-                          onChanged: ((checked) async {
-                            if (checked) {
-                              newDate = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(DateTime.now().year + 1),
-                              ).whenComplete(() async {
-                                newTime = await showTimePicker(
-                                  context: context,
-                                  initialTime: TimeOfDay(
-                                    hour: DateTime.now().hour,
-                                    minute: DateTime.now().minute,
-                                  ),
-                                );
-                              });
-                              _reportDateController.text =
-                                  "Date: ${DateFormat("dd/MM/yyyy").format(newDate!)}, Time: ${DateFormat.Hm().format(
-                                DateTime(
-                                  newDate!.year,
-                                  newDate!.month,
-                                  newDate!.day,
-                                  newTime!.hour,
-                                  newTime!.minute,
-                                ),
-                              )}";
-                            } else {
-                              _reportDateController.text =
-                                  "Date: ${DateFormat("dd/MM/yyyy").format(DateTime.now())}, Time: ${DateFormat.Hm().format(DateTime.now())}";
-                            }
-                            isCustomDate = !isCustomDate;
-                            setState(() {});
-                          }),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            if (isCustomDate)
-              SliverToBoxAdapter(
-                child: AuthNameTextField(
-                  controller: _reportDateController,
-                  hintText: "Report Date & Time",
-                  icon: Icons.date_range,
-                  readOnly: true,
-                ),
-              ),
+            // SliverToBoxAdapter(
+            //   child: GestureDetector(
+            //     onTap: (() {
+            //       setState(() {
+            //         isCustomDate = !isCustomDate;
+            //         if (isCustomDate) {
+            //           thumbnail = XFile(pickedImages[0].path);
+            //         } else {
+            //           thumbnail = null;
+            //         }
+            //       });
+            //     }),
+            //     child: Container(
+            //       width: MediaQuery.of(context).size.width,
+            //       margin: EdgeInsets.only(
+            //         top:
+            //             (pickedImages.isNotEmpty || thumbnail != null) ? 0 : 20,
+            //         bottom: 15,
+            //         left: 10,
+            //         right: 10,
+            //       ),
+            //       child: Row(
+            //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //         crossAxisAlignment: CrossAxisAlignment.center,
+            //         children: [
+            //           Column(
+            //             children: [
+            //               Text(
+            //                 "Use custom date for your report",
+            //                 style: TextStyle(
+            //                   color: AppColors.white,
+            //                   fontSize: 15,
+            //                 ),
+            //               ),
+            //               SizedBox(
+            //                 height: 2,
+            //               ),
+            //               Text(
+            //                 "(Else it will take the current time)",
+            //                 style: TextStyle(
+            //                   color: AppColors.white.withOpacity(0.5),
+            //                   fontSize: 12,
+            //                 ),
+            //               ),
+            //             ],
+            //           ),
+            //           Transform.scale(
+            //             scale: 0.8,
+            //             child: CupertinoSwitch(
+            //               value: isCustomDate,
+            //               onChanged: ((checked) async {
+            //                 if (checked) {
+            //                   newDate = await showDatePicker(
+            //                     context: context,
+            //                     initialDate: DateTime.now(),
+            //                     firstDate: DateTime(2000),
+            //                     lastDate: DateTime(DateTime.now().year + 1),
+            //                   ).whenComplete(() async {
+            //                     newTime = await showTimePicker(
+            //                       context: context,
+            //                       initialTime: TimeOfDay(
+            //                         hour: DateTime.now().hour,
+            //                         minute: DateTime.now().minute,
+            //                       ),
+            //                     );
+            //                   });
+            //                   _reportDateController.text =
+            //                       "Date: ${DateFormat("dd/MM/yyyy").format(newDate!)}, Time: ${DateFormat.Hm().format(
+            //                     DateTime(
+            //                       newDate!.year,
+            //                       newDate!.month,
+            //                       newDate!.day,
+            //                       newTime!.hour,
+            //                       newTime!.minute,
+            //                     ),
+            //                   )}";
+            //                 } else {
+            //                   _reportDateController.text =
+            //                       "Date: ${DateFormat("dd/MM/yyyy").format(DateTime.now())}, Time: ${DateFormat.Hm().format(DateTime.now())}";
+            //                 }
+            //                 isCustomDate = !isCustomDate;
+            //                 setState(() {});
+            //               }),
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // if (isCustomDate)
+            //   SliverToBoxAdapter(
+            //     child: AuthNameTextField(
+            //       controller: _reportDateController,
+            //       hintText: "Report Date & Time",
+            //       icon: Icons.date_range,
+            //       readOnly: true,
+            //     ),
+            //   ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 20,
+                padding: EdgeInsets.only(
+                  top: (pickedImages.isNotEmpty || thumbnail != null) ? 5 : 25,
                   left: 15,
                   right: 15,
                   bottom: 10,
@@ -1006,39 +1078,50 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                   maxLength: 50,
                   onDetectionTyped: ((text) async {
                     log(text);
-                    nameHashtagDetect = true;
                     // hashtags = await fetchHashtags(text);
 
-                    var uri = Uri.parse(
-                        "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(text)}&page=$pageCount&limit=$limitCount");
+                    // http.Response response = await http.get(
+                    //   Uri.parse(
+                    //       "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(text.trim())}&page=$pageCount&limit=$limitCount"),
+                    //   headers: {
+                    //     'content-Type': 'application/json',
+                    //     'authorization': 'Bearer $token',
+                    //   },
+                    // );
+                    //
+                    // if (response.statusCode == 200) {
+                    //   log(response.body.toString());
+                    //   final resJson = jsonDecode(response.body);
+                    //   log(resJson["message"].toString());
+                    //   if (resJson["success"]) {
+                    //     Hashtags hashtags = hashtagsFromJson(response.body);
+                    //
+                    //     log(hashtags.message);
+                    //     hashtagsLocal = hashtags.hashtags;
+                    //   } else {
+                    //     hashtagsLocal.clear();
+                    //   }
+                    // }
 
-                    http.Response response = await http.get(
-                      Uri.parse(
-                          "${Keys.apiReportsBaseUrl}/hashtags/autocomplete?q=${Uri.encodeComponent(text.trim())}&page=$pageCount&limit=$limitCount"),
-                      headers: {
-                        'content-Type': 'application/json',
-                        'authorization': 'Bearer $token',
-                      },
-                    );
-
-                    if (response.statusCode == 200) {
-                      log(response.body.toString());
-                      final resJson = jsonDecode(response.body);
-                      log(resJson["message"].toString());
-                      if (resJson["success"]) {
-                        Hashtags hashtags = hashtagsFromJson(response.body);
-
-                        log(hashtags.message);
-                        hashtagsLocal = hashtags.hashtags;
-                      } else {
-                        hashtagsLocal.clear();
-                      }
+                    if (text.trim().startsWith('#')) {
+                      // log(text);
+                      nameHashtagDetect = true;
+                      hashtagsLocal = await fetchHashtags(text);
                     }
+
+                    if (text.trim().startsWith('@')) {
+                      // log(text);
+                      nameMentionDetect = true;
+                      mentionsLocal = await fetchMentions(text.substring(1));
+                    }
+
                     setState(() {});
                   }),
                   onDetectionFinished: (() {
                     nameHashtagDetect = false;
+                    nameMentionDetect = false;
                     hashtagsLocal.clear();
+                    mentionsLocal.clear();
                     setState(() {});
                   }),
                 ),
@@ -1083,38 +1166,50 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                               //   hashtagsLocal[hashtagListIndex],
                               // );
 
-                              String currentText = _reportNameController.text;
-                              RegExp regex =
-                                  RegExp(r'(?<=\s|^)(#\w+)\b(?!.*#\w+\b)');
-                              String newText = currentText.replaceFirst(regex,
-                                  hashtagsLocal[hashtagListIndex].hashtag);
-                              _reportNameController.text = "$newText ";
+                              if (!containsExactMention(
+                                  _reportNameController.text.trim(),
+                                  hashtagsLocal[hashtagListIndex].hashtag)) {
+                                String currentText = _reportNameController.text;
+                                RegExp regex =
+                                    RegExp(r'(?<=\s|^)(#\w+)\b(?!.*#\w+\b)');
+                                String newText = currentText.replaceFirst(regex,
+                                    hashtagsLocal[hashtagListIndex].hashtag);
+                                _reportNameController.text = "$newText ";
 
-                              // String currentText = _reportNameController.text;
-                              // final List<String> words = currentText.split(' ');
-                              // String newText = "";
-                              // int lastIndex = -1;
-                              // for (int i = words.length - 1; i >= 0; i--) {
-                              //   if (words[i].startsWith('#')) {
-                              //     lastIndex = i;
-                              //     break;
-                              //   }
-                              // }
-                              // if (lastIndex != -1) {
-                              //   String word = words[lastIndex];
-                              //   newText = currentText.replaceRange(
-                              //     currentText.lastIndexOf(word),
-                              //     currentText.lastIndexOf(word) + word.length,
-                              //     hashtagsLocal[hashtagListIndex],
-                              //   );
-                              //   _reportNameController.text = newText;
-                              // }
-                              // _reportNameController.text = newText;
+                                // String currentText = _reportNameController.text;
+                                // final List<String> words = currentText.split(' ');
+                                // String newText = "";
+                                // int lastIndex = -1;
+                                // for (int i = words.length - 1; i >= 0; i--) {
+                                //   if (words[i].startsWith('#')) {
+                                //     lastIndex = i;
+                                //     break;
+                                //   }
+                                // }
+                                // if (lastIndex != -1) {
+                                //   String word = words[lastIndex];
+                                //   newText = currentText.replaceRange(
+                                //     currentText.lastIndexOf(word),
+                                //     currentText.lastIndexOf(word) + word.length,
+                                //     hashtagsLocal[hashtagListIndex],
+                                //   );
+                                //   _reportNameController.text = newText;
+                                // }
+                                // _reportNameController.text = newText;
 
-                              _reportNameController.selection =
-                                  TextSelection.collapsed(
-                                offset: _reportNameController.text.length,
-                              );
+                                _reportNameController.selection =
+                                    TextSelection.collapsed(
+                                  offset: _reportNameController.text.length,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(hashtagListContext)
+                                    .showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message: "You already added this hashtag",
+                                    context: hashtagListContext,
+                                  ),
+                                );
+                              }
 
                               setState(() {});
 
@@ -1206,17 +1301,190 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: Visibility(
+                visible: nameMentionDetect,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Visibility(
+                      visible: mentionsLocal.isNotEmpty,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 23),
+                        child: Text(
+                          "Mentions",
+                          style: TextStyle(
+                            color: AppColors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      width: MediaQuery.of(context).size.width,
+                      height: (mentionsLocal.length * 70) > 250
+                          ? 250
+                          : mentionsLocal.length * 70,
+                      margin: EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                        top: 5,
+                      ),
+                      duration: Duration(
+                        milliseconds: 300,
+                      ),
+                      child: ListView.separated(
+                        itemBuilder: (mentionListContext, mentionListIndex) {
+                          return GestureDetector(
+                            onTap: (() {
+                              // _reportNameController.text =
+                              //     _reportNameController.text.replaceAll(
+                              //   RegExp(r'(#\w+)(?=\b)'),
+                              //   hashtagsLocal[hashtagListIndex],
+                              // );
+
+                              if (!containsExactMention(
+                                  _reportNameController.text.trim(),
+                                  mentionsLocal[mentionListIndex].blocId)) {
+                                String newText = "";
+                                newText =
+                                    _reportNameController.text.replaceAllMapped(
+                                  RegExp(r'([@])(\w+)\b(?!.*[@]\w+\b)'),
+                                  (match) {
+                                    return match.group(1)! +
+                                        (match.group(2)! ==
+                                                mentionsLocal[mentionListIndex]
+                                                    .blocId
+                                            ? match.group(2)!
+                                            : mentionsLocal[mentionListIndex]
+                                                .blocId);
+                                  },
+                                );
+
+                                _reportNameController.text = "$newText ";
+
+                                _reportNameController.selection =
+                                    TextSelection.collapsed(
+                                  offset: _reportNameController.text.length,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(mentionListContext)
+                                    .showSnackBar(
+                                  AppSnackbar().customizedAppSnackbar(
+                                    message:
+                                        "You already mentioned this reporter",
+                                    context: mentionListContext,
+                                  ),
+                                );
+                              }
+
+                              // _reportNameController.value = TextEditingValue(
+                              //   text: _reportNameController.text,
+                              //   selection: TextSelection.collapsed(
+                              //     offset: (cursorPosition.toInt() +
+                              //             hashtagsLocal[hashtagListIndex]
+                              //                 .length -
+                              //             match.group(0)!.length)
+                              //         .toInt(),
+                              //   ),
+                              // ),
+                            }),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 13,
+                                vertical: 13,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppColors.backgroundColour.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              width:
+                                  MediaQuery.of(mentionListContext).size.width,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundImage: NetworkImage(
+                                          mentionsLocal[mentionListIndex]
+                                              .blocProfile,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            mentionsLocal[mentionListIndex]
+                                                .blocName,
+                                            overflow: TextOverflow.clip,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              color: AppColors.white,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            mentionsLocal[mentionListIndex]
+                                                .blocId,
+                                            overflow: TextOverflow.clip,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.white
+                                                  .withOpacity(0.6),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 5,
+                          );
+                        },
+                        itemCount: mentionsLocal.length,
+                      ),
+                    ),
+                    Visibility(
+                      visible: mentionsLocal.isNotEmpty,
+                      child: SizedBox(
+                        height: 5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             SliverToBoxAdapter(
               child: Container(
-                padding: const EdgeInsets.only(
+                padding: EdgeInsets.only(
                   top: 20,
                   left: 15,
                   right: 15,
-                  bottom: 10,
+                  bottom:
+                      (hashtagsLocal.isEmpty && !desHashtagDetect) ? 30 : 10,
                 ),
                 child: DetectableTextField(
-                  focusNode: nameFocusNode,
                   textCapitalization: TextCapitalization.sentences,
                   detectionRegExp: detectionRegExp(atSign: false)!,
                   controller: _reportDesController,
@@ -1280,141 +1548,150 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
                       hashtagsLocal = await fetchHashtags(text);
                       setState(() {});
                     }
-
-                    if (text.trim().startsWith('@')) {}
                   }),
                   onDetectionFinished: (() {
                     desHashtagDetect = false;
-
+                    hashtagsLocal.clear();
                     setState(() {});
                   }),
                 ),
               ),
             ),
-
-            // if (desHashtagDetect)
-            //   SliverToBoxAdapter(
-            //     child: Consumer<AllAppProviders>(
-            //       builder: (allAppContext, allAppProvider, allAppChild) {
-            //         return Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             if (hashtagsLocal.isNotEmpty)
-            //               Padding(
-            //                 padding: const EdgeInsets.only(left: 23),
-            //                 child: Text(
-            //                   "Hashtags",
-            //                   style: TextStyle(
-            //                     color: AppColors.white.withOpacity(0.5),
-            //                   ),
-            //                 ),
-            //               ),
-            //             AnimatedContainer(
-            //               width: MediaQuery.of(context).size.width,
-            //               height: hashtagsLocal.length * 40,
-            //               margin: EdgeInsets.only(
-            //                 left: 15,
-            //                 right: 15,
-            //                 top: 5,
-            //               ),
-            //               duration: Duration(
-            //                 milliseconds: 600,
-            //               ),
-            //               child: ListView.separated(
-            //                 itemBuilder: (hashtagListContext, hashtagListIndex) {
-            //                   return Container(
-            //                     margin: const EdgeInsets.only(
-            //                       left: 10,
-            //                       right: 10,
-            //                     ),
-            //                     padding: EdgeInsets.symmetric(horizontal: 10),
-            //                     decoration: BoxDecoration(
-            //                       color:
-            //                           AppColors.backgroundColour.withOpacity(0.4),
-            //                       borderRadius: BorderRadius.circular(15),
-            //                     ),
-            //                     width:
-            //                         MediaQuery.of(hashtagListContext).size.width,
-            //                     height: 40,
-            //                     child: Column(
-            //                       mainAxisAlignment: MainAxisAlignment.center,
-            //                       crossAxisAlignment: CrossAxisAlignment.start,
-            //                       children: [
-            //                         Text(
-            //                           hashtagsLocal[hashtagListIndex],
-            //                           style: TextStyle(
-            //                             color: AppColors.white.withOpacity(0.8),
-            //                           ),
-            //                         ),
-            //                       ],
-            //                     ),
-            //                   );
-            //                 },
-            //                 separatorBuilder: (BuildContext context, int index) {
-            //                   return SizedBox(
-            //                     width: MediaQuery.of(context).size.width,
-            //                     height: 1.5,
-            //                   );
-            //                 },
-            //                 itemCount: hashtagsLocal.length,
-            //               ),
-            //             ),
-            //             if (hashtagsLocal.isNotEmpty)
-            //               SizedBox(
-            //                 height: 2,
-            //               ),
-            //             if (hashtagsLocal.isNotEmpty)
-            //               Center(
-            //                 child: Text(
-            //                   "If you cannot found proper category, just type it",
-            //                   style: TextStyle(
-            //                     color: AppColors.white.withOpacity(0.5),
-            //                   ),
-            //                 ),
-            //               ),
-            //             if (hashtagsLocal.isEmpty)
-            //               Center(
-            //                 child: Text(
-            //                   "There are no categories according to your report category\nIf your are confident about it just type it",
-            //                   textAlign: TextAlign.center,
-            //                   style: TextStyle(
-            //                     color: AppColors.white.withOpacity(0.5),
-            //                   ),
-            //                 ),
-            //               ),
-            //           ],
-            //         );
-            //       },
-            //     ),
-            //   ),
-            // if (locationTapped)
-            //   const SliverToBoxAdapter(
-            //     child: SuggestionContainer(
-            //       sugg:
-            //           "Suggestion: Write your location like in this format, Nearby Place, Street, Place, State, PIN",
-            //     ),
-            //   ),
             SliverToBoxAdapter(
-              child: AuthNameTextField(
-                // inputFormatter: [
-                //   LocationTextInputFormatter(),
-                // ],
-                controller: _reportLocationController,
-                hintText: "location",
-                icon: Icons.location_on,
-                onTap: (() {
-                  setState(() {
-                    locationTapped = true;
-                  });
-                  Timer(
-                    const Duration(seconds: 7),
-                    (() {
-                      setState(() {
-                        locationTapped = false;
-                      });
-                    }),
-                  );
-                }),
+              child: Visibility(
+                visible: desHashtagDetect,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Visibility(
+                      visible: hashtagsLocal.isNotEmpty,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 23),
+                        child: Text(
+                          "Hashtags",
+                          style: TextStyle(
+                            color: AppColors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    AnimatedContainer(
+                      width: MediaQuery.of(context).size.width,
+                      height: (hashtagsLocal.length * 55) > 200
+                          ? 200
+                          : hashtagsLocal.length * 55,
+                      margin: EdgeInsets.only(
+                        left: 15,
+                        right: 15,
+                        top: 5,
+                      ),
+                      duration: Duration(
+                        milliseconds: 300,
+                      ),
+                      child: ListView.separated(
+                        itemBuilder: (hashtagListContext, hashtagListIndex) {
+                          return GestureDetector(
+                            onTap: (() {
+                              // _reportNameController.text =
+                              //     _reportNameController.text.replaceAll(
+                              //   RegExp(r'(#\w+)(?=\b)'),
+                              //   hashtagsLocal[hashtagListIndex],
+                              // );
+
+                              String currentText = _reportDesController.text;
+                              RegExp regex =
+                                  RegExp(r'(?<=\s|^)(#\w+)\b(?!.*#\w+\b)');
+                              String newText = currentText.replaceFirst(regex,
+                                  hashtagsLocal[hashtagListIndex].hashtag);
+                              _reportDesController.text = "$newText ";
+
+                              _reportDesController.selection =
+                                  TextSelection.collapsed(
+                                offset: _reportDesController.text.length,
+                              );
+
+                              setState(() {});
+                            }),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 30),
+                              decoration: BoxDecoration(
+                                color:
+                                    AppColors.backgroundColour.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              width:
+                                  MediaQuery.of(hashtagListContext).size.width,
+                              height: 50,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    hashtagsLocal[hashtagListIndex].hashtag,
+                                    style: TextStyle(
+                                      color: AppColors.white.withOpacity(0.8),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "Times used: ",
+                                        style: TextStyle(
+                                          color:
+                                              AppColors.white.withOpacity(0.5),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      Text(
+                                        NumberFormat.compact().format(
+                                            hashtagsLocal[hashtagListIndex]
+                                                .timesUsed),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color:
+                                              AppColors.white.withOpacity(0.8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 5,
+                          );
+                        },
+                        itemCount: hashtagsLocal.length,
+                      ),
+                    ),
+                    if (hashtagsLocal.isNotEmpty)
+                      SizedBox(
+                        height: 2,
+                      ),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: 10,
+                        ),
+                        child: Text(
+                          "If you can't find proper hashtag, just type it",
+                          style: TextStyle(
+                            color: AppColors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
