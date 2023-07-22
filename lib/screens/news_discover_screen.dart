@@ -915,7 +915,51 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                               );
                             }),
                             saveBtnOnTap: (() {}),
-                            followedOnTap: (() {}),
+                            followedOnTap: (() async {
+                              if (!trendingReportsList[index].followed) {
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/follow",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    HapticFeedback.heavyImpact();
+                                    trendingReportsList[index].followed =
+                                        recentsResponseJson["followed"];
+                                    trendingReportsList[index].followers =
+                                        trendingReportsList[index].followers +
+                                            1;
+                                  } else {
+                                    trendingReportsList[index].followed =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  trendingReportsList[index].followed = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                              }
+
+                              setState(() {});
+                            }),
                             saved: saved,
                             commented: trendingReportsList[index].commented,
                           );
@@ -1418,7 +1462,50 @@ class _NewsDiscoverScreenState extends State<NewsDiscoverScreen>
                               );
                             }),
                             saveBtnOnTap: (() {}),
-                            followedOnTap: (() {}),
+                            followedOnTap: (() async {
+                              if (!reportsByCat[index].followed) {
+                                http.Response recentResponse = await http.post(
+                                  Uri.parse(
+                                    "${Keys.apiReportsBaseUrl}/follow",
+                                  ),
+                                  headers: {
+                                    'content-Type': 'application/json',
+                                    'authorization': 'Bearer $token',
+                                  },
+                                );
+                                log(recentResponse.statusCode.toString());
+                                if (recentResponse.statusCode == 200) {
+                                  Map<String, dynamic> recentsResponseJson =
+                                      jsonDecode(recentResponse.body);
+                                  if (recentsResponseJson["success"]) {
+                                    HapticFeedback.heavyImpact();
+                                    reportsByCat[index].followed =
+                                        recentsResponseJson["followed"];
+                                    reportsByCat[index].followers =
+                                        reportsByCat[index].followers + 1;
+                                  } else {
+                                    reportsByCat[index].followed =
+                                        recentsResponseJson["success"];
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      AppSnackbar().customizedAppSnackbar(
+                                        message: recentsResponseJson["message"],
+                                        context: context,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  reportsByCat[index].followed = false;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    AppSnackbar().customizedAppSnackbar(
+                                      message: "Something went wrong",
+                                      context: context,
+                                    ),
+                                  );
+                                }
+                              }
+
+                              setState(() {});
+                            }),
                             liked: reportsByCat[index].liked!,
                             commented: reportsByCat[index].commented!,
                           );

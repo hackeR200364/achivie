@@ -4,6 +4,7 @@ import 'dart:io';
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -716,6 +717,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   request.fields[
                                                           Keys.usrProfession] =
                                                       profession;
+                                                  request.fields[Keys
+                                                          .notificationToken] =
+                                                      (await FirebaseMessaging
+                                                          .instance
+                                                          .getToken())!;
 
                                                   http.Response response =
                                                       await http.Response
@@ -776,6 +782,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                               Keys
                                                                   .data][0][Keys
                                                               .usrProfession]);
+
+                                                      // StorageServices
+                                                      //     .setNotificationToken(
+                                                      //         responseJson[Keys
+                                                      //                 .data][0][
+                                                      //             Keys.notificationToken]);
 
                                                       ScaffoldMessenger.of(
                                                               allAppProvidersContext)
@@ -1144,6 +1156,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               //     await StorageServices
                                               //         .getUsrToken();
 
+                                              String? notificationToken =
+                                                  await FirebaseMessaging
+                                                      .instance
+                                                      .getToken();
+
+                                              log(notificationToken!);
+
                                               http.Response response =
                                                   await http.post(
                                                 Uri.parse(
@@ -1165,6 +1184,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   Keys.usrEmail:
                                                       _emailController.text
                                                           .trim(),
+                                                  Keys.notificationToken:
+                                                      notificationToken,
                                                 }),
                                               );
 
@@ -1177,6 +1198,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 log(responseJson.toString());
 
                                                 if (responseJson["success"]) {
+                                                  // StorageServices
+                                                  //     .setNotificationToken(
+                                                  //         responseJson[Keys
+                                                  //             .notificationToken]);
+
                                                   StorageServices.setUsrName(
                                                       "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
 

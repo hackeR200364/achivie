@@ -93,6 +93,17 @@ class StorageServices {
     pref.setString(Keys.blocName, blocName);
   }
 
+  static void setNotificationToken(String notificationToken) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString(Keys.notificationToken, notificationToken);
+  }
+
+  static Future<String?> getNotificationToken() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String? notificationToken = pref.getString(Keys.notificationToken);
+    return notificationToken;
+  }
+
   static Future<String?> getBlocName() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String? blocName = pref.getString(Keys.blocName);

@@ -21,6 +21,7 @@ class Keys {
   static const String usrProfession = "usrProfession";
   static const String usrProfilePic = "usrProfilePic";
   static const String uid = "uid";
+  static const String notificationToken = "notificationToken";
   static const String usrID = "usrID";
   // static const String userPassword = "userPassword";
   static const String usrPassword = "usrPassword";
