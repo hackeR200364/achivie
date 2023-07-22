@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "601368506923",
+    "project_id": "achivie-dfeaa",
+    "storage_bucket": "achivie-dfeaa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601368506923:android:3ffa48b121e56f9d6fb06e",
+        "android_client_info": {
+          "package_name": "com.achivie.achivie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "601368506923-b7ru0f2qgvfccmrjihbclcmrfsriuick.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.achivie.achivie",
+            "certificate_hash": "d27dad36f4f8038127d13d594ab1bf8d21b70e65"
+          }
+        },
+        {
+          "client_id": "601368506923-go76uop8mbmqm8uortur452fss2cfhrt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQA9scl7OGcFLh02tKDEqpfXZkQ3t9qFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "601368506923-go76uop8mbmqm8uortur452fss2cfhrt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

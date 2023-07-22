@@ -12,6 +12,7 @@ import 'package:achivie/screens/reporter_public_profile.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:achivie/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
@@ -1142,7 +1143,57 @@ class _SearchScreenState extends State<SearchScreen>
                                   saveBtnOnTap: (() {}),
                                   followed:
                                       searchReports[topNewsIndex].followed,
-                                  followedOnTap: (() {}),
+                                  followedOnTap: (() async {
+                                    if (!searchReports[topNewsIndex].followed) {
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/follow",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          HapticFeedback.heavyImpact();
+                                          searchReports[topNewsIndex].followed =
+                                              recentsResponseJson["followed"];
+                                          searchReports[topNewsIndex]
+                                                  .followers =
+                                              searchReports[topNewsIndex]
+                                                      .followers +
+                                                  1;
+                                        } else {
+                                          searchReports[topNewsIndex].followed =
+                                              recentsResponseJson["success"];
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: recentsResponseJson[
+                                                  "message"],
+                                              context: context,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        searchReports[topNewsIndex].followed =
+                                            false;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: "Something went wrong",
+                                            context: context,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }),
                                   saved: searchReports[topNewsIndex].saved,
                                   liked: searchReports[topNewsIndex].liked,
                                   commented:
@@ -1442,7 +1493,64 @@ class _SearchScreenState extends State<SearchScreen>
                                       commentBtnOnTap: (() {}),
                                       saveBtnOnTap: (() {}),
                                       followed: reports[topNewsIndex].followed,
-                                      followedOnTap: (() {}),
+                                      followedOnTap: (() async {
+                                        if (!reports[topNewsIndex].followed) {
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/follow",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              HapticFeedback.heavyImpact();
+                                              reports[topNewsIndex].followed =
+                                                  recentsResponseJson[
+                                                      "followed"];
+                                              reports[topNewsIndex].followers =
+                                                  reports[topNewsIndex]
+                                                          .followers +
+                                                      1;
+                                            } else {
+                                              reports[topNewsIndex].followed =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: recentsResponseJson[
+                                                      "message"],
+                                                  context: context,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            reports[topNewsIndex].followed =
+                                                false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: "Something went wrong",
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }),
                                       saved: reports[topNewsIndex].saved,
                                       liked: reports[topNewsIndex].liked,
                                       commented:
@@ -1508,10 +1616,61 @@ class _SearchScreenState extends State<SearchScreen>
                                     radius: 30,
                                     followed: searchReporters[topReportersIndex]
                                         .followed,
-                                    followedOnTap: (() {
-                                      setState(() {
-                                        followed = !followed;
-                                      });
+                                    followedOnTap: (() async {
+                                      if (!searchReporters[topReportersIndex]
+                                          .followed) {
+                                        http.Response recentResponse =
+                                            await http.post(
+                                          Uri.parse(
+                                            "${Keys.apiReportsBaseUrl}/follow",
+                                          ),
+                                          headers: {
+                                            'content-Type': 'application/json',
+                                            'authorization': 'Bearer $token',
+                                          },
+                                        );
+                                        log(recentResponse.statusCode
+                                            .toString());
+                                        if (recentResponse.statusCode == 200) {
+                                          Map<String, dynamic>
+                                              recentsResponseJson =
+                                              jsonDecode(recentResponse.body);
+                                          if (recentsResponseJson["success"]) {
+                                            HapticFeedback.heavyImpact();
+                                            searchReporters[topReportersIndex]
+                                                    .followed =
+                                                recentsResponseJson["followed"];
+                                            searchReporters[topReportersIndex]
+                                                .followers = searchReporters[
+                                                        topReportersIndex]
+                                                    .followers +
+                                                1;
+                                          } else {
+                                            searchReporters[topReportersIndex]
+                                                    .followed =
+                                                recentsResponseJson["success"];
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: recentsResponseJson[
+                                                    "message"],
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          searchReporters[topReportersIndex]
+                                              .followed = false;
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: "Something went wrong",
+                                              context: context,
+                                            ),
+                                          );
+                                        }
+                                      }
                                     }),
                                     onTap: (() {
                                       Navigator.push(
@@ -1546,10 +1705,71 @@ class _SearchScreenState extends State<SearchScreen>
                                         radius: 30,
                                         followed: reporters[topReportersIndex]
                                             .followed,
-                                        followedOnTap: (() {
-                                          setState(() {
-                                            followed = !followed;
-                                          });
+                                        followedOnTap: (() async {
+                                          if (!reporters[topReportersIndex]
+                                              .followed) {
+                                            http.Response recentResponse =
+                                                await http.post(
+                                              Uri.parse(
+                                                "${Keys.apiReportsBaseUrl}/follow",
+                                              ),
+                                              headers: {
+                                                'content-Type':
+                                                    'application/json',
+                                                'authorization':
+                                                    'Bearer $token',
+                                              },
+                                            );
+                                            log(recentResponse.statusCode
+                                                .toString());
+                                            if (recentResponse.statusCode ==
+                                                200) {
+                                              Map<String, dynamic>
+                                                  recentsResponseJson =
+                                                  jsonDecode(
+                                                      recentResponse.body);
+                                              if (recentsResponseJson[
+                                                  "success"]) {
+                                                HapticFeedback.heavyImpact();
+                                                reporters[topReportersIndex]
+                                                        .followed =
+                                                    recentsResponseJson[
+                                                        "followed"];
+                                                reporters[topReportersIndex]
+                                                        .followers =
+                                                    reporters[topReportersIndex]
+                                                            .followers +
+                                                        1;
+                                              } else {
+                                                reporters[topReportersIndex]
+                                                        .followed =
+                                                    recentsResponseJson[
+                                                        "success"];
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message:
+                                                        recentsResponseJson[
+                                                            "message"],
+                                                    context: context,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              reporters[topReportersIndex]
+                                                  .followed = false;
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      "Something went wrong",
+                                                  context: context,
+                                                ),
+                                              );
+                                            }
+                                          }
                                         }),
                                         onTap: (() {
                                           Navigator.push(
@@ -1891,7 +2111,60 @@ class _SearchScreenState extends State<SearchScreen>
                                   saveBtnOnTap: (() {}),
                                   followed:
                                       allReportsBySearch[allNewsIndex].followed,
-                                  followedOnTap: (() {}),
+                                  followedOnTap: (() async {
+                                    if (!allReportsBySearch[allNewsIndex]
+                                        .followed) {
+                                      http.Response recentResponse =
+                                          await http.post(
+                                        Uri.parse(
+                                          "${Keys.apiReportsBaseUrl}/follow",
+                                        ),
+                                        headers: {
+                                          'content-Type': 'application/json',
+                                          'authorization': 'Bearer $token',
+                                        },
+                                      );
+                                      log(recentResponse.statusCode.toString());
+                                      if (recentResponse.statusCode == 200) {
+                                        Map<String, dynamic>
+                                            recentsResponseJson =
+                                            jsonDecode(recentResponse.body);
+                                        if (recentsResponseJson["success"]) {
+                                          HapticFeedback.heavyImpact();
+                                          allReportsBySearch[allNewsIndex]
+                                                  .followed =
+                                              recentsResponseJson["followed"];
+                                          allReportsBySearch[allNewsIndex]
+                                                  .followers =
+                                              allReportsBySearch[allNewsIndex]
+                                                      .followers +
+                                                  1;
+                                        } else {
+                                          allReportsBySearch[allNewsIndex]
+                                                  .followed =
+                                              recentsResponseJson["success"];
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: recentsResponseJson[
+                                                  "message"],
+                                              context: context,
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        allReportsBySearch[allNewsIndex]
+                                            .followed = false;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message: "Something went wrong",
+                                            context: context,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }),
                                   saved: allReportsBySearch[allNewsIndex].saved,
                                   liked: allReportsBySearch[allNewsIndex].liked,
                                   commented: allReportsBySearch[allNewsIndex]
@@ -2197,7 +2470,68 @@ class _SearchScreenState extends State<SearchScreen>
                                       saveBtnOnTap: (() {}),
                                       followed:
                                           allReports[allNewsIndex].followed,
-                                      followedOnTap: (() {}),
+                                      followedOnTap: (() async {
+                                        if (!allReports[allNewsIndex]
+                                            .followed) {
+                                          http.Response recentResponse =
+                                              await http.post(
+                                            Uri.parse(
+                                              "${Keys.apiReportsBaseUrl}/follow",
+                                            ),
+                                            headers: {
+                                              'content-Type':
+                                                  'application/json',
+                                              'authorization': 'Bearer $token',
+                                            },
+                                          );
+                                          log(recentResponse.statusCode
+                                              .toString());
+                                          if (recentResponse.statusCode ==
+                                              200) {
+                                            Map<String, dynamic>
+                                                recentsResponseJson =
+                                                jsonDecode(recentResponse.body);
+                                            if (recentsResponseJson[
+                                                "success"]) {
+                                              HapticFeedback.heavyImpact();
+                                              allReports[allNewsIndex]
+                                                      .followed =
+                                                  recentsResponseJson[
+                                                      "followed"];
+                                              allReports[allNewsIndex]
+                                                      .followers =
+                                                  allReports[allNewsIndex]
+                                                          .followers +
+                                                      1;
+                                            } else {
+                                              allReports[allNewsIndex]
+                                                      .followed =
+                                                  recentsResponseJson[
+                                                      "success"];
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: recentsResponseJson[
+                                                      "message"],
+                                                  context: context,
+                                                ),
+                                              );
+                                            }
+                                          } else {
+                                            allReports[allNewsIndex].followed =
+                                                false;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message: "Something went wrong",
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }),
                                       saved: allReports[allNewsIndex].saved,
                                       liked: allReports[allNewsIndex].liked,
                                       commented:

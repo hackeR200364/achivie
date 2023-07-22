@@ -39,7 +39,8 @@ dependencies:
   provider:
 #  firebase_auth:
 #  google_sign_in:
-#  firebase_core:
+  firebase_core:
+  firebase_messaging:
   shared_preferences:
 #  cloud_firestore:
   awesome_dialog:
