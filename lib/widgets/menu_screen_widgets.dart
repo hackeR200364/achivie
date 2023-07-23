@@ -400,14 +400,14 @@ class MenuScreenListUpperColumn extends StatelessWidget {
           setIndex: widget.setIndex,
           zoomDrawerController: zoomDrawerController,
         ),
-        MenuListItem(
-          title: "Reports",
-          icon: Icons.newspaper,
-          index: 3,
-          selectedIndex: widget.selectedIndex,
-          setIndex: widget.setIndex,
-          zoomDrawerController: zoomDrawerController,
-        ),
+        // MenuListItem(
+        //   title: "Reports",
+        //   icon: Icons.newspaper,
+        //   index: 3,
+        //   selectedIndex: widget.selectedIndex,
+        //   setIndex: widget.setIndex,
+        //   zoomDrawerController: zoomDrawerController,
+        // ),
         MenuListItem(
           title: "Info",
           icon: Icons.info,
