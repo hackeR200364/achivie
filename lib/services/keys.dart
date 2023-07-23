@@ -48,6 +48,11 @@ class Keys {
   static const String notificationID = "notificationID";
   static const String schedule = "schedule";
   static const String tasksInstantChannelKey = "tasks_instant_channel";
+  static const String tasksInstantChannelKeyGroup =
+      "tasks_instant_channel_group";
+  static const String sponsorChannelKey = "sponsor_channel";
+  static const String sponsorChannelName = "Sponsor_channel_name";
+  static const String sponsorChannelDes = "Sponsor Notifications";
   static const String tasksInstantChannelName = "Tasks_Instant";
   static const String tasksInstantChannelDes = "Instant Tasks Notifications";
   static const String tasksScheduledChannelKey = "Tasks_Scheduled";
