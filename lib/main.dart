@@ -7,6 +7,7 @@ import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
 import 'package:achivie/screens/splash_screen.dart';
 import 'package:achivie/services/keys.dart';
+import 'package:achivie/services/notification_services.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:achivie/styles.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -22,31 +23,19 @@ import 'package:nowplaying/nowplaying.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Handle background FCM messages here
+
+  NotificationServices().onReceiveFCMNotification(message);
+  print("onBackgroundMessage: ${message.data}");
+}
+
 Future main() async {
   FlutterNativeSplash.preserve(
     widgetsBinding: WidgetsFlutterBinding.ensureInitialized(),
   );
   await Firebase.initializeApp();
-  await FirebaseMessaging.instance.requestPermission();
-  log(await FirebaseMessaging.instance.getToken() ?? "");
-  FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
-    String usrToken = await StorageServices.getUsrToken();
-    http.Response response = await http.post(
-      Uri.parse("${Keys.apiUsersBaseUrl}/updateNotificationToken/$token"),
-      headers: {
-        "content-type": "application/json",
-        'Authorization': 'Bearer $usrToken',
-      },
-    );
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> responseJson = jsonDecode(response.body);
-      if (responseJson["success"] == true) {
-        StorageServices.setNotificationToken(
-            (await FirebaseMessaging.instance.getToken())!);
-      }
-    }
-  });
   // await isMusicPlaying();
   // await NotificationServices().init();
 
@@ -86,6 +75,14 @@ Future main() async {
         importance: NotificationImportance.High,
         channelShowBadge: true,
       ),
+      NotificationChannel(
+        channelKey: Keys.sponsorChannelKey,
+        channelName: Keys.sponsorChannelName,
+        channelDescription: Keys.sponsorChannelDes,
+        defaultColor: AppColors.backgroundColour,
+        importance: NotificationImportance.High,
+        channelShowBadge: true,
+      ),
       // NotificationChannel(
       //   channelKey: Keys.tasksScheduledChannelKey,
       //   channelName: Keys.tasksScheduledChannelName,
@@ -96,8 +93,44 @@ Future main() async {
       //   channelShowBadge: true,
       // ),
     ],
+    // channelGroups: [
+    //   NotificationChannelGroup(
+    //     channelGroupKey: Keys.tasksInstantChannelKey,
+    //     channelGroupName: Keys.tasksInstantChannelKeyGroup,
+    //   ),
+    // ],
     debug: true,
   );
+
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  await _firebaseMessaging.requestPermission();
+  log(await _firebaseMessaging.getToken() ?? "");
+  _firebaseMessaging.onTokenRefresh.listen((token) async {
+    String usrToken = await StorageServices.getUsrToken();
+    http.Response response = await http.post(
+      Uri.parse("${Keys.apiUsersBaseUrl}/updateNotificationToken/$token"),
+      headers: {
+        "content-type": "application/json",
+        'Authorization': 'Bearer $usrToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      if (responseJson["success"] == true) {
+        StorageServices.setNotificationToken(
+            (await FirebaseMessaging.instance.getToken())!);
+      }
+    }
+  });
+  await _firebaseMessaging.subscribeToTopic("SPONSOR");
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    NotificationServices().onReceiveFCMNotification(message);
+  });
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    NotificationServices().onReceiveFCMNotification(message);
+  });
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // await Firebase.initializeApp();
   MobileAds.instance.initialize();
   NowPlaying.instance.start();
