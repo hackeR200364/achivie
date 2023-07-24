@@ -83,6 +83,9 @@ android {
         }
     }
 
+//    useAndroidX = true
+//    enableJetifier = true
+
 //    allprojects{
 //        tasks.withType(JavaCompile){
 //            options.compileArgs << "-Xlint:deprecation"
@@ -96,11 +99,11 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.0"
+    implementation "androidx.core:core-ktx:1.6.0"
     implementation "com.mikhaellopez:circularimageview:4.3.1"
     implementation 'com.google.android.material:material:1.9.0'
     implementation(platform("com.google.firebase:firebase-bom:32.2.0"))
-    implementation("com.google.firebase:firebase-analytics-ktx")
 
 }
 

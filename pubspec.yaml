@@ -69,7 +69,7 @@ dependencies:
   telephony:
   smooth_page_indicator:
   nowplaying:
-  flutter_local_notifications: ^13.0.0
+#  flutter_local_notifications: ^13.0.0
   flutter_marquee:
 #  app_settings:
   flutter_native_splash:
@@ -84,20 +84,21 @@ dependencies:
   pull_to_refresh:
   badges:
   carousel_slider:
-  readmore:
-  like_button:
-  google_nav_bar:
+#  readmore:
+#  like_button:
+#  google_nav_bar:
   full_screen_image:
-  geolocator:
-  geocoding:
-  mobile_number:
-  detectable_text_field:
-  hidable:
-  webview_flutter:
-  animated_icon_button:
+#  geolocator:
+#  geocoding:
+#  mobile_number:
+#  detectable_text_field:
+#  hidable:
+#  webview_flutter:
+#  animated_icon_button:
   circular_clip_route:
-  multi_trigger_autocomplete:
-  flutter_emoji:
+#  multi_trigger_autocomplete:
+#  flutter_emoji:
+#  audio_session:
 #  rename: any
 #  pinput:
 

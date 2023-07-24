@@ -535,8 +535,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               const SizedBox(
                                 height: 10,
                               ),
-                              Row(
-                                children: const [
+                              const Row(
+                                children: [
                                   CircleAvatar(
                                     radius: 10,
                                     backgroundImage: AssetImage(

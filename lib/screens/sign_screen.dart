@@ -351,7 +351,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             TextCapitalization.words,
                                         decoration: InputDecoration(
                                           counterText: "",
-                                          prefixIcon: Icon(
+                                          prefixIcon: const Icon(
                                             Icons.image,
                                             color: AppColors.white,
                                           ),
@@ -405,7 +405,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               if (signPage == 0 && signUpPressed == true)
                                 SizedBox(
                                   width: size.width,
-                                  child: Center(
+                                  child: const Center(
                                     child: Text(
                                       "Please select your profile picture.",
                                       style: TextStyle(

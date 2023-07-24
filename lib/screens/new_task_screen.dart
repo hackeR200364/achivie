@@ -260,11 +260,11 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                   AppColors.white.withOpacity(0.5),
                 ],
               ),
-              child: Center(
+              child: const Center(
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
+                    children: [
                       Text(
                         "Add new task",
                         style: TextStyle(

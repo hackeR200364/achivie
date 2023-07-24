@@ -12,7 +12,7 @@ import '../Utils/snackbar_utils.dart';
 import '../styles.dart';
 
 class EmailUsScreenColumn extends StatefulWidget {
-  EmailUsScreenColumn({
+  const EmailUsScreenColumn({
     super.key,
     required this.subjectFocusNode,
     required TextEditingController subjectController,

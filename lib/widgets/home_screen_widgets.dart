@@ -1296,7 +1296,7 @@ class _BarChart extends StatelessWidget {
             showingTooltipIndicators: [0],
           ),
         ],
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         alignment: BarChartAlignment.spaceAround,
         maxY: count.toDouble(),
       ),
@@ -1345,13 +1345,13 @@ class _BarChart extends StatelessWidget {
             },
           ),
         ),
-        leftTitles: AxisTitles(
+        leftTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: AxisTitles(
+        topTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        rightTitles: AxisTitles(
+        rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
       );

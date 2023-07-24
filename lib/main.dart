@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:achivie/providers/app_providers.dart';
-import 'package:achivie/providers/news_searching_provider.dart';
+// import 'package:achivie/providers/news_searching_provider.dart';
 import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
 import 'package:achivie/screens/splash_screen.dart';
@@ -27,7 +27,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Handle background FCM messages here
 
   NotificationServices().onReceiveFCMNotification(message);
-  print("onBackgroundMessage: ${message.data}");
+  // print("onBackgroundMessage: ${message.data}");
 }
 
 Future main() async {
@@ -102,10 +102,10 @@ Future main() async {
     debug: true,
   );
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  await _firebaseMessaging.requestPermission();
-  log(await _firebaseMessaging.getToken() ?? "");
-  _firebaseMessaging.onTokenRefresh.listen((token) async {
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  await firebaseMessaging.requestPermission();
+  log(await firebaseMessaging.getToken() ?? "");
+  firebaseMessaging.onTokenRefresh.listen((token) async {
     String usrToken = await StorageServices.getUsrToken();
     http.Response response = await http.post(
       Uri.parse("${Keys.apiUsersBaseUrl}/updateNotificationToken/$token"),
@@ -123,7 +123,7 @@ Future main() async {
       }
     }
   });
-  await _firebaseMessaging.subscribeToTopic("SPONSOR");
+  await firebaseMessaging.subscribeToTopic("SPONSOR");
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     NotificationServices().onReceiveFCMNotification(message);
   });
@@ -162,9 +162,9 @@ Future main() async {
         ChangeNotifierProvider(
           create: (_) => SongPlayingProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => NewsSearchingProvider(),
-        ),
+        // ChangeNotifierProvider(
+        //   create: (_) => NewsSearchingProvider(),
+        // ),
       ],
       child: StreamProvider.value(
         value: NowPlaying.instance.stream,
