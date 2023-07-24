@@ -27,7 +27,6 @@ import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
 import '../widgets/home_screen_widgets.dart';
 import 'new_task_screen.dart';
-import 'notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -79,6 +78,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool activeConnection = false;
   final _newTaskBtnKey = GlobalKey();
   final _notificationBtnKey = GlobalKey();
+
+  Animatable<double>? nextScreenOpacity;
+  late AnimationController _animationController;
+
   // late AudioSession session;
   @override
   void initState() {
@@ -121,6 +124,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     //   volume: 50,
     // );
     // if (Platform.isAndroid) checkCallStatus();
+
+    nextScreenOpacity = Tween<double>(begin: 0.0, end: 1.0);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1000), // Set the desired duration
+    );
+    nextScreenOpacity = TweenSequence<double>([
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        weight: 1.0,
+      ),
+    ]);
 
     super.initState();
   }
@@ -341,24 +356,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 onPressed: () {
                   HapticFeedback.lightImpact();
 
+                  _animationController.forward();
                   Navigator.push(
                     context,
                     CircularClipRoute(
+                      border: Border.all(
+                        width: 0,
+                        color: AppColors.transparent,
+                      ),
+                      shadow: [
+                        BoxShadow(
+                          color: AppColors.transparent,
+                          blurRadius: 100,
+                        )
+                      ],
                       expandFrom: _newTaskBtnKey.currentContext!,
-                      curve: Curves.fastOutSlowIn,
+                      curve: Curves.ease,
                       reverseCurve: Curves.fastOutSlowIn.flipped,
-                      opacity: ConstantTween(1),
-                      transitionDuration: const Duration(milliseconds: 650),
+                      opacity: nextScreenOpacity,
+                      transitionDuration: const Duration(milliseconds: 600),
                       builder: ((_) => const NewTaskScreen()),
                     ), // CustomPageTransitionAnimation(
-                    //   enterWidget: SearchScreen(),
-                    //   x: 0.5,
-                    //   y: -0.85,
-                    // ),
                   ).then((value) {
                     refresh();
                     // setState(() {});
                   });
+
+                  // Navigator.push(
+                  //   context,
+                  //   CircularClipRoute(
+                  //     expandFrom: _newTaskBtnKey.currentContext!,
+                  //     curve: Curves.fastOutSlowIn,
+                  //     reverseCurve: Curves.fastOutSlowIn.flipped,
+                  //     opacity: ConstantTween(1),
+                  //     transitionDuration: const Duration(milliseconds: 650),
+                  //     builder: ((_) => const NewTaskScreen()),
+                  //   ), // CustomPageTransitionAnimation(
+                  //   //   enterWidget: SearchScreen(),
+                  //   //   x: 0.5,
+                  //   //   y: -0.85,
+                  //   // ),
+                  // ).then((value) {
+                  //   refresh();
+                  //   // setState(() {});
+                  // });
 
                   // Navigator.push(
                   //   context,
@@ -444,16 +485,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                         // session.setActive(false);
 
+                        _animationController.forward();
                         Navigator.push(
                           context,
                           CircularClipRoute(
+                            border: Border.all(
+                              width: 0,
+                              color: AppColors.transparent,
+                            ),
+                            shadow: [
+                              BoxShadow(
+                                color: AppColors.transparent,
+                                blurRadius: 100,
+                              )
+                            ],
                             expandFrom: _notificationBtnKey.currentContext!,
-                            curve: Curves.fastOutSlowIn,
+                            curve: Curves.ease,
                             reverseCurve: Curves.fastOutSlowIn.flipped,
-                            opacity: ConstantTween(1),
+                            opacity: nextScreenOpacity,
                             transitionDuration:
-                                const Duration(milliseconds: 650),
-                            builder: ((_) => const NotificationScreen()),
+                                const Duration(milliseconds: 600),
+                            builder: ((_) => const NewTaskScreen()),
                           ), // CustomPageTransitionAnimation(
                         ).then((value) {
                           refresh();
