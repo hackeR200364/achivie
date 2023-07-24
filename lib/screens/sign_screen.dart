@@ -514,7 +514,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           );
                                         },
                                       ).toList(),
-                                      onChanged: (value) {
+                                      onChanged: (String? value) {
                                         setState(() {
                                           _value = value!;
                                           profession =
