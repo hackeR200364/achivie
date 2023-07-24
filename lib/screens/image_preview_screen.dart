@@ -27,7 +27,7 @@ class _ImagePreviewScreenState extends State<ImagePreviewScreen>
     _transformationController = TransformationController();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     )..addListener(() {
         _transformationController.value = _animation!.value;
       });

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+// import 'package:audio_session/audio_session.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:circular_clip_route/circular_clip_route.dart';
@@ -78,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool activeConnection = false;
   final _newTaskBtnKey = GlobalKey();
   final _notificationBtnKey = GlobalKey();
-
+  // late AudioSession session;
   @override
   void initState() {
     _scrollController = ScrollController();
@@ -135,6 +136,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     profileType = await StorageServices.getUsrSignInType();
     uid = await StorageServices.getUID();
     token = await StorageServices.getUsrToken();
+    // session = await AudioSession.instance;
+    //
+    // session.configure(const AudioSessionConfiguration.speech());
+
+    // await session.setCategory(Category.playAndRecord);
+
+    // session.interruptionEventStream.listen((event) {
+    //   // Handle interruption events here
+    //   print('Audio session interruption: $event');
+    // });
 
     await refresh();
     // Future.delayed(
@@ -233,6 +244,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   //       log(responseJson[Keys.data][Keys.usrPoints].toString());
   //       setState(() {});
   //     }
+  //   }
+  // }
+
+  // static const platform = MethodChannel('music_control');
+  //
+  // Future<void> playMusic(String url) async {
+  //   try {
+  //     await platform.invokeMethod('play', {"url": url});
+  //   } on PlatformException catch (e) {
+  //     print('Error playing music: ${e.message}');
+  //   }
+  // }
+  //
+  // Future<void> pauseMusic() async {
+  //   try {
+  //     await platform.invokeMethod('pause');
+  //     // log("message");
+  //   } on PlatformException catch (e) {
+  //     print('Error pausing music: ${e.message}');
+  //   }
+  // }
+  //
+  // Future<void> nextTrack() async {
+  //   try {
+  //     await platform.invokeMethod('next');
+  //   } on PlatformException catch (e) {
+  //     print('Error playing next track: ${e.message}');
+  //   }
+  // }
+  //
+  // Future<void> previousTrack() async {
+  //   try {
+  //     await platform.invokeMethod('previous');
+  //   } on PlatformException catch (e) {
+  //     print('Error playing previous track: ${e.message}');
   //   }
   // }
 
@@ -396,6 +442,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         //   ),
                         // );
 
+                        // session.setActive(false);
+
                         Navigator.push(
                           context,
                           CircularClipRoute(
@@ -407,10 +455,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 const Duration(milliseconds: 650),
                             builder: ((_) => const NotificationScreen()),
                           ), // CustomPageTransitionAnimation(
-                          //   enterWidget: SearchScreen(),
-                          //   x: 0.5,
-                          //   y: -0.85,
-                          // ),
                         ).then((value) {
                           refresh();
                           // setState(() {});
@@ -624,7 +668,7 @@ class HomeAppBarTitleRow extends StatelessWidget {
 
   final Size size;
   final bool hasImage;
-  final image;
+  final ImageProvider<Object> image;
   final String title;
   final String artist;
   final String source;
@@ -672,7 +716,7 @@ class HomeAppBarSongImage extends StatelessWidget {
     required this.image,
   });
 
-  final image;
+  final ImageProvider<Object> image;
 
   @override
   Widget build(BuildContext context) {

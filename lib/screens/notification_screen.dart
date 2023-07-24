@@ -79,7 +79,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+    // Size size = MediaQuery.of(context).size;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(

@@ -9,14 +9,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.4"
-  animated_icon_button:
-    dependency: "direct main"
-    description:
-      name: animated_icon_button
-      sha256: a483ca86d56fe358f4913ba79be8f0bd8fca3282de06f1ae3df108aece5b2a04
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   animated_text_kit:
     dependency: "direct main"
     description:
@@ -225,14 +217,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.8"
-  detectable_text_field:
-    dependency: "direct main"
-    description:
-      name: detectable_text_field
-      sha256: "64c9892eec96d1944d07201afd982f4011564e7463fd79d14b6582a657b46455"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   email_validator:
     dependency: "direct main"
     description:
@@ -374,14 +358,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-  flutter_emoji:
-    dependency: "direct main"
-    description:
-      name: flutter_emoji
-      sha256: a4341f2440b7f97c2ec4bb19a0903f313918a755c55d30ac746f1312085788dd
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.0"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
@@ -398,30 +374,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
-  flutter_local_notifications:
-    dependency: "direct main"
-    description:
-      name: flutter_local_notifications
-      sha256: "293995f94e120c8afce768981bd1fa9c5d6de67c547568e3b42ae2defdcbb4a0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "13.0.0"
-  flutter_local_notifications_linux:
-    dependency: transitive
-    description:
-      name: flutter_local_notifications_linux
-      sha256: ccb08b93703aeedb58856e5637450bf3ffec899adb66dc325630b68994734b89
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0+1"
-  flutter_local_notifications_platform_interface:
-    dependency: transitive
-    description:
-      name: flutter_local_notifications_platform_interface
-      sha256: "5ec1feac5f7f7d9266759488bc5f76416152baba9aa1b26fe572246caa00d1ab"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.0.0"
   flutter_marquee:
     dependency: "direct main"
     description:
@@ -446,14 +398,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.15"
-  flutter_portal:
-    dependency: transitive
-    description:
-      name: flutter_portal
-      sha256: "4601b3dc24f385b3761721bd852a3f6c09cddd4e943dd184ed58ee1f43006257"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -480,14 +424,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  freezed_annotation:
-    dependency: transitive
-    description:
-      name: freezed_annotation
-      sha256: aeac15850ef1b38ee368d4c53ba9a847e900bb2c53a4db3f6881cbb3cb684338
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   full_screen_image:
     dependency: "direct main"
     description:
@@ -496,86 +432,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  geocoding:
-    dependency: "direct main"
-    description:
-      name: geocoding
-      sha256: b34c0501bbbaf3190b85bef3078b27cf66c28a8915c6d3af50d67f356aa7da31
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
-  geocoding_android:
-    dependency: transitive
-    description:
-      name: geocoding_android
-      sha256: "5a1fc0cec9b0497b44ca31c1fa8d1c891f3aded1053e6bb2eac075d3bd1bf046"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
-  geocoding_ios:
-    dependency: transitive
-    description:
-      name: geocoding_ios
-      sha256: c85495ce8fb34e4fbd2dd8fc5f79263d622d9f88c4af948c965daf6b27a7f3a1
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
-  geocoding_platform_interface:
-    dependency: transitive
-    description:
-      name: geocoding_platform_interface
-      sha256: "8848605d307d844d89937cdb4b8ad7dfa880552078f310fa24d8a460f6dddab4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
-  geolocator:
-    dependency: "direct main"
-    description:
-      name: geolocator
-      sha256: "5c23f3613f50586c0bbb2b8f970240ae66b3bd992088cf60dd5ee2e6f7dde3a8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.0.2"
-  geolocator_android:
-    dependency: transitive
-    description:
-      name: geolocator_android
-      sha256: "94c2cf51f4a8387335cc2d1a21cc50897bc93069e05fc09aee29bd353a14f6f5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.9"
-  geolocator_apple:
-    dependency: transitive
-    description:
-      name: geolocator_apple
-      sha256: "36527c555f4c425f7d8fa8c7c07d67b78e3ff7590d40448051959e1860c1cfb4"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.7"
-  geolocator_platform_interface:
-    dependency: transitive
-    description:
-      name: geolocator_platform_interface
-      sha256: af4d69231452f9620718588f41acc4cb58312368716bfff2e92e770b46ce6386
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.7"
-  geolocator_web:
-    dependency: transitive
-    description:
-      name: geolocator_web
-      sha256: f68a122da48fcfff68bbc9846bb0b74ef651afe84a1b1f6ec20939de4d6860e1
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.6"
-  geolocator_windows:
-    dependency: transitive
-    description:
-      name: geolocator_windows
-      sha256: f5911c88e23f48b598dd506c7c19eff0e001645bdc03bb6fecb9f4549208354d
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.1"
   glassmorphism:
     dependency: "direct main"
     description:
@@ -592,14 +448,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  google_nav_bar:
-    dependency: "direct main"
-    description:
-      name: google_nav_bar
-      sha256: "1c8e3882fa66ee7b74c24320668276ca23affbd58f0b14a24c1e5590f4d07ab0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.6"
   graphs:
     dependency: transitive
     description:
@@ -608,14 +456,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.1"
-  hidable:
-    dependency: "direct main"
-    description:
-      name: hidable
-      sha256: "10821b1c7edb4f7b027fac8b0619b3c12fa1517c895a2380a191403d7974dc4f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   html:
     dependency: transitive
     description:
@@ -752,14 +592,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
-  like_button:
-    dependency: "direct main"
-    description:
-      name: like_button
-      sha256: "08e6a45b78888412df5d351786c550205ad3a677e72a0820d5bbc0b063c8a463"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.5"
   lints:
     dependency: transitive
     description:
@@ -816,22 +648,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-  mobile_number:
-    dependency: "direct main"
-    description:
-      name: mobile_number
-      sha256: "4c3ef292b198c8607385a75f6afae73b34026a9238931d116b42e2c7120c8eec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
-  multi_trigger_autocomplete:
-    dependency: "direct main"
-    description:
-      name: multi_trigger_autocomplete
-      sha256: a38b1f0f68eaa34fe81847844167e60c6e793d7b620c5f818457ac6f9f8c31ab
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   nested:
     dependency: transitive
     description:
@@ -1024,14 +840,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  readmore:
-    dependency: "direct main"
-    description:
-      name: readmore
-      sha256: "99c2483202f7c7e98c50834d72be2b119aefecf4497ca1960ae9d5f418eb1481"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   rive:
     dependency: transitive
     description:
@@ -1213,14 +1021,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.1"
-  timezone:
-    dependency: transitive
-    description:
-      name: timezone
-      sha256: "1cfd8ddc2d1cfd836bc93e67b9be88c3adaeca6f40a00ca999104c30693cdca0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.9.2"
   typed_data:
     dependency: transitive
     description:
@@ -1326,7 +1126,7 @@ packages:
     source: hosted
     version: "0.3.3"
   webview_flutter:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: webview_flutter
       sha256: "789d52bd789373cc1e100fb634af2127e86c99cf9abde09499743270c5de8d00"
