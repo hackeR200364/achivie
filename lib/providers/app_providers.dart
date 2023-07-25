@@ -155,4 +155,10 @@ class AllAppProviders extends ChangeNotifier {
     catCount = inputCatCount;
     notifyListeners();
   }
+
+  bool expanded = false;
+  void isExpandedFunc(bool isExpanded) {
+    expanded = isExpanded;
+    notifyListeners();
+  }
 }
