@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:achivie/services/shared_preferences.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
@@ -994,48 +995,96 @@ class _CustomFloatingActionButtonChildState
   }
 }
 
-class CustomHomeScreenAppBarTitle extends StatelessWidget {
-  const CustomHomeScreenAppBarTitle({
+class CustomHomeScreenAppBarTitle extends StatefulWidget {
+  CustomHomeScreenAppBarTitle({
     super.key,
     required this.date,
+    required this.expandable,
+    required this.expandedNotifier,
   });
 
   final DateTime date;
+  final void Function(bool status) expandable;
+  final ValueNotifier<bool> expandedNotifier;
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<UserDetailsProvider>(
-      builder: (_, userDetailsProviderProvider, userDetailsProviderChild) {
-        Future.delayed(
-          Duration.zero,
-          (() {
-            userDetailsProviderProvider.userNameFunc();
-          }),
-        );
-        return CustomHomeScreenAppBarTitleChild(
-          date: date,
-          userDetailsProviderProvider: userDetailsProviderProvider,
-        );
-      },
-    );
-  }
+  State<CustomHomeScreenAppBarTitle> createState() =>
+      _CustomHomeScreenAppBarTitleState();
 }
 
-class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
-  const CustomHomeScreenAppBarTitleChild({
-    super.key,
-    required this.date,
-    required this.userDetailsProviderProvider,
-  });
+class _CustomHomeScreenAppBarTitleState
+    extends State<CustomHomeScreenAppBarTitle> {
+  String name = '', image = "", email = "";
+  int rate = 0;
 
-  final DateTime date;
-  final UserDetailsProvider userDetailsProviderProvider;
+  void getUserDetails() async {
+    name = await StorageServices.getUsrName();
+    image = await StorageServices.getUsrProfilePic();
+    email = await StorageServices.getUsrEmail();
+    log(image);
+  }
+
+  Future<void> completionRate() async {
+    // ((totalDone / (totalTasks - totalDelete)) * 100).round();
+
+    String uid = await StorageServices.getUID();
+    String token = await StorageServices.getUsrToken();
+
+    http.Response response = await http.get(
+        Uri.parse("${Keys.apiUsersBaseUrl}/completionRate/$uid"),
+        headers: {
+          "content-type": "application/json",
+          'Authorization': 'Bearer $token',
+        });
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      // log(responseJson.toString());
+      if (responseJson["success"]) {
+        rate = responseJson["completionRate"];
+        setState(() {});
+      }
+    }
+  }
+
+  bool expanded = false;
+
+  @override
+  void initState() {
+    getUserDetails();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.center,
       child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            widget.expandable(false);
+            setState(() {
+              expanded = false;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+          if (details.delta.dy > 0) {
+            widget.expandable(true);
+            setState(() {
+              expanded = true;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+        },
+        onLongPress: (() {
+          HapticFeedback.lightImpact();
+          // _animationController.forward();
+          widget.expandable(true);
+          setState(() {
+            expanded = true;
+          });
+          widget.expandedNotifier.value = expanded;
+        }),
         onDoubleTap: (() {
           HapticFeedback.lightImpact();
           Navigator.push(
@@ -1045,27 +1094,240 @@ class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
             ),
           );
         }),
-        child: GlassmorphicContainer(
-          width: double.infinity,
-          height: 41,
-          borderRadius: 40,
-          linearGradient: AppColors.customGlassIconButtonGradient,
-          border: 2,
-          blur: 4,
-          borderGradient: AppColors.customGlassIconButtonBorderGradient,
-          child: Center(
-            child: SingleChildScrollView(
-              physics: AppColors.scrollPhysics,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CustomHomeScreenAppBarTitleHeading(
-                    userDetailsProviderProvider: userDetailsProviderProvider,
+        onTap: expanded
+            ? (() {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (nextPageContext) => const ProfileScreen(),
                   ),
-                  CustomHomeScreenAppBarTitleSubHeading(
-                    date: date,
-                  ),
-                ],
+                );
+              })
+            : null,
+        child: AnimatedContainer(
+          width: MediaQuery.of(context).size.width,
+          height: expanded ? 80 : 41,
+          curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(
+              width: expanded ? 1 : 2,
+              color: AppColors.white.withOpacity(0.4),
+            ),
+          ),
+          duration: Duration(milliseconds: expanded ? 700 : 900),
+          child: GlassmorphicContainer(
+            width: double.infinity,
+            height: expanded ? 80 : 41, //150
+            borderRadius: 40,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 0,
+            blur: 4,
+            borderGradient: expanded
+                ? AppColors.customGlassButtonTransparentGradient
+                : AppColors.customGlassIconButtonBorderGradient,
+            child: Center(
+              child: SingleChildScrollView(
+                physics: AppColors.scrollPhysics,
+                child: (expanded)
+                    ? Padding(
+                        padding: const EdgeInsets.only(
+                          left: 10,
+                          right: 10,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: AppColors.white,
+                              backgroundImage: NetworkImage(image),
+                              radius: 31,
+                            ),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name.trim(),
+                                  style: AppColors.headingTextStyle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(
+                                  height: 3,
+                                ),
+                                Text(
+                                  email.trim(),
+                                  style: AppColors.subHeadingTextStyle,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(
+                                  height: 3,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Completion rate: ",
+                                      style: AppColors.subHeadingTextStyle,
+                                    ),
+                                    if (rate <= 25)
+                                      Text(
+                                        "${rate.toString()}%",
+                                        style: const TextStyle(
+                                          color: AppColors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    if (rate > 25 && rate <= 50)
+                                      Text(
+                                        "${rate.toString()}%",
+                                        style: const TextStyle(
+                                          color: AppColors.orange,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    if (rate > 50 && rate <= 100)
+                                      Text(
+                                        "${rate.toString()}%",
+                                        style: const TextStyle(
+                                          color: AppColors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          CustomHomeScreenAppBarTitleHeading(
+                            name: name,
+                          ),
+                          CustomHomeScreenAppBarTitleSubHeading(
+                            date: widget.date,
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomHomeScreenAppBarTitleChild extends StatefulWidget {
+  const CustomHomeScreenAppBarTitleChild({
+    super.key,
+    required this.date,
+    required this.userDetailsProviderProvider,
+    required this.expandable,
+  });
+
+  final DateTime date;
+  final UserDetailsProvider userDetailsProviderProvider;
+  final Function(bool expanded) expandable;
+  @override
+  State<CustomHomeScreenAppBarTitleChild> createState() =>
+      _CustomHomeScreenAppBarTitleChildState();
+}
+
+class _CustomHomeScreenAppBarTitleChildState
+    extends State<CustomHomeScreenAppBarTitleChild>
+    with TickerProviderStateMixin {
+  bool expanded = false;
+  Animatable<double>? expandHeight;
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    // expandHeight = Tween<double>(begin: 41.0, end: 150.0);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600), // Set the desired duration
+    );
+    expandHeight = TweenSequence<double>([
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 41.0, end: 150.0),
+        weight: 1.0,
+      ),
+    ]);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            setState(() {
+              expanded = false;
+            });
+            widget.expandable(expanded);
+          }
+        },
+        onLongPress: (() {
+          HapticFeedback.lightImpact();
+          // _animationController.forward();
+          setState(() {
+            expanded = true;
+          });
+          widget.expandable(expanded);
+        }),
+        onDoubleTap: (() {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (nextPageContext) => const ProfileScreen(),
+            ),
+          );
+        }),
+        child: AnimatedContainer(
+          width: MediaQuery.of(context).size.width,
+          height: expanded ? 200 : 41,
+          curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(
+              width: expanded ? 1 : 2,
+              color: AppColors.white.withOpacity(0.4),
+            ),
+          ),
+          duration: Duration(milliseconds: expanded ? 700 : 900),
+          child: GlassmorphicContainer(
+            width: double.infinity,
+            height: expanded ? 200 : 41, //150
+            borderRadius: 50,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 0,
+            blur: 4,
+            borderGradient: expanded
+                ? AppColors.customGlassButtonTransparentGradient
+                : AppColors.customGlassIconButtonBorderGradient,
+            child: Center(
+              child: SingleChildScrollView(
+                physics: AppColors.scrollPhysics,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CustomHomeScreenAppBarTitleHeading(
+                      name: "",
+                    ),
+                    CustomHomeScreenAppBarTitleSubHeading(
+                      date: widget.date,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1078,10 +1340,10 @@ class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
 class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
   const CustomHomeScreenAppBarTitleHeading({
     super.key,
-    required this.userDetailsProviderProvider,
+    required this.name,
   });
 
-  final UserDetailsProvider userDetailsProviderProvider;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -1092,23 +1354,21 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (userDetailsProviderProvider.userName.trim().length <
-            (size.width / 35).round())
+        if (name.trim().length < (size.width / 35).round())
           Center(
             child: Text(
-              userDetailsProviderProvider.userName.trim(),
+              name.trim(),
               style: AppColors.headingTextStyle,
             ),
           ),
-        if (userDetailsProviderProvider.userName.trim().length >
-            (size.width / 35).round())
+        if (name.trim().length > (size.width / 35).round())
           SizedBox(
             width: MediaQuery.of(context).size.width,
             // height: 41 / 2.3,
             child: Center(
               child: flutter_marquee.Marquee(
                 textStyle: AppColors.headingTextStyle,
-                str: userDetailsProviderProvider.userName.trim(),
+                str: name.trim(),
                 containerWidth: MediaQuery.of(context).size.width,
               ),
             ),
