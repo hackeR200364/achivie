@@ -130,6 +130,10 @@ class FocusedMenuTileChildContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.only(
+        top: 5,
+        bottom: 5,
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: 15,
         vertical: 15,
@@ -1021,6 +1025,7 @@ class _CustomHomeScreenAppBarTitleState
     name = await StorageServices.getUsrName();
     image = await StorageServices.getUsrProfilePic();
     email = await StorageServices.getUsrEmail();
+    await completionRate();
     log(image);
   }
 
