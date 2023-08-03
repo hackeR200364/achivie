@@ -41,6 +41,11 @@ class _MenuScreenState extends State<MenuScreen> {
     // log("message");
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   usrPoints() async {
     points = await StorageServices.getUsrPoints();
     log(points.toString());

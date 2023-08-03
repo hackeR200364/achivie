@@ -1000,7 +1000,7 @@ class _CustomFloatingActionButtonChildState
 }
 
 class CustomHomeScreenAppBarTitle extends StatefulWidget {
-  CustomHomeScreenAppBarTitle({
+  const CustomHomeScreenAppBarTitle({
     super.key,
     required this.date,
     required this.expandable,
@@ -1112,115 +1112,104 @@ class _CustomHomeScreenAppBarTitleState
             : null,
         child: AnimatedContainer(
           width: MediaQuery.of(context).size.width,
-          height: expanded ? 80 : 41,
+          height: expanded ? 80 : 45,
           curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(40),
+            gradient: AppColors.customGlassIconButtonGradient,
             border: Border.all(
               width: expanded ? 1 : 2,
               color: AppColors.white.withOpacity(0.4),
             ),
           ),
           duration: Duration(milliseconds: expanded ? 700 : 900),
-          child: GlassmorphicContainer(
-            width: double.infinity,
-            height: expanded ? 80 : 41, //150
-            borderRadius: 40,
-            linearGradient: AppColors.customGlassIconButtonGradient,
-            border: 0,
-            blur: 4,
-            borderGradient: expanded
-                ? AppColors.customGlassButtonTransparentGradient
-                : AppColors.customGlassIconButtonBorderGradient,
-            child: Center(
-              child: SingleChildScrollView(
-                physics: AppColors.scrollPhysics,
-                child: (expanded)
-                    ? Padding(
-                        padding: const EdgeInsets.only(
-                          left: 10,
-                          right: 10,
+          child: Center(
+            child: (expanded)
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                      left: 10,
+                      right: 10,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: AppColors.white,
+                          backgroundImage: NetworkImage(image),
+                          radius: 31,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(
-                              backgroundColor: AppColors.white,
-                              backgroundImage: NetworkImage(image),
-                              radius: 31,
+                            Text(
+                              name.trim(),
+                              style: AppColors.headingTextStyle,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             SizedBox(
-                              width: 5,
+                              height: 3,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Text(
+                              email.trim(),
+                              style: AppColors.subHeadingTextStyle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(
+                              height: 3,
+                            ),
+                            Row(
                               children: [
                                 Text(
-                                  name.trim(),
-                                  style: AppColors.headingTextStyle,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(
-                                  height: 3,
-                                ),
-                                Text(
-                                  email.trim(),
+                                  "Completion rate: ",
                                   style: AppColors.subHeadingTextStyle,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                SizedBox(
-                                  height: 3,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      "Completion rate: ",
-                                      style: AppColors.subHeadingTextStyle,
+                                if (rate <= 25)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.red,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    if (rate <= 25)
-                                      Text(
-                                        "${rate.toString()}%",
-                                        style: const TextStyle(
-                                          color: AppColors.red,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    if (rate > 25 && rate <= 50)
-                                      Text(
-                                        "${rate.toString()}%",
-                                        style: const TextStyle(
-                                          color: AppColors.orange,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    if (rate > 50 && rate <= 100)
-                                      Text(
-                                        "${rate.toString()}%",
-                                        style: const TextStyle(
-                                          color: AppColors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                  ],
-                                ),
+                                  ),
+                                if (rate > 25 && rate <= 50)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.orange,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (rate > 50 && rate <= 100)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                               ],
                             ),
                           ],
                         ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          CustomHomeScreenAppBarTitleHeading(
-                            name: name,
-                          ),
-                          CustomHomeScreenAppBarTitleSubHeading(
-                            date: widget.date,
-                          ),
-                        ],
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomHomeScreenAppBarTitleHeading(
+                        name: name,
                       ),
-              ),
-            ),
+                      CustomHomeScreenAppBarTitleSubHeading(
+                        date: widget.date,
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -1248,22 +1237,22 @@ class _CustomHomeScreenAppBarTitleChildState
     extends State<CustomHomeScreenAppBarTitleChild>
     with TickerProviderStateMixin {
   bool expanded = false;
-  Animatable<double>? expandHeight;
-  late AnimationController _animationController;
+  // Animatable<double>? expandHeight;
+  // late AnimationController _animationController;
 
   @override
   void initState() {
-    // expandHeight = Tween<double>(begin: 41.0, end: 150.0);
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600), // Set the desired duration
-    );
-    expandHeight = TweenSequence<double>([
-      TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 41.0, end: 150.0),
-        weight: 1.0,
-      ),
-    ]);
+    // // expandHeight = Tween<double>(begin: 41.0, end: 150.0);
+    // _animationController = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(milliseconds: 600), // Set the desired duration
+    // );
+    // expandHeight = TweenSequence<double>([
+    //   TweenSequenceItem<double>(
+    //     tween: Tween<double>(begin: 41.0, end: 150.0),
+    //     weight: 1.0,
+    //   ),
+    // ]);
     super.initState();
   }
 
@@ -1395,7 +1384,10 @@ class CustomHomeScreenAppBarTitleSubHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
-      style: AppColors.subHeadingTextStyle,
+      style: TextStyle(
+        color: AppColors.white.withOpacity(0.7),
+        fontSize: 12,
+      ),
     );
   }
 }

@@ -23,12 +23,12 @@ import 'package:nowplaying/nowplaying.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Handle background FCM messages here
-
-  NotificationServices().onReceiveFCMNotification(message);
-  // print("onBackgroundMessage: ${message.data}");
-}
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   // Handle background FCM messages here
+//
+//   NotificationServices().onReceiveFCMNotification(message);
+//   // print("onBackgroundMessage: ${message.data}");
+// }
 
 Future main() async {
   FlutterNativeSplash.preserve(
@@ -104,7 +104,7 @@ Future main() async {
 
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   await firebaseMessaging.requestPermission();
-  log(await firebaseMessaging.getToken() ?? "");
+  // log(await firebaseMessaging.getToken() ?? "");
   firebaseMessaging.onTokenRefresh.listen((token) async {
     String usrToken = await StorageServices.getUsrToken();
     http.Response response = await http.post(
@@ -124,13 +124,32 @@ Future main() async {
     }
   });
   await firebaseMessaging.subscribeToTopic("SPONSOR");
+  //when foreground
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    log("message");
     NotificationServices().onReceiveFCMNotification(message);
   });
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    NotificationServices().onReceiveFCMNotification(message);
-  });
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  //
+  // //
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   log("message opened");
+  //   NotificationServices().onReceiveFCMNotification(message);
+  // });
+  //
+  // //
+  // FirebaseMessaging.onBackgroundMessage((message) {
+  //   log("message background");
+  //   return NotificationServices().onReceiveFCMNotification(message);
+  // });
+
+  // FirebaseMessaging.onBackgroundMessage(
+  //   (message) => NotificationServices().onReceiveFCMNotification(message),
+  // );
+
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   NotificationServices().onReceiveFCMNotification(message);
+  // });
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // await Firebase.initializeApp();
   MobileAds.instance.initialize();
   NowPlaying.instance.start();

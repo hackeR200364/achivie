@@ -71,6 +71,11 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7050103229809241~5474149923"/>
 
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="sponsor_channel" />
+
+
         <service android:name="com.gomes.nowplaying.NowPlayingListenerService"
             android:label="Play song"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"

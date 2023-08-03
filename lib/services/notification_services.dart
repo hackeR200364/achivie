@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -155,7 +153,7 @@ class NotificationServices {
     // log(message.messageId! as num);
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
-        id: Random().nextInt(1000),
+        id: message.hashCode,
         channelKey: Keys.sponsorChannelKey,
         title: message.notification!.title,
         body: message.notification!.body,

@@ -12,12 +12,13 @@ package com.achivie.achivie
 import io.flutter.embedding.android.FlutterActivity
 //import io.flutter.app.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 //import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 
 class MainActivity: FlutterActivity() {
 
-//    private val CHANNEL = "my_channel"
+    private val CHANNEL = "music_control"
 
 //    companion object {
 //        private const val MUSIC_CHANNEL = "music_control"
@@ -29,6 +30,17 @@ class MainActivity: FlutterActivity() {
         // TODO: Register the ListTileNativeAdFactory
         GoogleMobileAdsPlugin.registerNativeAdFactory(
                 flutterEngine, "listTile", ListTileNativeAdFactory(this.context))
+
+//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+//            if (call.method == "controlMusicState") {
+//                val packageName = call.argument<String>("packageName")
+//                val command = call.argument<String>("command")
+//                controlMusicState(packageName, command)
+//                result.success(null)
+//            } else {
+//                result.notImplemented()
+//            }
+//        }
 
 //        GoogleMobileAdsPlugin.registerNativeAdFactory(
 //                flutterEngine, "ReportContainer", ReportsContainerAdFactory(this.context))
