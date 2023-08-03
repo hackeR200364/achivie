@@ -84,6 +84,7 @@ dependencies:
   pull_to_refresh:
   badges:
   carousel_slider:
+  simple_animation_progress_bar:
 #  readmore:
 #  like_button:
 #  google_nav_bar:
@@ -101,6 +102,8 @@ dependencies:
 #  audio_session:
 #  rename: any
 #  pinput:
+  audio_service:
+  just_audio:
 
 dev_dependencies:
   flutter_test:

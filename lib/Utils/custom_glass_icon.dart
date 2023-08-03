@@ -25,6 +25,7 @@ class CustomGlassIconButton extends StatelessWidget {
       border: 2,
       blur: 4,
       borderGradient: AppColors.customGlassIconButtonBorderGradient,
+      shape: BoxShape.circle,
       child: Center(
         child: IconButton(
           onPressed: onPressed,

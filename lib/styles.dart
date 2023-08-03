@@ -52,12 +52,12 @@ class AppColors {
   static const TextStyle headingTextStyle = TextStyle(
     color: AppColors.white,
     overflow: TextOverflow.fade,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: FontWeight.bold,
     letterSpacing: 3,
   );
   static final TextStyle subHeadingTextStyle = TextStyle(
     color: AppColors.white.withOpacity(0.7),
-    fontSize: 15,
+    fontSize: 10,
   );
 }

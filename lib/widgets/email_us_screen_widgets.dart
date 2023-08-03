@@ -313,6 +313,7 @@ class CustomApBarTitleChildText extends StatelessWidget {
       child: Text(
         heading,
         style: const TextStyle(
+          color: AppColors.white,
           overflow: TextOverflow.fade,
           fontSize: 17,
           fontWeight: FontWeight.bold,

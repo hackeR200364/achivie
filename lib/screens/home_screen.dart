@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:achivie/screens/notification_screen.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:circular_clip_route/circular_clip_route.dart';
@@ -17,6 +18,7 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_animation_progress_bar/simple_animation_progress_bar.dart';
 import 'package:telephony/telephony.dart';
 
 import '../Utils/custom_glass_icon.dart';
@@ -102,6 +104,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // late AudioSession session;
   @override
   void initState() {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: AppColors.transparent,
+        // Change this color to your desired color
+      ),
+    );
     expanded = false;
     _scrollController = ScrollController();
     tabController = TabController(
@@ -241,6 +249,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         // pageLoading = false;
       });
     });
+
+    updateTasks(taskTypeIndexMain, taskStatusIndexMain);
   }
 
   Future checkUserConnection() async {
@@ -746,6 +756,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               },
                                             ).then((value) async {
                                               // await widget.refresh;
+                                              refresh();
                                             });
                                           });
                                         } else {
@@ -794,16 +805,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           {
                                             Keys.uid: uid,
                                             Keys.notificationID:
-                                                tasks[listIndex]
-                                                    .taskNotification,
+                                                tasks[listIndex].notificationId,
                                           },
                                         ),
                                       );
 
-                                      Map<String, dynamic> doneResponseJson =
-                                          jsonDecode(doneResponse.body);
-
                                       if (doneResponse.statusCode == 200) {
+                                        Map<String, dynamic> doneResponseJson =
+                                            jsonDecode(doneResponse.body);
                                         if (doneResponseJson["success"]) {
                                           DateTime date = DateTime.now();
 
@@ -843,6 +852,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 },
                                               ).then((value) async {
                                                 // await widget.refresh;
+                                                refresh();
                                               });
                                             });
                                           }
@@ -1320,7 +1330,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   opacity: nextScreenOpacity,
                                   transitionDuration:
                                       const Duration(milliseconds: 600),
-                                  builder: ((_) => const NewTaskScreen()),
+                                  builder: ((_) => const NotificationScreen()),
                                 ), // CustomPageTransitionAnimation(
                               ).then((value) {
                                 refresh();
@@ -1342,18 +1352,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           icon: Icons.menu,
                         ),
                       ),
-                      Consumer<AllAppProviders>(
-                        builder:
-                            (allAppContext, allAppProviderParent, allAppChild) {
-                          // log(expanded.toString());
-                          return Positioned(
-                            top: 45,
-                            left: expandVal ? 15 : 61,
-                            right: expandVal ? 15 : 61,
-                            // width: size.width,
-                            child: Consumer<SongPlayingProvider>(
-                              builder:
-                                  (allAppContext, allAppProvider, allAppChild) {
+                      Positioned(
+                        top: 45,
+                        left: expandVal ? 15 : 61,
+                        right: expandVal ? 15 : 61,
+                        // width: size.width,
+                        child: Consumer<AllAppProviders>(
+                          builder: (allAppContext, allAppProviderParent,
+                              allAppChild) {
+                            // log(expanded.toString());
+                            return Consumer<SongPlayingProvider>(
+                              builder: (songPlayingContext, songPlayingProvider,
+                                  songPlayingChild) {
                                 // log(expanded.toString());
                                 return Consumer<NowPlayingTrack>(
                                   builder:
@@ -1365,10 +1375,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       Future.delayed(
                                         Duration.zero,
                                         (() {
-                                          allAppProvider
+                                          songPlayingProvider
                                               .isSongPlayingFunc(isPlaying);
-                                          allAppProvider.songNameFunc(songName);
-                                          allAppProvider
+                                          songPlayingProvider
+                                              .songNameFunc(songName);
+                                          songPlayingProvider
                                               .songArtistFunc(songArtist);
                                         }),
                                       );
@@ -1439,7 +1450,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       Future.delayed(
                                         Duration.zero,
                                         (() {
-                                          allAppProvider
+                                          songPlayingProvider
                                               .isSongPlayingFunc(isPlaying);
                                         }),
                                       );
@@ -1455,17 +1466,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           nowPlayingTrack.title != null &&
                                           nowPlayingTrack.artist != null &&
                                           nowPlayingTrack.source != null) {
+                                        // log(nowPlayingTrack.duration
+                                        //     .toString());
                                         isPlaying = true;
                                         songName = nowPlayingTrack.title!;
                                         songArtist = nowPlayingTrack.artist!;
                                         Future.delayed(
                                           Duration.zero,
                                           (() {
-                                            allAppProvider
+                                            songPlayingProvider
                                                 .isSongPlayingFunc(isPlaying);
-                                            allAppProvider
+                                            songPlayingProvider
                                                 .songNameFunc(songName);
-                                            allAppProvider
+                                            songPlayingProvider
                                                 .songArtistFunc(songArtist);
                                           }),
                                         );
@@ -1477,65 +1490,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           }),
                                         );
                                       }
-                                      return Align(
-                                        alignment: Alignment.center,
-                                        child: GestureDetector(
-                                          onTap: (() {}),
-                                          child: GlassmorphicContainer(
-                                            width: double.infinity,
-                                            height: 41,
-                                            borderRadius: 40,
-                                            linearGradient: AppColors
-                                                .customGlassIconButtonGradient,
-                                            border: 2,
-                                            blur: 4,
-                                            borderGradient: AppColors
-                                                .customGlassIconButtonBorderGradient,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 5,
-                                              ),
-                                              child:
-                                                  (nowPlayingTrack.image !=
-                                                              null &&
-                                                          nowPlayingTrack
-                                                                  .title !=
-                                                              null &&
-                                                          nowPlayingTrack
-                                                                  .artist !=
-                                                              null &&
-                                                          nowPlayingTrack
-                                                                  .source !=
-                                                              null)
-                                                      ? HomeAppBarTitleRow(
-                                                          isPaused:
-                                                              nowPlayingTrack
-                                                                  .isPaused,
-                                                          size: size,
-                                                          hasImage:
-                                                              nowPlayingTrack
-                                                                  .hasImage,
-                                                          image: nowPlayingTrack
-                                                              .image!,
-                                                          title: nowPlayingTrack
-                                                              .title!,
-                                                          artist:
-                                                              nowPlayingTrack
-                                                                  .artist!,
-                                                          source:
-                                                              nowPlayingTrack
-                                                                  .source!,
-                                                        )
-                                                      : const Center(
-                                                          child: Text(
-                                                            "Loading...",
-                                                            style: AppColors
-                                                                .headingTextStyle,
-                                                          ),
-                                                        ),
-                                            ),
-                                          ),
-                                        ),
+                                      return PlayingAppBarTitleWidget(
+                                        size: size,
+                                        nowPlayingTrack: nowPlayingTrack,
+                                        expandedNotifier: expandedNotifier,
                                       );
                                     }
                                     return CustomHomeScreenAppBarTitle(
@@ -1546,10 +1504,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   },
                                 );
                               },
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
+                      )
                     ],
                   )
 
@@ -1574,6 +1532,259 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class PlayingAppBarTitleWidget extends StatefulWidget {
+  const PlayingAppBarTitleWidget({
+    super.key,
+    required this.size,
+    required this.nowPlayingTrack,
+    required this.expandedNotifier,
+  });
+
+  final Size size;
+  final NowPlayingTrack nowPlayingTrack;
+  final ValueNotifier<bool> expandedNotifier;
+
+  @override
+  State<PlayingAppBarTitleWidget> createState() =>
+      _PlayingAppBarTitleWidgetState();
+}
+
+class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
+  bool expanded = false;
+
+  String formatDuration(Duration duration) {
+    int hours = duration.inHours;
+    int minutes = duration.inMinutes.remainder(60);
+    int seconds = duration.inSeconds.remainder(60);
+
+    String formattedDuration = (hours > 0)
+        ? "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}"
+        : "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+
+    return formattedDuration;
+  }
+
+  final MethodChannel controlMusicStateChannel =
+      MethodChannel('control_music_state');
+
+  @override
+  Widget build(BuildContext context) {
+    // log(widget.nowPlayingTrack.duration.toString());
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            setState(() {
+              expanded = false;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+          if (details.delta.dy > 0) {
+            setState(() {
+              expanded = true;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+        },
+        onLongPress: (() {
+          HapticFeedback.lightImpact();
+          // _animationController.forward();
+          setState(() {
+            expanded = true;
+          });
+          widget.expandedNotifier.value = expanded;
+        }),
+        child: AnimatedContainer(
+          width: MediaQuery.of(context).size.width,
+          height: expanded ? 140 : 41,
+          curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
+          decoration: BoxDecoration(
+            gradient: AppColors.customGlassIconButtonGradient,
+            borderRadius: BorderRadius.circular(expanded ? 31 : 40),
+            border: Border.all(
+              width: expanded ? 1 : 2,
+              color: AppColors.white.withOpacity(0.4),
+            ),
+          ),
+          duration: Duration(milliseconds: expanded ? 700 : 900),
+          child: expanded
+              ? Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              AnimatedContainer(
+                                height: 65,
+                                width: 65,
+                                duration: Duration(
+                                  milliseconds: 400,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: DecorationImage(
+                                    image: widget.nowPlayingTrack.image!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // if (title.trim().split(" ").length < 2)
+                                  // Text(
+                                  //   title,
+                                  //   style: AppColors.headingTextStyle,
+                                  // ),
+                                  // if (title.trim().split(" ").length > 1)
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.3,
+                                    height: 20,
+                                    child: Marquee(
+                                      textStyle: AppColors.headingTextStyle,
+                                      str: widget.nowPlayingTrack.title!,
+                                      containerWidth:
+                                          MediaQuery.of(context).size.width,
+                                      baseMilliseconds: 6000,
+                                    ),
+                                  ),
+                                  // if (artist.trim().split(" ").length < 3)
+                                  //   Text(
+                                  //     artist,
+                                  //     style: AppColors.subHeadingTextStyle,
+                                  //   ),
+                                  // if (artist.trim().split(" ").length > 2)
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width / 2.3,
+                                    height: 15,
+                                    child: Marquee(
+                                      textStyle: AppColors.subHeadingTextStyle,
+                                      str: widget.nowPlayingTrack.artist!,
+                                      containerWidth:
+                                          MediaQuery.of(context).size.width,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 400),
+                            margin: const EdgeInsets.only(right: 5),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            height: (widget.nowPlayingTrack.source! ==
+                                    "com.spotify.music")
+                                ? 35
+                                : 40,
+                            width: (widget.nowPlayingTrack.source! ==
+                                    "com.spotify.music")
+                                ? 35
+                                : 40,
+                            child: (widget.nowPlayingTrack.source! ==
+                                    "com.spotify.music")
+                                ? Lottie.network(
+                                    "https://assets6.lottiefiles.com/packages/lf20_7fdtc2jOL0.json",
+                                  )
+                                : Lottie.network(
+                                    "https://assets9.lottiefiles.com/packages/lf20_SxMfIUiQaT.json",
+                                  ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            formatDuration(widget.nowPlayingTrack.progress),
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 13,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 7,
+                          ),
+                          SimpleAnimationProgressBar(
+                            height: 5,
+                            width: MediaQuery.of(context).size.width - 150,
+                            backgroundColor:
+                                AppColors.mainColor.withOpacity(0.5),
+                            foregrondColor: AppColors.white,
+                            ratio: widget.nowPlayingTrack.progress.inSeconds
+                                    .toDouble() /
+                                widget.nowPlayingTrack.duration.inSeconds
+                                    .toDouble(),
+                            direction: Axis.horizontal,
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            duration: const Duration(seconds: 1),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.backgroundColour,
+                                offset: const Offset(
+                                  5.0,
+                                  5.0,
+                                ),
+                                blurRadius: 10.0,
+                                spreadRadius: 2.0,
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            width: 7,
+                          ),
+                          Text(
+                            formatDuration(widget.nowPlayingTrack.duration),
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(
+                    left: 3,
+                  ),
+                  child: (widget.nowPlayingTrack.image != null &&
+                          widget.nowPlayingTrack.title != null &&
+                          widget.nowPlayingTrack.artist != null &&
+                          widget.nowPlayingTrack.source != null)
+                      ? HomeAppBarTitleRow(
+                          isPaused: widget.nowPlayingTrack.isPaused,
+                          size: widget.size,
+                          hasImage: widget.nowPlayingTrack.hasImage,
+                          image: widget.nowPlayingTrack.image!,
+                          title: widget.nowPlayingTrack.title!,
+                          artist: widget.nowPlayingTrack.artist!,
+                          source: widget.nowPlayingTrack.source!,
+                        )
+                      : Container(),
+                ),
         ),
       ),
     );
@@ -1676,47 +1887,36 @@ class HomeAppBarSongTittleAndArtist extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size.width / 2.5,
-      height: 41,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(
-              height: 3,
-            ),
-            // if (title.trim().split(" ").length < 2)
-            // Text(
-            //   title,
-            //   style: AppColors.headingTextStyle,
-            // ),
-            // if (title.trim().split(" ").length > 1)
-            SizedBox(
-              height: 41 / 2.2,
-              child: Marquee(
-                textStyle: AppColors.headingTextStyle,
-                str: title,
-                containerWidth: MediaQuery.of(context).size.width,
-              ),
-            ),
-            // if (artist.trim().split(" ").length < 3)
-            //   Text(
-            //     artist,
-            //     style: AppColors.subHeadingTextStyle,
-            //   ),
-            // if (artist.trim().split(" ").length > 2)
-            SizedBox(
-              height: 41 / 2.2,
-              child: Marquee(
-                textStyle: AppColors.subHeadingTextStyle,
-                str: artist,
-                containerWidth: MediaQuery.of(context).size.width,
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // if (title.trim().split(" ").length < 2)
+        // Text(
+        //   title,
+        //   style: AppColors.headingTextStyle,
+        // ),
+        // if (title.trim().split(" ").length > 1)
+        Marquee(
+          textStyle: AppColors.headingTextStyle,
+          str: title,
+          containerWidth: MediaQuery.of(context).size.width / 2,
         ),
-      ),
+        // if (artist.trim().split(" ").length < 3)
+        //   Text(
+        //     artist,
+        //     style: AppColors.subHeadingTextStyle,
+        //   ),
+        // if (artist.trim().split(" ").length > 2)
+        Marquee(
+          textStyle: TextStyle(
+            color: AppColors.white.withOpacity(0.7),
+            fontSize: 12,
+          ),
+          str: artist,
+          containerWidth: MediaQuery.of(context).size.width / 2,
+        ),
+      ],
     );
   }
 }
@@ -1733,7 +1933,7 @@ class HomeAppBarTitleSongLastAnimation extends StatelessWidget {
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
       ),
-      height: (source == "com.spotify.music") ? 33 : 40,
+      // height: (source == "com.spotify.music") ? 33 : 40,
       width: (source == "com.spotify.music") ? 33 : 40,
       child: (source == "com.spotify.music")
           ? Lottie.network(
