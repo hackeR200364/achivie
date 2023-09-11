@@ -56,6 +56,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="achivie"
+                android:host="achivie.com"
+                android:pathPrefix="/screen/newTask"
+                />
+            </intent-filter>
         </activity>
 
 

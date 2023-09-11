@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:telephony/telephony.dart';
+
+// import 'package:telephony/telephony.dart';
 
 import '../Utils/custom_text_field_utils.dart';
-import '../Utils/snackbar_utils.dart';
 import '../styles.dart';
 import '../widgets/email_us_screen_widgets.dart';
 
@@ -144,67 +143,67 @@ class _SendSMSScreenState extends State<SendSMSScreen> {
                       nativeAd: nativeAd,
                     ),
                   ),
-                CustomBottomSubmitButton(
-                  isLoading: isLoading,
-                  title: "Send SMS",
-                  isNativeAdLoaded: isNativeAdLoaded,
-                  size: size,
-                  onTap: (() async {
-                    focusNode.unfocus();
-                    setState(() {
-                      isLoading = true;
-                    });
-                    if (_bodyController.text.isNotEmpty) {
-                      var phoneStatus = await Permission.phone.status;
-                      if (phoneStatus.isRestricted) {
-                        openAppSettings();
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
-                      if (phoneStatus.isPermanentlyDenied) {
-                        openAppSettings();
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
-                      if (phoneStatus.isDenied) {
-                        Permission.phone.request();
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
-                      if (phoneStatus.isGranted) {
-                        await Telephony.instance.sendSms(
-                          to: "8583006460",
-                          message: _bodyController.text.trim(),
-                          statusListener: ((statusListener) {
-                            // print(statusListener.name);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              AppSnackbar().customizedAppSnackbar(
-                                message:
-                                    "Your message ${statusListener.name.toLowerCase()} successfully",
-                                context: context,
-                              ),
-                            );
-                          }),
-                        );
-                        _bodyController.clear();
-                        setState(() {
-                          isLoading = false;
-                        });
-                      }
-                    } else {
-                      // print("empty");
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        AppSnackbar().customizedAppSnackbar(
-                          message: "Please fill the fields properly",
-                          context: context,
-                        ),
-                      );
-                    }
-                  }),
-                )
+                // CustomBottomSubmitButton(
+                //   isLoading: isLoading,
+                //   title: "Send SMS",
+                //   isNativeAdLoaded: isNativeAdLoaded,
+                //   size: size,
+                //   onTap: (() async {
+                //     focusNode.unfocus();
+                //     setState(() {
+                //       isLoading = true;
+                //     });
+                //     if (_bodyController.text.isNotEmpty) {
+                //       var phoneStatus = await Permission.phone.status;
+                //       if (phoneStatus.isRestricted) {
+                //         openAppSettings();
+                //         setState(() {
+                //           isLoading = false;
+                //         });
+                //       }
+                //       if (phoneStatus.isPermanentlyDenied) {
+                //         openAppSettings();
+                //         setState(() {
+                //           isLoading = false;
+                //         });
+                //       }
+                //       if (phoneStatus.isDenied) {
+                //         Permission.phone.request();
+                //         setState(() {
+                //           isLoading = false;
+                //         });
+                //       }
+                //       if (phoneStatus.isGranted) {
+                //         await Telephony.instance.sendSms(
+                //           to: "8583006460",
+                //           message: _bodyController.text.trim(),
+                //           statusListener: ((statusListener) {
+                //             // print(statusListener.name);
+                //             ScaffoldMessenger.of(context).showSnackBar(
+                //               AppSnackbar().customizedAppSnackbar(
+                //                 message:
+                //                     "Your message ${statusListener.name.toLowerCase()} successfully",
+                //                 context: context,
+                //               ),
+                //             );
+                //           }),
+                //         );
+                //         _bodyController.clear();
+                //         setState(() {
+                //           isLoading = false;
+                //         });
+                //       }
+                //     } else {
+                //       // print("empty");
+                //       ScaffoldMessenger.of(context).showSnackBar(
+                //         AppSnackbar().customizedAppSnackbar(
+                //           message: "Please fill the fields properly",
+                //           context: context,
+                //         ),
+                //       );
+                //     }
+                //   }),
+                // )
               ],
             ),
             if (pageLoading)

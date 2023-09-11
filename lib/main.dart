@@ -5,6 +5,7 @@ import 'package:achivie/providers/app_providers.dart';
 // import 'package:achivie/providers/news_searching_provider.dart';
 import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
+import 'package:achivie/screens/new_task_screen.dart';
 import 'package:achivie/screens/splash_screen.dart';
 import 'package:achivie/services/keys.dart';
 import 'package:achivie/services/notification_services.dart';
@@ -211,6 +212,16 @@ class _TaskAppState extends State<TaskApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      //changes
+      onGenerateRoute: ((settings) {
+        log(settings.name!);
+        if (settings.name == '/newTask') {
+          return MaterialPageRoute(
+            builder: (context) => const NewTaskScreen(),
+          );
+        }
+        return null;
+      }),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: AppColors.backgroundColour,

@@ -130,7 +130,7 @@ class FocusedMenuTileChildContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         top: 5,
         bottom: 5,
       ),
@@ -594,11 +594,11 @@ class TaskUnDoneDialogChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TaskDialog(
+    return const TaskDialog(
       animation: "assets/cancel-undone-animation.json",
       headMessage: "Canceled!",
       subMessage: "Your this task is canceled",
-      subMessageBottomDivision: 5,
+      // subMessageBottomDivision: 5,
     );
   }
 }
@@ -737,10 +737,6 @@ class CustomTabBarItems extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width / 5,
       height: 25,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
-      ),
       decoration: BoxDecoration(
         border: Border.all(
           color: AppColors.backgroundColour,
@@ -1138,7 +1134,7 @@ class _CustomHomeScreenAppBarTitleState
                           backgroundImage: NetworkImage(image),
                           radius: 31,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 5,
                         ),
                         Column(
@@ -1150,7 +1146,7 @@ class _CustomHomeScreenAppBarTitleState
                               style: AppColors.headingTextStyle,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 3,
                             ),
                             Text(
@@ -1158,7 +1154,7 @@ class _CustomHomeScreenAppBarTitleState
                               style: AppColors.subHeadingTextStyle,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 3,
                             ),
                             Row(
@@ -1314,7 +1310,7 @@ class _CustomHomeScreenAppBarTitleChildState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    CustomHomeScreenAppBarTitleHeading(
+                    const CustomHomeScreenAppBarTitleHeading(
                       name: "",
                     ),
                     CustomHomeScreenAppBarTitleSubHeading(
@@ -1393,18 +1389,18 @@ class CustomHomeScreenAppBarTitleSubHeading extends StatelessWidget {
 }
 
 class TaskDialog extends StatelessWidget {
-  TaskDialog({
+  const TaskDialog({
     super.key,
     required this.animation,
     required this.headMessage,
     required this.subMessage,
-    required this.subMessageBottomDivision,
+    // required this.subMessageBottomDivision,
   });
 
   final String animation;
   final String headMessage;
   final String subMessage;
-  int subMessageBottomDivision = 0;
+  // int subMessageBottomDivision = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1478,7 +1474,7 @@ class TaskDialog extends StatelessWidget {
 }
 
 class _BarChart extends StatelessWidget {
-  _BarChart({
+  const _BarChart({
     required this.done,
     required this.personal,
     required this.pending,
@@ -1487,12 +1483,12 @@ class _BarChart extends StatelessWidget {
     required this.count,
   });
 
-  int deleted = 0;
-  int done = 0;
-  int pending = 0;
-  int business = 0;
-  int personal = 0;
-  int count = 0;
+  final int deleted;
+  final int done;
+  final int pending;
+  final int business;
+  final int personal;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
@@ -1980,12 +1976,12 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           // widget.refresh;
                                         }),
                                       );
-                                      return TaskDialog(
+                                      return const TaskDialog(
                                         animation:
                                             "assets/success-done-animation.json",
                                         headMessage: "Congratulations",
                                         subMessage: "You completed your task",
-                                        subMessageBottomDivision: 5,
+                                        // subMessageBottomDivision: 5,
                                       );
                                     },
                                   ).then((value) async {
@@ -2206,13 +2202,13 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           // widget.refresh;
                                         }),
                                       );
-                                      return TaskDialog(
+                                      return const TaskDialog(
                                         animation:
                                             "assets/success-done-animation.json",
                                         headMessage: "Woohooo...!",
                                         subMessage:
                                             "Your this message is brought back as pending",
-                                        subMessageBottomDivision: 6,
+                                        // subMessageBottomDivision: 6,
                                       );
                                     },
                                   );
@@ -2316,12 +2312,12 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                         Navigator.pop(deleteContext);
                                       }),
                                     );
-                                    return TaskDialog(
+                                    return const TaskDialog(
                                       animation:
                                           "assets/deleted-animation.json",
                                       headMessage: "Deleted!",
                                       subMessage: "Your this task is deleted",
-                                      subMessageBottomDivision: 5,
+                                      // subMessageBottomDivision: 5,
                                     );
                                   },
                                 ).then((value) {

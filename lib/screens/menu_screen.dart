@@ -11,10 +11,10 @@ import '../widgets/menu_screen_widgets.dart';
 
 class MenuScreen extends StatefulWidget {
   final ValueSetter setIndex;
-  int selectedIndex = 0;
-  ZoomDrawerController zoomDrawerController;
+  final int selectedIndex;
+  final ZoomDrawerController zoomDrawerController;
 
-  MenuScreen({
+  const MenuScreen({
     super.key,
     required this.setIndex,
     required this.selectedIndex,

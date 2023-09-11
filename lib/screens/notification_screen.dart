@@ -4,7 +4,6 @@ import 'package:achivie/services/keys.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
@@ -41,23 +40,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
       request: const AdRequest(),
     );
     bannerAd!.load();
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor:
-            AppColors.mainColor, // Change this color to your desired color
-      ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   const SystemUiOverlayStyle(
+    //     statusBarColor:
+    //         AppColors.mainColor, // Change this color to your desired color
+    //   ),
+    // );
     super.initState();
   }
 
   @override
   void dispose() {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: AppColors
-            .backgroundColour, // Change this color to your desired color
-      ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   const SystemUiOverlayStyle(
+    //     statusBarColor: AppColors
+    //         .backgroundColour, // Change this color to your desired color
+    //   ),
+    // );
     bannerAd?.dispose();
     super.dispose();
   }
@@ -106,17 +105,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
             Navigator.pop(context);
           }),
         ),
-        title: const CustomAppBarTitle(
-          heading: "Notifications",
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: (() {}),
-            child: Center(
-              child: Text("Hello"),
+        title: Align(
+          alignment: Alignment.center,
+          child: GlassmorphicContainer(
+            width: MediaQuery.of(context).size.width - 70,
+            height: 41,
+            borderRadius: 40,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 2,
+            blur: 4,
+            borderGradient: AppColors.customGlassIconButtonBorderGradient,
+            child: const CustomApBarTitleChildText(
+              heading: "Notifications",
             ),
           ),
-        ],
+        ),
       ),
       bottomNavigationBar: (isBannerAdLoaded)
           ? Container(
@@ -147,42 +150,42 @@ class _NotificationScreenState extends State<NotificationScreen> {
           //     ),
           //   ),
           // ),
-          SliverToBoxAdapter(
-            child: Container(
-              margin: EdgeInsets.only(
-                left: 10,
-                right: 10,
-                top: 10,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CustomAppBarLeading(
-                    icon: CupertinoIcons.back,
-                    onPressed: (() {
-                      Navigator.pop(context);
-                    }),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: GlassmorphicContainer(
-                      width: MediaQuery.of(context).size.width - 70,
-                      height: 41,
-                      borderRadius: 40,
-                      linearGradient: AppColors.customGlassIconButtonGradient,
-                      border: 2,
-                      blur: 4,
-                      borderGradient:
-                          AppColors.customGlassIconButtonBorderGradient,
-                      child: const CustomApBarTitleChildText(
-                        heading: "Notifications",
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // SliverToBoxAdapter(
+          //   child: Container(
+          //     margin: EdgeInsets.only(
+          //       left: 10,
+          //       right: 10,
+          //       top: 10,
+          //     ),
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //       children: [
+          //         CustomAppBarLeading(
+          //           icon: CupertinoIcons.back,
+          //           onPressed: (() {
+          //             Navigator.pop(context);
+          //           }),
+          //         ),
+          //         Align(
+          //           alignment: Alignment.center,
+          //           child: GlassmorphicContainer(
+          //             width: MediaQuery.of(context).size.width - 70,
+          //             height: 41,
+          //             borderRadius: 40,
+          //             linearGradient: AppColors.customGlassIconButtonGradient,
+          //             border: 2,
+          //             blur: 4,
+          //             borderGradient:
+          //                 AppColors.customGlassIconButtonBorderGradient,
+          //             child: const CustomApBarTitleChildText(
+          //               heading: "Notifications",
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           SliverFillRemaining(
             child: FutureBuilder(
               future: AwesomeNotifications().listScheduledNotifications(),
@@ -206,15 +209,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         key: Key(notification.content!.id.toString()),
                         direction: DismissDirection.startToEnd,
                         background: Container(
-                          padding: EdgeInsets.only(left: 15),
-                          margin: EdgeInsets.only(
+                          padding: const EdgeInsets.only(left: 15),
+                          margin: const EdgeInsets.only(
                             bottom: 20,
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.red,
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          child: Row(
+                          child: const Row(
                             children: [
                               Icon(
                                 Icons.delete,
@@ -231,8 +234,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           ScaffoldMessenger.of(notificationContext)
                               .showSnackBar(
                             SnackBar(
-                              duration: Duration(hours: 1),
-                              margin: EdgeInsets.only(
+                              duration: const Duration(hours: 1),
+                              margin: const EdgeInsets.only(
                                 bottom: 30,
                                 left: 15,
                                 right: 15,
@@ -267,9 +270,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                   );
                                 }),
                               ),
-                              content: Text(
+                              content: const Text(
                                 "Notification Deleted",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

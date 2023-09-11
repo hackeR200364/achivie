@@ -97,12 +97,12 @@ class _NewTaskScreenState extends State<NewTaskScreen>
         widget.taskNoti != null &&
         widget.taskTime != null &&
         widget.taskDate != null) {
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor:
-              AppColors.mainColor, // Change this color to your desired color
-        ),
-      );
+      // SystemChrome.setSystemUIOverlayStyle(
+      //   const SystemUiOverlayStyle(
+      //     statusBarColor:
+      //         AppColors.mainColor, // Change this color to your desired color
+      //   ),
+      // );
     }
 
     // controllerToIncreaseCurve = AnimationController(
@@ -201,12 +201,12 @@ class _NewTaskScreenState extends State<NewTaskScreen>
     _descriptionController.dispose();
     _notificationController.dispose();
 
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: AppColors
-            .backgroundColour, // Change this color to your desired color
-      ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   const SystemUiOverlayStyle(
+    //     statusBarColor: AppColors
+    //         .backgroundColour, // Change this color to your desired color
+    //   ),
+    // );
 
     // controllerToIncreaseCurve.dispose();
     // controllerToDecreaseCurve.dispose();
@@ -327,7 +327,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                   color: (!updateTask)
                       ? AppColors.backgroundColour
                       : AppColors.mainColor,
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                     left: 10,
                     right: 10,
                     top: 10,
@@ -587,23 +587,41 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                               payload: _taskNameController.text
                                                   .trim(),
                                               dateTime: scheduleDateTIme,
-                                            );
+                                            )
+                                                .then((value) {
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message:
+                                                      responseJson["message"],
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+                                              allAppProvidersProvider
+                                                  .newTaskUploadLoadingFunc(
+                                                      false);
 
-                                            ScaffoldMessenger.of(
-                                                    allAppProvidersContext)
-                                                .showSnackBar(
-                                              AppSnackbar()
-                                                  .customizedAppSnackbar(
-                                                message:
-                                                    responseJson["message"],
-                                                context: allAppProvidersContext,
-                                              ),
-                                            );
-                                            allAppProvidersProvider
-                                                .newTaskUploadLoadingFunc(
-                                                    false);
+                                              Navigator.pop(context);
+                                            });
 
-                                            Navigator.pop(context);
+                                            // ScaffoldMessenger.of(
+                                            //         allAppProvidersContext)
+                                            //     .showSnackBar(
+                                            //   AppSnackbar()
+                                            //       .customizedAppSnackbar(
+                                            //     message:
+                                            //         responseJson["message"],
+                                            //     context: allAppProvidersContext,
+                                            //   ),
+                                            // );
+                                            // allAppProvidersProvider
+                                            //     .newTaskUploadLoadingFunc(
+                                            //         false);
+                                            //
+                                            // Navigator.pop(context);
                                           } else {
                                             allAppProvidersProvider
                                                 .newTaskUploadLoadingFunc(
@@ -655,7 +673,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                                         .newTaskUploadLoadingFunc(false);
                                   }),
                             child: Container(
-                              padding: EdgeInsets.only(
+                              padding: const EdgeInsets.only(
                                 left: 15,
                                 right: 15,
                               ),
@@ -752,7 +770,7 @@ class _NewTaskScreenState extends State<NewTaskScreen>
                     children: [
                       if (!updateTask)
                         Container(
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: 20,
                             bottom: 5,
                             left: 15,
