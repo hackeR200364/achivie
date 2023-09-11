@@ -2197,7 +2197,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 }
 
 class AuthTextField extends StatefulWidget {
-  AuthTextField({
+  const AuthTextField({
     super.key,
     required this.controller,
     required this.hintText,
@@ -2216,7 +2216,7 @@ class AuthTextField extends StatefulWidget {
   final bool isPassField, isPassConfirmField, isEmailField;
   final IconData icon;
   final int pageIndex;
-  int? maxLen;
+  final int? maxLen;
 
   // GlobalKey<FormState> formKey;
 

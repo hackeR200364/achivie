@@ -66,7 +66,6 @@ dependencies:
   flutter_zoom_drawer:
   url_launcher:
   flutter_email_sender:
-  telephony:
   smooth_page_indicator:
   nowplaying:
 #  flutter_local_notifications: ^13.0.0
@@ -81,14 +80,14 @@ dependencies:
   path_provider:
   image_picker:
   change_app_package_name:
-  pull_to_refresh:
+#  pull_to_refresh:
   badges:
-  carousel_slider:
   simple_animation_progress_bar:
+  animations: 
 #  readmore:
 #  like_button:
 #  google_nav_bar:
-  full_screen_image:
+#  full_screen_image:
 #  geolocator:
 #  geocoding:
 #  mobile_number:
@@ -102,8 +101,8 @@ dependencies:
 #  audio_session:
 #  rename: any
 #  pinput:
-  audio_service:
-  just_audio:
+#  audio_service:
+#  just_audio:
 
 dev_dependencies:
   flutter_test:

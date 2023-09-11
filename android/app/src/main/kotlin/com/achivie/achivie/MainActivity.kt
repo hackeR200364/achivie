@@ -15,6 +15,10 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 //import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+
 
 class MainActivity: FlutterActivity() {
 
@@ -23,6 +27,31 @@ class MainActivity: FlutterActivity() {
 //    companion object {
 //        private const val MUSIC_CHANNEL = "music_control"
 //    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Handle deep link if the app was opened via a deep link
+        handleDeepLink(intent.data)
+    }
+
+    private fun handleDeepLink(deepLink: Uri?) {
+        if (deepLink != null) {
+            val path = deepLink.path
+            if ("/screen/newTask" == path) {
+                // Navigate to the NewTaskScreen here
+                // You can use Flutter channels or other methods to communicate with Flutter
+                navigateToFlutterScreen();
+            }
+        }
+    }
+
+    private fun navigateToFlutterScreen() {
+        val intent = Intent(this, FlutterActivity::class.java)
+        intent.putExtra("route", "/newTask") // Specify the Flutter route you want to navigate to
+        startActivity(intent)
+    }
+
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

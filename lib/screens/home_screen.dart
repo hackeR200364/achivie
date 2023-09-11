@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:achivie/screens/notification_screen.dart';
+import 'package:animations/animations.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:circular_clip_route/circular_clip_route.dart';
@@ -19,7 +20,8 @@ import 'package:lottie/lottie.dart';
 import 'package:nowplaying/nowplaying.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_animation_progress_bar/simple_animation_progress_bar.dart';
-import 'package:telephony/telephony.dart';
+
+// import 'package:telephony/telephony.dart';
 
 import '../Utils/custom_glass_icon.dart';
 import '../Utils/snackbar_utils.dart';
@@ -68,14 +70,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool isBannerAdLoaded = false;
   int counter = 0;
   // final assetsAudioPlayer = AssetsAudioPlayer();
-  late ScrollController _scrollController;
   bool pageLoading = false;
   String songName = "";
   String songArtist = "";
   bool isPlaying = false;
   final animationDuration = const Duration(milliseconds: 300);
   bool isShowingIsland = false, backed = false;
-  final telephony = Telephony.instance;
+  // final telephony = Telephony.instance;
   String message = "";
   int userPoints = 0,
       taskDone = 0,
@@ -104,14 +105,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // late AudioSession session;
   @override
   void initState() {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: AppColors.transparent,
-        // Change this color to your desired color
-      ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   const SystemUiOverlayStyle(
+    //     statusBarColor: AppColors.transparent,
+    //     // Change this color to your desired color
+    //   ),
+    // );
     expanded = false;
-    _scrollController = ScrollController();
     tabController = TabController(
       length: 3,
       vsync: this,
@@ -154,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     nextScreenOpacity = Tween<double>(begin: 0.0, end: 1.0);
     _opacityAnimationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1000), // Set the desired duration
+      duration: const Duration(milliseconds: 1000), // Set the desired duration
     );
     nextScreenOpacity = TweenSequence<double>([
       TweenSequenceItem<double>(
@@ -417,86 +417,103 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         bottomNavigationBar: (isBannerAdLoaded)
             ? CustomHomeScreenBottomNavBarWithBannerAd(bannerAd: bannerAd)
             : null,
-        floatingActionButton: GlassmorphicContainer(
-          margin: const EdgeInsets.only(
-            right: 10,
+        floatingActionButton: OpenContainer(
+          transitionDuration: const Duration(
+            milliseconds: 600,
           ),
-          width: 50,
-          height: 50,
-          borderRadius: 40,
-          linearGradient: AppColors.customGlassIconButtonGradient,
-          border: 2,
-          blur: 4,
-          borderGradient: AppColors.customGlassIconButtonBorderGradient,
-          child: Center(
-            child: IconButton(
-              key: _newTaskBtnKey,
-              onPressed: () {
-                HapticFeedback.lightImpact();
-
-                _opacityAnimationController.forward();
-                Navigator.push(
-                  context,
-                  CircularClipRoute(
-                    border: Border.all(
-                      width: 0,
-                      color: AppColors.transparent,
-                    ),
-                    shadow: [
-                      BoxShadow(
-                        color: AppColors.transparent,
-                        blurRadius: 100,
-                      )
-                    ],
-                    expandFrom: _newTaskBtnKey.currentContext!,
-                    curve: Curves.ease,
-                    reverseCurve: Curves.fastOutSlowIn.flipped,
-                    opacity: nextScreenOpacity,
-                    transitionDuration: const Duration(milliseconds: 600),
-                    builder: ((_) => const NewTaskScreen()),
-                  ), // CustomPageTransitionAnimation(
-                ).then((value) {
-                  refresh();
-                  // setState(() {});
-                });
-
-                // Navigator.push(
-                //   context,
-                //   CircularClipRoute(
-                //     expandFrom: _newTaskBtnKey.currentContext!,
-                //     curve: Curves.fastOutSlowIn,
-                //     reverseCurve: Curves.fastOutSlowIn.flipped,
-                //     opacity: ConstantTween(1),
-                //     transitionDuration: const Duration(milliseconds: 650),
-                //     builder: ((_) => const NewTaskScreen()),
-                //   ), // CustomPageTransitionAnimation(
-                //   //   enterWidget: SearchScreen(),
-                //   //   x: 0.5,
-                //   //   y: -0.85,
-                //   // ),
-                // ).then((value) {
-                //   refresh();
-                //   // setState(() {});
-                // });
-
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (nextPageContext) {
-                //       return const NewTaskScreen();
-                //     },
-                //   ),
-                // ).then((value) {
-                //   refresh();
-                //   // setState(() {});
-                // });
-              },
-              icon: const Icon(
-                Icons.add,
-                color: AppColors.white,
+          tappable: false,
+          closedElevation: 0,
+          openElevation: 0,
+          closedColor: AppColors.transparent,
+          openColor: AppColors.transparent,
+          closedBuilder: ((closedCtx, openContainer) {
+            return GlassmorphicContainer(
+              margin: const EdgeInsets.only(
+                right: 10,
               ),
-            ),
-          ),
+              width: 50,
+              height: 50,
+              borderRadius: 40,
+              linearGradient: AppColors.customGlassIconButtonGradient,
+              border: 2,
+              blur: 4,
+              borderGradient: AppColors.customGlassIconButtonBorderGradient,
+              child: Center(
+                child: IconButton(
+                  key: _newTaskBtnKey,
+                  onPressed: openContainer,
+                  // onPressed: () {
+                  //   HapticFeedback.lightImpact();
+                  //
+                  //   // _opacityAnimationController.forward();
+                  //   // Navigator.push(
+                  //   //   context,
+                  //   //   CircularClipRoute(
+                  //   //     border: Border.all(
+                  //   //       width: 0,
+                  //   //       color: AppColors.transparent,
+                  //   //     ),
+                  //   //     shadow: [
+                  //   //       const BoxShadow(
+                  //   //         color: AppColors.transparent,
+                  //   //         blurRadius: 100,
+                  //   //       )
+                  //   //     ],
+                  //   //     expandFrom: _newTaskBtnKey.currentContext!,
+                  //   //     curve: Curves.ease,
+                  //   //     reverseCurve: Curves.fastOutSlowIn.flipped,
+                  //   //     opacity: nextScreenOpacity,
+                  //   //     transitionDuration: const Duration(milliseconds: 600),
+                  //   //     builder: ((_) => const NewTaskScreen()),
+                  //   //   ), // CustomPageTransitionAnimation(
+                  //   // ).then((value) {
+                  //   //   refresh();
+                  //   //   // setState(() {});
+                  //   // });
+                  //
+                  //   // Navigator.push(
+                  //   //   context,
+                  //   //   CircularClipRoute(
+                  //   //     expandFrom: _newTaskBtnKey.currentContext!,
+                  //   //     curve: Curves.fastOutSlowIn,
+                  //   //     reverseCurve: Curves.fastOutSlowIn.flipped,
+                  //   //     opacity: ConstantTween(1),
+                  //   //     transitionDuration: const Duration(milliseconds: 650),
+                  //   //     builder: ((_) => const NewTaskScreen()),
+                  //   //   ), // CustomPageTransitionAnimation(
+                  //   //   //   enterWidget: SearchScreen(),
+                  //   //   //   x: 0.5,
+                  //   //   //   y: -0.85,
+                  //   //   // ),
+                  //   // ).then((value) {
+                  //   //   refresh();
+                  //   //   // setState(() {});
+                  //   // });
+                  //
+                  //   // Navigator.push(
+                  //   //   context,
+                  //   //   MaterialPageRoute(
+                  //   //     builder: (nextPageContext) {
+                  //   //       return const NewTaskScreen();
+                  //   //     },
+                  //   //   ),
+                  //   // ).then((value) {
+                  //   //   refresh();
+                  //   //   // setState(() {});
+                  //   // });
+                  // },
+                  icon: const Icon(
+                    Icons.add,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            );
+          }),
+          openBuilder: ((openCtx, _) {
+            refresh();
+            return const NewTaskScreen();
+          }),
         ),
         backgroundColor: AppColors.mainColor,
         body: ValueListenableBuilder<bool>(
@@ -531,20 +548,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       SliverAppBar(
-                        expandedHeight: 40,
-                        collapsedHeight: 40,
+                        toolbarHeight: 40,
                         elevation: 0,
                         // pinned: true,
                         backgroundColor: AppColors.transparent,
                         flexibleSpace: Container(
                           height: 40,
-                          margin: EdgeInsets.only(
+                          margin: const EdgeInsets.only(
                             top: 19,
                             bottom: 15,
                             left: 15,
                             right: 15,
                           ),
-                          padding: EdgeInsets.only(
+                          padding: const EdgeInsets.only(
                             top: 10,
                             bottom: 5,
                           ),
@@ -585,11 +601,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      SliverAppBar(
+                      SliverToBoxAdapter(
                         // pinned: true,
-                        elevation: 0,
-                        backgroundColor: AppColors.transparent,
-                        flexibleSpace: Center(
+                        // toolbarHeight: 40,
+                        // elevation: 0,
+                        // backgroundColor: AppColors.red,
+                        child: Center(
                           child: TabBar(
                             onTap: ((index) {
                               HapticFeedback.heavyImpact();
@@ -659,7 +676,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               // String taskDocID = snapshotList[listIndex].reference.id;
 
                               return Container(
-                                margin: EdgeInsets.only(
+                                margin: const EdgeInsets.only(
                                   left: 15,
                                   right: 15,
                                 ),
@@ -826,7 +843,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   .notificationId,
                                             )
                                                 .then((value) {
-                                              showDialog(
+                                              return showDialog(
                                                 context: listContext,
                                                 builder:
                                                     (BuildContext doneContext) {
@@ -840,14 +857,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       // widget.refresh;
                                                     }),
                                                   );
-                                                  return TaskDialog(
+                                                  return const TaskDialog(
                                                     animation:
                                                         "assets/success-done-animation.json",
                                                     headMessage:
                                                         "Congratulations",
                                                     subMessage:
                                                         "You completed your task",
-                                                    subMessageBottomDivision: 5,
+                                                    // subMessageBottomDivision: 5,
                                                   );
                                                 },
                                               ).then((value) async {
@@ -1081,13 +1098,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       // widget.refresh;
                                                     }),
                                                   );
-                                                  return TaskDialog(
+                                                  return const TaskDialog(
                                                     animation:
                                                         "assets/success-done-animation.json",
                                                     headMessage: "Woohooo...!",
                                                     subMessage:
                                                         "Your this message is brought back as pending",
-                                                    subMessageBottomDivision: 6,
+                                                    // subMessageBottomDivision: 6,
                                                   );
                                                 },
                                               );
@@ -1201,13 +1218,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         deleteContext);
                                                   }),
                                                 );
-                                                return TaskDialog(
+                                                return const TaskDialog(
                                                   animation:
                                                       "assets/deleted-animation.json",
                                                   headMessage: "Deleted!",
                                                   subMessage:
                                                       "Your this task is deleted",
-                                                  subMessageBottomDivision: 5,
+                                                  // subMessageBottomDivision: 5,
                                                 );
                                               },
                                             ).then((value) {
@@ -1318,7 +1335,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     color: AppColors.transparent,
                                   ),
                                   shadow: [
-                                    BoxShadow(
+                                    const BoxShadow(
                                       color: AppColors.transparent,
                                       blurRadius: 100,
                                     )
@@ -1571,7 +1588,7 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
   }
 
   final MethodChannel controlMusicStateChannel =
-      MethodChannel('control_music_state');
+      const MethodChannel('control_music_state');
 
   @override
   Widget build(BuildContext context) {
@@ -1628,7 +1645,7 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
                               AnimatedContainer(
                                 height: 65,
                                 width: 65,
-                                duration: Duration(
+                                duration: const Duration(
                                   milliseconds: 400,
                                 ),
                                 decoration: BoxDecoration(
@@ -1688,7 +1705,7 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
                             width: 10,
                           ),
                           AnimatedContainer(
-                            duration: Duration(milliseconds: 400),
+                            duration: const Duration(milliseconds: 400),
                             margin: const EdgeInsets.only(right: 5),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
@@ -1717,12 +1734,12 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
                         children: [
                           Text(
                             formatDuration(widget.nowPlayingTrack.progress),
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColors.white,
                               fontSize: 13,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 7,
                           ),
                           SimpleAnimationProgressBar(
@@ -1739,10 +1756,10 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
                             curve: Curves.fastLinearToSlowEaseIn,
                             duration: const Duration(seconds: 1),
                             borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: AppColors.backgroundColour,
-                                offset: const Offset(
+                                offset: Offset(
                                   5.0,
                                   5.0,
                                 ),
@@ -1751,12 +1768,12 @@ class _PlayingAppBarTitleWidgetState extends State<PlayingAppBarTitleWidget> {
                               ),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 7,
                           ),
                           Text(
                             formatDuration(widget.nowPlayingTrack.duration),
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColors.white,
                               fontSize: 13,
                             ),

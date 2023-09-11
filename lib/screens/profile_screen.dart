@@ -971,8 +971,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       File(path).writeAsBytesSync(visitingCard!);
                       const link = "https://achivie.com";
 
-                      await Share.shareFiles(
-                        [path],
+                      await Share.shareXFiles(
+                        [XFile(path)],
                         text:
                             "Excited to share my progress on Achieve! 🎉💪 I've been making great strides towards my goals and can't wait to see what else I can accomplish. Start your journey towards success today with Achieve: $link",
                       ).then((value) {
