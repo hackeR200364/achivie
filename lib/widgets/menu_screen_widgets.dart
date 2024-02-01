@@ -5,8 +5,7 @@ import 'package:flutter_marquee/flutter_marquee.dart' as flutter_marquee;
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
-import 'package:material_dialogs/dialogs.dart';
+// import 'package:material_dialogs/dialogs.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -128,32 +127,92 @@ class MenuScreenExtraLogoutButton extends StatelessWidget {
         const CircularProgressIndicator(
           color: AppColors.backgroundColour,
         );
-        Dialogs.bottomMaterialDialog(
-          enableDrag: false,
-          isDismissible: false,
-          barrierDismissible: false,
-          context: parentContext,
-          color: AppColors.backgroundColour,
-          lottieBuilder: Lottie.asset("assets/warning-animation.json"),
-          title: "Warning",
-          titleStyle: const TextStyle(
-            color: AppColors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-          ),
-          msg:
-              "If you logout your account, all scheduled reminders will be canceled!",
-          msgStyle: const TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          actions: [
-            MenuScreenLogoutBottomSheetCancelButton(
-              googleSignInContext: parentContext,
+
+        showModalBottomSheet(
+            context: context,
+            backgroundColor: AppColors.mainColor,
+            // isDismissible: false,
+            isScrollControlled: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
             ),
-            const MenuScreenLogoutBottomSheetLogoutButton(),
-          ],
-        );
+            builder: (logoutContext) {
+              return Container(
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  right: 10,
+                  top: 20,
+                  bottom: 20,
+                ),
+                height: 190,
+                child: Column(
+                  children: [
+                    const Text(
+                      "Warning",
+                      style: TextStyle(
+                        letterSpacing: 1.5,
+                        color: AppColors.red,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      "If you logout your account, all scheduled reminders will be canceled!.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        MenuScreenLogoutBottomSheetCancelButton(
+                          googleSignInContext: parentContext,
+                        ),
+                        const MenuScreenLogoutBottomSheetLogoutButton(),
+                      ],
+                    )
+                  ],
+                ),
+              );
+            });
+
+        // Dialogs.bottomMaterialDialog(
+        //   enableDrag: false,
+        //   isDismissible: false,
+        //   barrierDismissible: false,
+        //   context: parentContext,
+        //   color: AppColors.backgroundColour,
+        //   lottieBuilder: Lottie.asset("assets/warning-animation.json"),
+        //   title: "Warning",
+        //   titleStyle: const TextStyle(
+        //     color: AppColors.white,
+        //     fontSize: 17,
+        //     fontWeight: FontWeight.bold,
+        //   ),
+        //   msg:
+        //       "If you logout your account, all scheduled reminders will be canceled!",
+        //   msgStyle: const TextStyle(
+        //     color: AppColors.white,
+        //     fontWeight: FontWeight.w600,
+        //   ),
+        //   actions: [
+        //     MenuScreenLogoutBottomSheetCancelButton(
+        //       googleSignInContext: parentContext,
+        //     ),
+        //     const MenuScreenLogoutBottomSheetLogoutButton(),
+        //   ],
+        // );
       }),
       title: "Logout",
     );
@@ -207,6 +266,7 @@ class MenuScreenLogoutBottomSheetLogoutButton extends StatelessWidget {
       }),
       child: Container(
         height: 40,
+        margin: EdgeInsets.only(left: 10),
         decoration: BoxDecoration(
           color: AppColors.mainColor,
           borderRadius: BorderRadius.circular(15),
@@ -241,6 +301,7 @@ class MenuScreenLogoutBottomSheetCancelButton extends StatelessWidget {
       }),
       child: Container(
         height: 40,
+        margin: EdgeInsets.only(right: 10),
         decoration: BoxDecoration(
           color: AppColors.mainColor,
           borderRadius: BorderRadius.circular(15),
