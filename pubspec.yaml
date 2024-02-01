@@ -43,7 +43,7 @@ dependencies:
   firebase_messaging:
   shared_preferences:
 #  cloud_firestore:
-  awesome_dialog:
+#  awesome_dialog:
   focused_menu:
   interval_time_picker:
 #  timezone:
@@ -61,8 +61,9 @@ dependencies:
 #  package_info_plus:
   google_mobile_ads:
 #  assets_audio_player:
-  material_dialogs:
+#  material_dialogs:
   open_mail_app:
+  google_fonts:
   flutter_zoom_drawer:
   url_launcher:
   flutter_email_sender:
@@ -79,7 +80,7 @@ dependencies:
   share_plus:
   path_provider:
   image_picker:
-  change_app_package_name:
+#  change_app_package_name:
 #  pull_to_refresh:
   badges:
   simple_animation_progress_bar:
@@ -96,6 +97,7 @@ dependencies:
 #  webview_flutter:
 #  animated_icon_button:
   circular_clip_route:
+  go_router:
 #  multi_trigger_autocomplete:
 #  flutter_emoji:
 #  audio_session:

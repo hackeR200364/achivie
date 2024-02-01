@@ -5,7 +5,6 @@ import 'package:achivie/providers/app_providers.dart';
 // import 'package:achivie/providers/news_searching_provider.dart';
 import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
-import 'package:achivie/screens/new_task_screen.dart';
 import 'package:achivie/screens/splash_screen.dart';
 import 'package:achivie/services/keys.dart';
 import 'package:achivie/services/notification_services.dart';
@@ -18,6 +17,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:nowplaying/nowplaying.dart';
@@ -212,17 +212,19 @@ class _TaskAppState extends State<TaskApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      //changes
-      onGenerateRoute: ((settings) {
-        log(settings.name!);
-        if (settings.name == '/newTask') {
-          return MaterialPageRoute(
-            builder: (context) => const NewTaskScreen(),
-          );
-        }
-        return null;
-      }),
+      initialRoute: "/",
+      //changesf
+      // onGenerateRoute: ((settings) {
+      //   log(settings.name!);
+      //   if (settings.name == '/newTask') {
+      //     return MaterialPageRoute(
+      //       builder: (context) => const NewTaskScreen(),
+      //     );
+      //   }
+      //   return null;
+      // }),
       theme: ThemeData(
+        textTheme: GoogleFonts.kuraleTextTheme(),
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: AppColors.backgroundColour,
           secondary: AppColors.backgroundColour.withOpacity(0.5),

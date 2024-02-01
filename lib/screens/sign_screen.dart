@@ -188,278 +188,167 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
     Size size = MediaQuery.of(context).size;
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: AppColors.backgroundColour,
-          secondary: AppColors.backgroundColour.withOpacity(0.5),
-        ),
-      ),
-      home: Scaffold(
-        backgroundColor: AppColors.backgroundColour,
-        body: SingleChildScrollView(
-          child: Stack(
-            children: [
-              Positioned(
-                child: Image.asset(
-                  "assets/auth-bg-pic.jpg",
-                  fit: BoxFit.fill,
-                  width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0)
-                      ? (profession == "Others")
-                          ? 1280
-                          : 1180
-                      : (signPage == 4)
-                          ? size.height
-                          : (size.height < 700)
-                              ? 800
-                              : size.height,
-                ),
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColour,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            Positioned(
+              child: Image.asset(
+                "assets/auth-bg-pic.jpg",
+                fit: BoxFit.fill,
+                width: MediaQuery.of(context).size.width,
+                height: (signPage == 0)
+                    ? (profession == "Others")
+                        ? 1280
+                        : 1180
+                    : (signPage == 4)
+                        ? size.height
+                        : (size.height < 700)
+                            ? 800
+                            : size.height,
               ),
-              Positioned(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: (signPage == 0)
-                      ? (profession == "Others")
-                          ? 1280
-                          : 1180
-                      : (signPage == 4)
-                          ? size.height
-                          : (size.height < 700)
-                              ? 800
-                              : size.height,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.transparent,
-                        AppColors.white,
-                      ],
-                    ),
+            ),
+            Positioned(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: (signPage == 0)
+                    ? (profession == "Others")
+                        ? 1280
+                        : 1180
+                    : (signPage == 4)
+                        ? size.height
+                        : (size.height < 700)
+                            ? 800
+                            : size.height,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.transparent,
+                      AppColors.white,
+                    ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  top: 30,
-                  left: 15,
-                  right: 15,
-                ),
-                child: Consumer<AllAppProviders>(
-                  builder: (allAppProvidersContext, allAppProvidersProvider,
-                      allAppProvidersChild) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: size.height / 20,
-                        ),
-                        Lottie.asset(
-                          "assets/login-animation.json",
-                          width: 200,
-                          height: 200,
-                        ),
-                        GlassmorphicContainer(
-                          width: size.width,
-                          height: (signPage == 0)
-                              ? (profession == "Others")
-                                  ? 920
-                                  : (selected)
-                                      ? 870
-                                      : 800
-                              : (signPage == 4)
-                                  ? 350
-                                  : 420,
-                          borderRadius: 15,
-                          linearGradient:
-                              AppColors.customGlassIconButtonGradient,
-                          border: 2,
-                          blur: 4,
-                          borderGradient:
-                              AppColors.customGlassIconButtonBorderGradient,
-                          child: Column(
-                            children: [
-                              //SIGN UP
-                              if (signPage == 0 &&
-                                  selected == true &&
-                                  selectedImage != null)
-                                GestureDetector(
-                                  onTap: (() async {
-                                    try {
-                                      final image = await ImagePicker()
-                                          .pickImage(
-                                              source: ImageSource.gallery);
-                                      if (image == null) return;
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 30,
+                left: 15,
+                right: 15,
+              ),
+              child: Consumer<AllAppProviders>(
+                builder: (allAppProvidersContext, allAppProvidersProvider,
+                    allAppProvidersChild) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: size.height / 20,
+                      ),
+                      Lottie.asset(
+                        "assets/login-animation.json",
+                        width: 200,
+                        height: 200,
+                      ),
+                      GlassmorphicContainer(
+                        width: size.width,
+                        height: (signPage == 0)
+                            ? (profession == "Others")
+                                ? 920
+                                : (selected)
+                                    ? 870
+                                    : 800
+                            : (signPage == 4)
+                                ? 350
+                                : 420,
+                        borderRadius: 15,
+                        linearGradient: AppColors.customGlassIconButtonGradient,
+                        border: 2,
+                        blur: 4,
+                        borderGradient:
+                            AppColors.customGlassIconButtonBorderGradient,
+                        child: Column(
+                          children: [
+                            //SIGN UP
+                            if (signPage == 0 &&
+                                selected == true &&
+                                selectedImage != null)
+                              GestureDetector(
+                                onTap: (() async {
+                                  try {
+                                    final image = await ImagePicker()
+                                        .pickImage(source: ImageSource.gallery);
+                                    if (image == null) return;
 
-                                      final imageTemp = File(image.path);
-                                      selectedImage = imageTemp;
-                                      setState(() {});
-                                    } on PlatformException catch (e) {
-                                      log(e.toString());
-                                    }
-                                  }),
-                                  child: (selectedImage != null)
-                                      ? Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 20,
-                                          ),
-                                          child: CircleAvatar(
-                                            backgroundImage: FileImage(
-                                              selectedImage!,
-                                            ),
-                                            radius: 50,
-                                          ),
-                                        )
-                                      : Container(),
-                                ),
-                              if (signPage == 0 &&
-                                  selected == false &&
-                                  selectedImage == null)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 30,
-                                    left: 15,
-                                    right: 15,
-                                    bottom: 10,
-                                  ),
-                                  child: Consumer<AllAppProviders>(
-                                    builder: (allAppContext, allAppProvider,
-                                        allAppChild) {
-                                      return TextFormField(
-                                        onTap: (() async {
-                                          try {
-                                            final image = await ImagePicker()
-                                                .pickImage(
-                                                    source:
-                                                        ImageSource.gallery);
-                                            if (image == null) return;
-
-                                            final imageTemp = File(image.path);
-                                            selectedImage = imageTemp;
-                                            selected = true;
-                                            signUpPressed = false;
-
-                                            setState(() {});
-                                          } on PlatformException catch (e) {
-                                            log(e.toString());
-                                          }
-                                        }),
-                                        textCapitalization:
-                                            TextCapitalization.words,
-                                        decoration: InputDecoration(
-                                          counterText: "",
-                                          prefixIcon: const Icon(
-                                            Icons.image,
-                                            color: AppColors.white,
-                                          ),
-                                          prefixStyle: const TextStyle(
-                                            color: AppColors.white,
-                                            fontSize: 16,
-                                          ),
-                                          hintText: "Choose Profile Picture",
-                                          hintStyle: TextStyle(
-                                            color: AppColors.white
-                                                .withOpacity(0.5),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                              color: Colors.white,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(15.0),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                              width: 1,
-                                              color: AppColors.white,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(15.0),
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                              width: 1,
-                                              color: AppColors.white,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(15.0),
-                                          ),
-                                          contentPadding: const EdgeInsets.only(
-                                            left: 15,
-                                            right: 15,
-                                          ),
+                                    final imageTemp = File(image.path);
+                                    selectedImage = imageTemp;
+                                    setState(() {});
+                                  } on PlatformException catch (e) {
+                                    log(e.toString());
+                                  }
+                                }),
+                                child: (selectedImage != null)
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(
+                                          top: 20,
                                         ),
-                                        readOnly: true,
-                                        cursorColor: AppColors.white,
-                                        style: const TextStyle(
-                                          color: AppColors.white,
+                                        child: CircleAvatar(
+                                          backgroundImage: FileImage(
+                                            selectedImage!,
+                                          ),
+                                          radius: 50,
                                         ),
-                                      );
-                                    },
-                                  ),
+                                      )
+                                    : Container(),
+                              ),
+                            if (signPage == 0 &&
+                                selected == false &&
+                                selectedImage == null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 30,
+                                  left: 15,
+                                  right: 15,
+                                  bottom: 10,
                                 ),
-                              if (signPage == 0 && signUpPressed == true)
-                                SizedBox(
-                                  width: size.width,
-                                  child: const Center(
-                                    child: Text(
-                                      "Please select your profile picture.",
-                                      style: TextStyle(
-                                        color: AppColors.red,
-                                        fontSize: 15,
-                                        letterSpacing: 1,
-                                        overflow: TextOverflow.clip,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                child: Consumer<AllAppProviders>(
+                                  builder: (allAppContext, allAppProvider,
+                                      allAppChild) {
+                                    return TextFormField(
+                                      onTap: (() async {
+                                        try {
+                                          final image = await ImagePicker()
+                                              .pickImage(
+                                                  source: ImageSource.gallery);
+                                          if (image == null) return;
 
-                              if (signPage == 0)
-                                AuthNameTextField(
-                                  icon: Icons.person,
-                                  controller: _firstNameController,
-                                  hintText: "Your First Name",
-                                ),
-                              if (signPage == 0)
-                                AuthNameTextField(
-                                  icon: Icons.badge_outlined,
-                                  controller: _lastNameController,
-                                  hintText: "Your Last Name",
-                                ),
-                              if (signPage == 0)
-                                AuthNameTextField(
-                                  icon: Icons.description,
-                                  controller: _desController,
-                                  hintText: "Your Short Description",
-                                  maxWords: 50,
-                                  desField: true,
-                                ),
-                              if (signPage == 0)
-                                Container(
-                                  margin: const EdgeInsets.only(
-                                    top: 20,
-                                    left: 15,
-                                    right: 15,
-                                    bottom: 10,
-                                  ),
-                                  width: size.width,
-                                  child: Center(
-                                    child: DropdownButtonFormField(
+                                          final imageTemp = File(image.path);
+                                          selectedImage = imageTemp;
+                                          selected = true;
+                                          signUpPressed = false;
+
+                                          setState(() {});
+                                        } on PlatformException catch (e) {
+                                          log(e.toString());
+                                        }
+                                      }),
+                                      textCapitalization:
+                                          TextCapitalization.words,
                                       decoration: InputDecoration(
                                         counterText: "",
                                         prefixIcon: const Icon(
-                                          Icons.work,
+                                          Icons.image,
                                           color: AppColors.white,
                                         ),
                                         prefixStyle: const TextStyle(
                                           color: AppColors.white,
                                           fontSize: 16,
                                         ),
-                                        hintText: "Study",
+                                        hintText: "Choose Profile Picture",
                                         hintStyle: TextStyle(
                                           color:
                                               AppColors.white.withOpacity(0.5),
@@ -493,375 +382,393 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           right: 15,
                                         ),
                                       ),
+                                      readOnly: true,
+                                      cursorColor: AppColors.white,
                                       style: const TextStyle(
                                         color: AppColors.white,
-                                        fontSize: 16,
                                       ),
-                                      icon: const Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        color: AppColors.white,
-                                      ),
-                                      enableFeedback: true,
-                                      elevation: 5,
-                                      dropdownColor: AppColors.backgroundColour,
-                                      borderRadius: BorderRadius.circular(15),
-                                      value: _value,
-                                      items: professionList.map(
-                                        (e) {
-                                          return DropdownMenuItem(
-                                            value: e.id,
-                                            child: Text(e.label),
-                                          );
-                                        },
-                                      ).toList(),
-                                      onChanged: (String? value) {
-                                        setState(() {
-                                          _value = value!;
-                                          profession =
-                                              professionList[int.parse(value)]
-                                                  .label;
-                                          log(profession);
-                                        });
-                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (signPage == 0 && signUpPressed == true)
+                              SizedBox(
+                                width: size.width,
+                                child: const Center(
+                                  child: Text(
+                                    "Please select your profile picture.",
+                                    style: TextStyle(
+                                      color: AppColors.red,
+                                      fontSize: 15,
+                                      letterSpacing: 1,
+                                      overflow: TextOverflow.clip,
                                     ),
                                   ),
                                 ),
-                              if (signPage == 0 && profession == "Others")
-                                AuthNameTextField(
-                                  controller: _othersProfessionController,
-                                  hintText: "Enter your Profession",
-                                  icon: Icons.work_outline,
+                              ),
+
+                            if (signPage == 0)
+                              AuthNameTextField(
+                                icon: Icons.person,
+                                controller: _firstNameController,
+                                hintText: "Your First Name",
+                              ),
+                            if (signPage == 0)
+                              AuthNameTextField(
+                                icon: Icons.badge_outlined,
+                                controller: _lastNameController,
+                                hintText: "Your Last Name",
+                              ),
+                            if (signPage == 0)
+                              AuthNameTextField(
+                                icon: Icons.description,
+                                controller: _desController,
+                                hintText: "Your Short Description",
+                                maxWords: 50,
+                                desField: true,
+                              ),
+                            if (signPage == 0)
+                              Container(
+                                margin: const EdgeInsets.only(
+                                  top: 20,
+                                  left: 15,
+                                  right: 15,
+                                  bottom: 10,
                                 ),
-                              if (signPage == 0)
-                                AuthTextField(
-                                    icon: Icons.email_outlined,
-                                    controller: _emailController,
-                                    hintText: "Email",
-                                    keyboard: TextInputType.emailAddress,
-                                    isPassField: false,
-                                    isPassConfirmField: false,
-                                    isEmailField: true,
-                                    pageIndex: signPage),
-                              if (signPage == 0)
-                                AuthTextField(
-                                  icon: Icons.security_outlined,
-                                  controller: _passController,
-                                  hintText: "Password",
-                                  keyboard: TextInputType.visiblePassword,
-                                  isPassField: true,
-                                  isPassConfirmField: false,
-                                  isEmailField: false,
-                                  pageIndex: signPage,
-                                ),
-                              if (signPage == 0)
-                                AuthTextField(
-                                  icon: Icons.shield_outlined,
-                                  controller: _passConfirmController,
-                                  hintText: "Confirm Password",
-                                  keyboard: TextInputType.visiblePassword,
-                                  isPassField: false,
-                                  isPassConfirmField: true,
-                                  isEmailField: false,
-                                  pageIndex: signPage,
-                                ),
-                              if (signPage == 0)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 20,
-                                    left: 15,
-                                    right: 15,
-                                    bottom: 10,
+                                width: size.width,
+                                child: Center(
+                                  child: DropdownButtonFormField(
+                                    decoration: InputDecoration(
+                                      counterText: "",
+                                      prefixIcon: const Icon(
+                                        Icons.work,
+                                        color: AppColors.white,
+                                      ),
+                                      prefixStyle: const TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 16,
+                                      ),
+                                      hintText: "Study",
+                                      hintStyle: TextStyle(
+                                        color: AppColors.white.withOpacity(0.5),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Colors.white,
+                                          width: 1.0,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(15.0),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          width: 1,
+                                          color: AppColors.white,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(15.0),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          width: 1,
+                                          color: AppColors.white,
+                                        ),
+                                        borderRadius:
+                                            BorderRadius.circular(15.0),
+                                      ),
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 15,
+                                        right: 15,
+                                      ),
+                                    ),
+                                    style: const TextStyle(
+                                      color: AppColors.white,
+                                      fontSize: 16,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: AppColors.white,
+                                    ),
+                                    enableFeedback: true,
+                                    elevation: 5,
+                                    dropdownColor: AppColors.backgroundColour,
+                                    borderRadius: BorderRadius.circular(15),
+                                    value: _value,
+                                    items: professionList.map(
+                                      (e) {
+                                        return DropdownMenuItem(
+                                          value: e.id,
+                                          child: Text(e.label),
+                                        );
+                                      },
+                                    ).toList(),
+                                    onChanged: (String? value) {
+                                      setState(() {
+                                        _value = value!;
+                                        profession =
+                                            professionList[int.parse(value)]
+                                                .label;
+                                        log(profession);
+                                      });
+                                    },
                                   ),
-                                  child: (allAppProvidersProvider.isLoading)
-                                      ? Container(
-                                          height: 50,
-                                          width: size.width / 2,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: AppColors.blackLow
-                                                    .withOpacity(0.5),
-                                                blurRadius: 10,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Lottie.asset(
-                                              "assets/loading-animation.json",
-                                              width: 100,
-                                              height: 50,
+                                ),
+                              ),
+                            if (signPage == 0 && profession == "Others")
+                              AuthNameTextField(
+                                controller: _othersProfessionController,
+                                hintText: "Enter your Profession",
+                                icon: Icons.work_outline,
+                              ),
+                            if (signPage == 0)
+                              AuthTextField(
+                                  icon: Icons.email_outlined,
+                                  controller: _emailController,
+                                  hintText: "Email",
+                                  keyboard: TextInputType.emailAddress,
+                                  isPassField: false,
+                                  isPassConfirmField: false,
+                                  isEmailField: true,
+                                  pageIndex: signPage),
+                            if (signPage == 0)
+                              AuthTextField(
+                                icon: Icons.security_outlined,
+                                controller: _passController,
+                                hintText: "Password",
+                                keyboard: TextInputType.visiblePassword,
+                                isPassField: true,
+                                isPassConfirmField: false,
+                                isEmailField: false,
+                                pageIndex: signPage,
+                              ),
+                            if (signPage == 0)
+                              AuthTextField(
+                                icon: Icons.shield_outlined,
+                                controller: _passConfirmController,
+                                hintText: "Confirm Password",
+                                keyboard: TextInputType.visiblePassword,
+                                isPassField: false,
+                                isPassConfirmField: true,
+                                isEmailField: false,
+                                pageIndex: signPage,
+                              ),
+                            if (signPage == 0)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 20,
+                                  left: 15,
+                                  right: 15,
+                                  bottom: 10,
+                                ),
+                                child: (allAppProvidersProvider.isLoading)
+                                    ? Container(
+                                        height: 50,
+                                        width: size.width / 2,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.blackLow
+                                                  .withOpacity(0.5),
+                                              blurRadius: 10,
                                             ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Lottie.asset(
+                                            "assets/loading-animation.json",
+                                            width: 100,
+                                            height: 50,
                                           ),
-                                        )
-                                      : InkWell(
-                                          onTap: (() async {
-                                            // print(packageInfo!.version);
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(true);
+                                        ),
+                                      )
+                                    : InkWell(
+                                        onTap: (() async {
+                                          // print(packageInfo!.version);
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(true);
 
-                                            if (_emailController.text
-                                                    .trim()
-                                                    .isNotEmpty &&
-                                                _passController.text
-                                                    .trim()
-                                                    .isNotEmpty &&
-                                                _passConfirmController.text
-                                                    .trim()
-                                                    .isNotEmpty &&
-                                                _firstNameController.text
-                                                    .trim()
-                                                    .isNotEmpty &&
-                                                _lastNameController.text
-                                                    .trim()
-                                                    .isNotEmpty &&
-                                                _firstNameController.text
-                                                        .trim() !=
-                                                    _lastNameController.text
-                                                        .trim() &&
-                                                EmailValidator.validate(
-                                                    _emailController.text
-                                                        .trim()) &&
-                                                _desController
-                                                    .text.isNotEmpty &&
-                                                profession.isNotEmpty &&
-                                                _value.isNotEmpty &&
-                                                _value != "0") {
-                                              if (_passController.text ==
-                                                  _passConfirmController.text) {
-                                                if (selected == true) {
-                                                  if (profession == "Others") {
-                                                    if (_othersProfessionController
-                                                        .text.isNotEmpty) {
-                                                      profession =
-                                                          _othersProfessionController
-                                                              .text
-                                                              .replaceAll(
-                                                                  " ", "\n");
-                                                    } else {
-                                                      allAppProvidersProvider
-                                                          .isLoadingFunc(false);
-                                                      ScaffoldMessenger.of(
-                                                              allAppProvidersContext)
-                                                          .showSnackBar(
-                                                        AppSnackbar()
-                                                            .customizedAppSnackbar(
-                                                          message:
-                                                              "Please enter your profession",
-                                                          context:
-                                                              allAppProvidersContext,
-                                                        ),
-                                                      );
-                                                      return;
-                                                    }
+                                          if (_emailController.text
+                                                  .trim()
+                                                  .isNotEmpty &&
+                                              _passController.text
+                                                  .trim()
+                                                  .isNotEmpty &&
+                                              _passConfirmController.text
+                                                  .trim()
+                                                  .isNotEmpty &&
+                                              _firstNameController.text
+                                                  .trim()
+                                                  .isNotEmpty &&
+                                              _lastNameController.text
+                                                  .trim()
+                                                  .isNotEmpty &&
+                                              _firstNameController.text
+                                                      .trim() !=
+                                                  _lastNameController.text
+                                                      .trim() &&
+                                              EmailValidator.validate(
+                                                  _emailController.text
+                                                      .trim()) &&
+                                              _desController.text.isNotEmpty &&
+                                              profession.isNotEmpty &&
+                                              _value.isNotEmpty &&
+                                              _value != "0") {
+                                            if (_passController.text ==
+                                                _passConfirmController.text) {
+                                              if (selected == true) {
+                                                if (profession == "Others") {
+                                                  if (_othersProfessionController
+                                                      .text.isNotEmpty) {
+                                                    profession =
+                                                        _othersProfessionController
+                                                            .text
+                                                            .replaceAll(
+                                                                " ", "\n");
+                                                  } else {
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
+                                                    ScaffoldMessenger.of(
+                                                            allAppProvidersContext)
+                                                        .showSnackBar(
+                                                      AppSnackbar()
+                                                          .customizedAppSnackbar(
+                                                        message:
+                                                            "Please enter your profession",
+                                                        context:
+                                                            allAppProvidersContext,
+                                                      ),
+                                                    );
+                                                    return;
                                                   }
+                                                }
 
-                                                  var request =
-                                                      http.MultipartRequest(
-                                                    'POST',
-                                                    Uri.parse(
-                                                        "${Keys.apiUsersBaseUrl}/create"),
-                                                  );
+                                                var request =
+                                                    http.MultipartRequest(
+                                                  'POST',
+                                                  Uri.parse(
+                                                      "${Keys.apiUsersBaseUrl}/create"),
+                                                );
 
-                                                  var fileStream =
-                                                      http.ByteStream(
-                                                    selectedImage!.openRead(),
-                                                  );
-                                                  var length =
-                                                      await selectedImage!
-                                                          .length();
-                                                  var multipartFile =
-                                                      http.MultipartFile(
-                                                    Keys.usrProfilePic,
-                                                    fileStream,
-                                                    length,
-                                                    filename: selectedImage!
-                                                        .path
-                                                        .split('/')
-                                                        .last,
-                                                  );
+                                                var fileStream =
+                                                    http.ByteStream(
+                                                  selectedImage!.openRead(),
+                                                );
+                                                var length =
+                                                    await selectedImage!
+                                                        .length();
+                                                var multipartFile =
+                                                    http.MultipartFile(
+                                                  Keys.usrProfilePic,
+                                                  fileStream,
+                                                  length,
+                                                  filename: selectedImage!.path
+                                                      .split('/')
+                                                      .last,
+                                                );
 
-                                                  request.files
-                                                      .add(multipartFile);
+                                                request.files
+                                                    .add(multipartFile);
 
-                                                  request.headers[
-                                                          "content-type"] =
-                                                      "multipart/form-data";
+                                                request.headers[
+                                                        "content-type"] =
+                                                    "multipart/form-data";
 
-                                                  request.fields[
-                                                          Keys.usrFirstName] =
-                                                      _firstNameController.text
-                                                          .trim();
-                                                  request.fields[
-                                                          Keys.usrLastName] =
-                                                      _lastNameController.text
-                                                          .trim();
-                                                  request.fields[
-                                                          Keys.usrPassword] =
-                                                      _passController.text
-                                                          .trim();
-                                                  request.fields[
-                                                          Keys.usrEmail] =
-                                                      _emailController.text
-                                                          .trim();
-                                                  request.fields[Keys.uid] =
-                                                      _emailController.text
-                                                          .trim()
-                                                          .split('@')[0];
-                                                  request.fields[
-                                                          Keys.usrDescription] =
-                                                      _desController.text
-                                                          .trim();
-                                                  request.fields[
-                                                          Keys.usrProfession] =
-                                                      profession;
-                                                  request.fields[Keys
-                                                          .notificationToken] =
-                                                      (await FirebaseMessaging
-                                                          .instance
-                                                          .getToken())!;
+                                                request.fields[
+                                                        Keys.usrFirstName] =
+                                                    _firstNameController.text
+                                                        .trim();
+                                                request.fields[
+                                                        Keys.usrLastName] =
+                                                    _lastNameController.text
+                                                        .trim();
+                                                request.fields[
+                                                        Keys.usrPassword] =
+                                                    _passController.text.trim();
+                                                request.fields[Keys.usrEmail] =
+                                                    _emailController.text
+                                                        .trim();
+                                                request.fields[Keys.uid] =
+                                                    _emailController.text
+                                                        .trim()
+                                                        .split('@')[0];
+                                                request.fields[
+                                                        Keys.usrDescription] =
+                                                    _desController.text.trim();
+                                                request.fields[
+                                                        Keys.usrProfession] =
+                                                    profession;
+                                                request.fields[Keys
+                                                        .notificationToken] =
+                                                    (await FirebaseMessaging
+                                                        .instance
+                                                        .getToken())!;
 
-                                                  http.Response response =
-                                                      await http.Response
-                                                          .fromStream(
-                                                              await request
-                                                                  .send());
+                                                http.Response response =
+                                                    await http.Response
+                                                        .fromStream(
+                                                            await request
+                                                                .send());
 
-                                                  Map<String, dynamic>
-                                                      responseJson =
-                                                      await json.decode(
-                                                          response.body);
+                                                Map<String, dynamic>
+                                                    responseJson = await json
+                                                        .decode(response.body);
 
-                                                  log(responseJson.toString());
+                                                log(responseJson.toString());
 
-                                                  if (response.statusCode ==
-                                                      200) {
-                                                    // log(response.stream
-                                                    //     .bytesToString()
-                                                    //     .toString());
+                                                if (response.statusCode ==
+                                                    200) {
+                                                  // log(response.stream
+                                                  //     .bytesToString()
+                                                  //     .toString());
+                                                  StorageServices.setSignInType(
+                                                      Keys.email);
+
+                                                  if (responseJson["success"]) {
+                                                    StorageServices.setUsrName(
+                                                        "${responseJson[Keys.data][0][Keys.usrFirstName]}${responseJson[Keys.data][0][Keys.usrLastName]}");
+
+                                                    StorageServices.setUID(
+                                                        responseJson[Keys.data]
+                                                            [0][Keys.uid]);
+
+                                                    StorageServices.setUsrEmail(
+                                                        responseJson[Keys.data]
+                                                            [0][Keys.usrEmail]);
+
+                                                    StorageServices.setUsrToken(
+                                                        responseJson[
+                                                            Keys.token]);
+
                                                     StorageServices
-                                                        .setSignInType(
-                                                            Keys.email);
-
-                                                    if (responseJson[
-                                                        "success"]) {
-                                                      StorageServices.setUsrName(
-                                                          "${responseJson[Keys.data][0][Keys.usrFirstName]}${responseJson[Keys.data][0][Keys.usrLastName]}");
-
-                                                      StorageServices.setUID(
-                                                          responseJson[
-                                                                  Keys.data][0]
-                                                              [Keys.uid]);
-
-                                                      StorageServices.setUsrEmail(
-                                                          responseJson[
-                                                                  Keys.data][0]
-                                                              [Keys.usrEmail]);
-
-                                                      StorageServices
-                                                          .setUsrToken(
-                                                              responseJson[
-                                                                  Keys.token]);
-
-                                                      StorageServices.setUsrDescription(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][0][Keys
-                                                              .usrDescription]);
-
-                                                      StorageServices.setUsrProfilePic(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][0][Keys
-                                                              .usrProfilePic]);
-
-                                                      StorageServices.setUsrProfession(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][0][Keys
-                                                              .usrProfession]);
-
-                                                      // StorageServices
-                                                      //     .setNotificationToken(
-                                                      //         responseJson[Keys
-                                                      //                 .data][0][
-                                                      //             Keys.notificationToken]);
-
-                                                      ScaffoldMessenger.of(
-                                                              allAppProvidersContext)
-                                                          .showSnackBar(
-                                                        AppSnackbar()
-                                                            .customizedAppSnackbar(
-                                                          message: responseJson[
-                                                              Keys.message],
-                                                          context: context,
-                                                        ),
-                                                      );
-                                                      String signInType =
-                                                          await StorageServices
-                                                              .getUsrSignInType();
-
-                                                      if (signInType ==
-                                                          Keys.email) {
-                                                        _passController.clear();
-                                                        _firstNameController
-                                                            .clear();
-                                                        _lastNameController
-                                                            .clear();
-                                                        _passConfirmController
-                                                            .clear();
-                                                        _desController.clear();
-                                                        _value = "0";
-                                                        selectedImage = null;
-                                                        verificationToken =
+                                                        .setUsrDescription(
                                                             responseJson[
-                                                                "token"];
-                                                        otp =
-                                                            responseJson["otp"];
-                                                        selectedImage = null;
-                                                        selected = false;
-                                                        setState(() {
-                                                          signPage = 4;
-                                                        });
-                                                      }
+                                                                Keys
+                                                                    .data][0][Keys
+                                                                .usrDescription]);
 
-                                                      allAppProvidersProvider
-                                                          .isLoadingFunc(false);
-                                                    } else {
-                                                      ScaffoldMessenger.of(
-                                                              allAppProvidersContext)
-                                                          .showSnackBar(
-                                                        AppSnackbar()
-                                                            .customizedAppSnackbar(
-                                                          message: responseJson[
-                                                              Keys.message],
-                                                          context:
-                                                              allAppProvidersContext,
-                                                        ),
-                                                      );
-                                                      allAppProvidersProvider
-                                                          .isLoadingFunc(false);
-                                                    }
-                                                  } else if (response
-                                                          .statusCode ==
-                                                      501) {
-                                                    selected = false;
-                                                    selectedImage = null;
-                                                    _firstNameController
-                                                        .clear();
-                                                    _lastNameController.clear();
-                                                    _desController.clear();
-                                                    profession = "";
-                                                    _value = "0";
-                                                    _emailController.clear();
-                                                    _passController.clear();
-                                                    _passConfirmController
-                                                        .clear();
-                                                    setState(() {
-                                                      signPage = 1;
-                                                    });
+                                                    StorageServices
+                                                        .setUsrProfilePic(
+                                                            responseJson[
+                                                                Keys
+                                                                    .data][0][Keys
+                                                                .usrProfilePic]);
+
+                                                    StorageServices
+                                                        .setUsrProfession(
+                                                            responseJson[
+                                                                Keys
+                                                                    .data][0][Keys
+                                                                .usrProfession]);
+
+                                                    // StorageServices
+                                                    //     .setNotificationToken(
+                                                    //         responseJson[Keys
+                                                    //                 .data][0][
+                                                    //             Keys.notificationToken]);
+
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
                                                         .showSnackBar(
@@ -869,10 +776,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                           .customizedAppSnackbar(
                                                         message: responseJson[
                                                             Keys.message],
-                                                        context:
-                                                            allAppProvidersContext,
+                                                        context: context,
                                                       ),
                                                     );
+                                                    String signInType =
+                                                        await StorageServices
+                                                            .getUsrSignInType();
+
+                                                    if (signInType ==
+                                                        Keys.email) {
+                                                      _passController.clear();
+                                                      _firstNameController
+                                                          .clear();
+                                                      _lastNameController
+                                                          .clear();
+                                                      _passConfirmController
+                                                          .clear();
+                                                      _desController.clear();
+                                                      _value = "0";
+                                                      selectedImage = null;
+                                                      verificationToken =
+                                                          responseJson["token"];
+                                                      otp = responseJson["otp"];
+                                                      selectedImage = null;
+                                                      selected = false;
+                                                      setState(() {
+                                                        signPage = 4;
+                                                      });
+                                                    }
+
                                                     allAppProvidersProvider
                                                         .isLoadingFunc(false);
                                                   } else {
@@ -890,22 +822,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     allAppProvidersProvider
                                                         .isLoadingFunc(false);
                                                   }
-                                                } else {
-                                                  signUpPressed = true;
-                                                  allAppProvidersProvider
-                                                      .isLoadingFunc(false);
+                                                } else if (response
+                                                        .statusCode ==
+                                                    501) {
+                                                  selected = false;
+                                                  selectedImage = null;
+                                                  _firstNameController.clear();
+                                                  _lastNameController.clear();
+                                                  _desController.clear();
+                                                  profession = "";
+                                                  _value = "0";
+                                                  _emailController.clear();
+                                                  _passController.clear();
+                                                  _passConfirmController
+                                                      .clear();
+                                                  setState(() {
+                                                    signPage = 1;
+                                                  });
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(
                                                     AppSnackbar()
                                                         .customizedAppSnackbar(
-                                                      message:
-                                                          "Please choose your profile picture",
-                                                      context: context,
+                                                      message: responseJson[
+                                                          Keys.message],
+                                                      context:
+                                                          allAppProvidersContext,
                                                     ),
                                                   );
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+                                                } else {
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: responseJson[
+                                                          Keys.message],
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
                                                 }
                                               } else {
+                                                signUpPressed = true;
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
                                                 ScaffoldMessenger.of(
@@ -914,7 +877,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   AppSnackbar()
                                                       .customizedAppSnackbar(
                                                     message:
-                                                        "Please check the password fields",
+                                                        "Please choose your profile picture",
                                                     context: context,
                                                   ),
                                                 );
@@ -928,138 +891,134 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 AppSnackbar()
                                                     .customizedAppSnackbar(
                                                   message:
-                                                      "Please fill the fields properly",
+                                                      "Please check the password fields",
                                                   context: context,
                                                 ),
                                               );
                                             }
-                                          }),
-                                          child: Container(
-                                            height: 50,
-                                            width: size.width / 2,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: AppColors.blackLow
-                                                      .withOpacity(0.5),
-                                                  blurRadius: 10,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Center(
-                                              child: Text(
-                                                "Sign Up",
-                                                style: TextStyle(
-                                                  color: AppColors
-                                                      .backgroundColour,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                ),
+                                          } else {
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    "Please fill the fields properly",
+                                                context: context,
+                                              ),
+                                            );
+                                          }
+                                        }),
+                                        child: Container(
+                                          height: 50,
+                                          width: size.width / 2,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.blackLow
+                                                    .withOpacity(0.5),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Center(
+                                            child: Text(
+                                              "Sign Up",
+                                              style: TextStyle(
+                                                color:
+                                                    AppColors.backgroundColour,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
                                               ),
                                             ),
                                           ),
                                         ),
-                                ),
+                                      ),
+                              ),
 
-                              //SIGN IN
-                              if (signPage == 1)
-                                AuthTextField(
-                                  icon: Icons.email_outlined,
-                                  controller: _emailController,
-                                  hintText: "example@gmail.com",
-                                  keyboard: TextInputType.emailAddress,
-                                  isPassField: false,
-                                  isPassConfirmField: false,
-                                  isEmailField: true,
-                                  pageIndex: signPage,
-                                  // formKey: signInFormKey,
-                                ),
-                              if (signPage == 1)
-                                AuthTextField(
-                                  icon: Icons.security_outlined,
-                                  controller: _passController,
-                                  hintText: "Password",
-                                  keyboard: TextInputType.visiblePassword,
-                                  isPassField: true,
-                                  isPassConfirmField: false,
-                                  isEmailField: false,
-                                  pageIndex: signPage,
-                                  // formKey: signInFormKey,
-                                ),
-                              if (signPage == 1)
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 20),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton(
-                                      onPressed: (() async {
-                                        if (_emailController.text.isNotEmpty) {
-                                          allAppProvidersProvider
-                                              .isLoadingFunc(true);
+                            //SIGN IN
+                            if (signPage == 1)
+                              AuthTextField(
+                                icon: Icons.email_outlined,
+                                controller: _emailController,
+                                hintText: "example@gmail.com",
+                                keyboard: TextInputType.emailAddress,
+                                isPassField: false,
+                                isPassConfirmField: false,
+                                isEmailField: true,
+                                pageIndex: signPage,
+                                // formKey: signInFormKey,
+                              ),
+                            if (signPage == 1)
+                              AuthTextField(
+                                icon: Icons.security_outlined,
+                                controller: _passController,
+                                hintText: "Password",
+                                keyboard: TextInputType.visiblePassword,
+                                isPassField: true,
+                                isPassConfirmField: false,
+                                isEmailField: false,
+                                pageIndex: signPage,
+                                // formKey: signInFormKey,
+                              ),
+                            if (signPage == 1)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 20),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: (() async {
+                                      if (_emailController.text.isNotEmpty) {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(true);
 
-                                          http.Response response =
-                                              await http.post(
-                                            Uri.parse(
-                                              "${Keys.apiUsersBaseUrl}/forgotPass/${_emailController.text.trim()}",
-                                            ),
-                                            headers: {
-                                              "content-type":
-                                                  "application/json",
-                                            },
-                                          );
+                                        http.Response response =
+                                            await http.post(
+                                          Uri.parse(
+                                            "${Keys.apiUsersBaseUrl}/forgotPass/${_emailController.text.trim()}",
+                                          ),
+                                          headers: {
+                                            "content-type": "application/json",
+                                          },
+                                        );
 
+                                        Map<String, dynamic> responseJson =
+                                            jsonDecode(response.body);
+
+                                        if (response.statusCode == 200) {
                                           Map<String, dynamic> responseJson =
                                               jsonDecode(response.body);
+                                          log(responseJson.toString());
 
-                                          if (response.statusCode == 200) {
-                                            Map<String, dynamic> responseJson =
-                                                jsonDecode(response.body);
-                                            log(responseJson.toString());
+                                          if (responseJson["success"]) {
+                                            StorageServices.setUsrResetToken(
+                                                responseJson["token"]);
 
-                                            if (responseJson["success"]) {
-                                              StorageServices.setUsrResetToken(
-                                                  responseJson["token"]);
+                                            resetToken = responseJson["token"];
+                                            uid = responseJson["uid"];
 
-                                              resetToken =
-                                                  responseJson["token"];
-                                              uid = responseJson["uid"];
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            setState(() {
+                                              signPage = 2;
+                                            });
+                                            _passController.clear();
 
-                                              allAppProvidersProvider
-                                                  .isLoadingFunc(false);
-                                              setState(() {
-                                                signPage = 2;
-                                              });
-                                              _passController.clear();
-
-                                              ScaffoldMessenger.of(
-                                                      allAppProvidersContext)
-                                                  .showSnackBar(
-                                                AppSnackbar()
-                                                    .customizedAppSnackbar(
-                                                  message: responseJson[
-                                                      Keys.message],
-                                                  context:
-                                                      allAppProvidersContext,
-                                                ),
-                                              );
-                                            } else {
-                                              allAppProvidersProvider
-                                                  .isLoadingFunc(false);
-                                              ScaffoldMessenger.of(
-                                                      allAppProvidersContext)
-                                                  .showSnackBar(
-                                                AppSnackbar()
-                                                    .customizedAppSnackbar(
-                                                  message: responseJson[
-                                                      Keys.message],
-                                                  context:
-                                                      allAppProvidersContext,
-                                                ),
-                                              );
-                                            }
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    responseJson[Keys.message],
+                                                context: allAppProvidersContext,
+                                              ),
+                                            );
                                           } else {
                                             allAppProvidersProvider
                                                 .isLoadingFunc(false);
@@ -1082,33 +1041,301 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               .showSnackBar(
                                             AppSnackbar().customizedAppSnackbar(
                                               message:
-                                                  "Please give your registered email",
+                                                  responseJson[Keys.message],
                                               context: allAppProvidersContext,
                                             ),
                                           );
                                         }
-                                      }),
-                                      child: const Text(
-                                        "Forgot Password",
-                                        style: TextStyle(
-                                          color: AppColors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      } else {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
+                                        ScaffoldMessenger.of(
+                                                allAppProvidersContext)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                "Please give your registered email",
+                                            context: allAppProvidersContext,
+                                          ),
+                                        );
+                                      }
+                                    }),
+                                    child: const Text(
+                                      "Forgot Password",
+                                      style: TextStyle(
+                                        color: AppColors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                 ),
-                              if (signPage == 1)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 20,
-                                    left: 15,
-                                    right: 15,
-                                    bottom: 10,
-                                  ),
-                                  child: (allAppProvidersProvider.isLoading)
-                                      ? Container(
+                              ),
+                            if (signPage == 1)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 20,
+                                  left: 15,
+                                  right: 15,
+                                  bottom: 10,
+                                ),
+                                child: (allAppProvidersProvider.isLoading)
+                                    ? Container(
+                                        height: 50,
+                                        width: size.width / 2,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.blackLow
+                                                  .withOpacity(0.5),
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Lottie.asset(
+                                            "assets/loading-animation.json",
+                                            width: 100,
+                                            height: 50,
+                                          ),
+                                        ),
+                                      )
+                                    : InkWell(
+                                        onTap: (() async {
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(true);
+                                          const CircularProgressIndicator(
+                                            backgroundColor:
+                                                AppColors.backgroundColour,
+                                          );
+                                          if (_emailController
+                                                  .text.isNotEmpty &&
+                                              _passController.text.isNotEmpty) {
+                                            // EmailPassAuthServices()
+                                            //     .emailPassSignIn(
+                                            //   email: _emailController.text
+                                            //       .trim(),
+                                            //   pass:
+                                            //       _passController.text.trim(),
+                                            //   context: allAppProvidersContext,
+                                            // );
+
+                                            // String token =
+                                            //     await StorageServices
+                                            //         .getUsrToken();
+
+                                            String? notificationToken =
+                                                await FirebaseMessaging.instance
+                                                    .getToken();
+
+                                            log(notificationToken!);
+
+                                            http.Response response =
+                                                await http.post(
+                                              Uri.parse(
+                                                  "${Keys.apiUsersBaseUrl}/login"),
+                                              headers: {
+                                                "content-type":
+                                                    "application/json",
+                                                // 'Authorization':
+                                                //     'Bearer $token',
+                                              },
+                                              body: jsonEncode({
+                                                Keys.uid: _emailController.text
+                                                    .trim()
+                                                    .split('@')[0],
+                                                Keys.usrPassword:
+                                                    _passController.text.trim(),
+                                                Keys.usrEmail: _emailController
+                                                    .text
+                                                    .trim(),
+                                                Keys.notificationToken:
+                                                    notificationToken,
+                                              }),
+                                            );
+
+                                            log(response.body);
+
+                                            if (response.statusCode == 200) {
+                                              Map<String, dynamic>
+                                                  responseJson =
+                                                  jsonDecode(response.body);
+                                              log(responseJson.toString());
+
+                                              if (responseJson["success"]) {
+                                                // StorageServices
+                                                //     .setNotificationToken(
+                                                //         responseJson[Keys
+                                                //             .notificationToken]);
+
+                                                StorageServices.setUsrName(
+                                                    "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
+
+                                                StorageServices.setUID(
+                                                    responseJson[Keys.data]
+                                                        [Keys.uid]);
+
+                                                StorageServices.setUsrEmail(
+                                                    responseJson[Keys.data]
+                                                        [Keys.usrEmail]);
+
+                                                StorageServices.setUsrToken(
+                                                    responseJson[Keys.token]);
+
+                                                StorageServices
+                                                    .setUsrDescription(
+                                                        responseJson[
+                                                            Keys
+                                                                .data][Keys
+                                                            .usrDescription]);
+
+                                                StorageServices
+                                                    .setUsrProfilePic(
+                                                        responseJson[
+                                                            Keys
+                                                                .data][Keys
+                                                            .usrProfilePic]);
+
+                                                StorageServices
+                                                    .setUsrProfession(
+                                                        responseJson[
+                                                            Keys
+                                                                .data][Keys
+                                                            .usrProfession]);
+
+                                                if (responseJson[Keys.data]
+                                                            [Keys.hasBloc] ==
+                                                        1 ||
+                                                    responseJson[Keys.data]
+                                                            [Keys.hasBloc] ==
+                                                        true) {
+                                                  StorageServices.setUsrHasBloc(
+                                                      true);
+                                                } else {
+                                                  StorageServices.setUsrHasBloc(
+                                                      false);
+                                                }
+                                                StorageServices.setUsrBlocID(
+                                                    responseJson[Keys.data]
+                                                            [Keys.blocID] ??
+                                                        "");
+
+                                                StorageServices.setUsrBlocName(
+                                                    responseJson[Keys.data]
+                                                            [Keys.blocName] ??
+                                                        "");
+
+                                                StorageServices.setSignStatus(
+                                                    true);
+                                                StorageServices.setSignInType(
+                                                    Keys.email);
+
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message: responseJson[
+                                                        Keys.message],
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (nextPageContext) =>
+                                                            const MainScreen(),
+                                                  ),
+                                                );
+                                              } else {
+                                                _emailController.clear();
+                                                _passController.clear();
+                                                setState(() {
+                                                  signPage = 0;
+                                                });
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message:
+                                                        responseJson["message"],
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+                                              }
+                                            }
+
+                                            if (response.statusCode == 403) {
+                                              Map<String, dynamic>
+                                                  responseJson =
+                                                  jsonDecode(response.body);
+                                              signPage = 4;
+                                              verificationToken = responseJson[
+                                                  "verificationToken"];
+                                              otp = responseJson["otp"];
+                                              setState(() {});
+
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: responseJson[
+                                                      Keys.message],
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                            }
+
+                                            if (response.statusCode == 404) {
+                                              Map<String, dynamic>
+                                                  responseJson =
+                                                  jsonDecode(response.body);
+                                              ScaffoldMessenger.of(
+                                                      allAppProvidersContext)
+                                                  .showSnackBar(
+                                                AppSnackbar()
+                                                    .customizedAppSnackbar(
+                                                  message: responseJson[
+                                                      Keys.message],
+                                                  context:
+                                                      allAppProvidersContext,
+                                                ),
+                                              );
+
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                            }
+                                          } else {
+                                            allAppProvidersProvider
+                                                .isLoadingFunc(false);
+                                            ScaffoldMessenger.of(
+                                                    allAppProvidersContext)
+                                                .showSnackBar(
+                                              AppSnackbar()
+                                                  .customizedAppSnackbar(
+                                                message:
+                                                    "Please fill the fields correctly",
+                                                context: allAppProvidersContext,
+                                              ),
+                                            );
+                                          }
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
+                                        }),
+                                        child: Container(
                                           height: 50,
                                           width: size.width / 2,
                                           decoration: BoxDecoration(
@@ -1123,148 +1350,233 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                               ),
                                             ],
                                           ),
-                                          child: Center(
-                                            child: Lottie.asset(
-                                              "assets/loading-animation.json",
-                                              width: 100,
-                                              height: 50,
+                                          child: const Center(
+                                            child: Text(
+                                              "Login",
+                                              style: TextStyle(
+                                                color:
+                                                    AppColors.backgroundColour,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                              ),
                                             ),
                                           ),
-                                        )
-                                      : InkWell(
-                                          onTap: (() async {
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(true);
-                                            const CircularProgressIndicator(
-                                              backgroundColor:
-                                                  AppColors.backgroundColour,
-                                            );
-                                            if (_emailController
-                                                    .text.isNotEmpty &&
-                                                _passController
-                                                    .text.isNotEmpty) {
-                                              // EmailPassAuthServices()
-                                              //     .emailPassSignIn(
-                                              //   email: _emailController.text
-                                              //       .trim(),
-                                              //   pass:
-                                              //       _passController.text.trim(),
-                                              //   context: allAppProvidersContext,
-                                              // );
+                                        ),
+                                      ),
+                              ),
+                            // const Center(
+                            //   child: Text(
+                            //     "or",
+                            //     style: TextStyle(
+                            //       color: AppColors.white,
+                            //       fontSize: 15,
+                            //     ),
+                            //   ),
+                            // ),
+                            // Padding(
+                            //   padding: const EdgeInsets.only(
+                            //     top: 10,
+                            //     bottom: 10,
+                            //     left: 20,
+                            //     right: 20,
+                            //   ),
+                            //   child: Column(
+                            //     crossAxisAlignment:
+                            //         CrossAxisAlignment.stretch,
+                            //     children: [
+                            //       Row(
+                            //         mainAxisAlignment:
+                            //             MainAxisAlignment.center,
+                            //         children: [
+                            //           CompanyAuth(
+                            //             logo: "assets/google-logo.png",
+                            //             onTap: (() async {
+                            //               allAppProvidersProvider
+                            //                   .isLoadingFunc(true);
+                            //               const CircularProgressIndicator(
+                            //                 color: AppColors.backgroundColour,
+                            //               );
+                            //               await googleSignIn(context);
+                            //               allAppProvidersProvider
+                            //                   .isLoadingFunc(false);
+                            //             }),
+                            //           ),
+                            //           SizedBox(
+                            //             width: size.width / 10,
+                            //           ),
+                            //           CompanyAuth(
+                            //             logo: "assets/apple-logo.png",
+                            //             onTap: (() {
+                            //               if (!Platform.isIOS ||
+                            //                   !Platform.isMacOS) {
+                            //                 ScaffoldMessenger.of(
+                            //                         allAppProvidersContext)
+                            //                     .showSnackBar(
+                            //                   AppSnackbar()
+                            //                       .customizedAppSnackbar(
+                            //                     message:
+                            //                         "Your device is not a iOS or macOS device",
+                            //                     context:
+                            //                         allAppProvidersContext,
+                            //                   ),
+                            //                 );
+                            //               }
+                            //             }),
+                            //           ),
+                            //         ],
+                            //       ),
+                            //     ],
+                            //   ),
+                            // ),
+                            if (signPage == 0)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Already have an account?",
+                                    style: TextStyle(
+                                      color:
+                                          AppColors.blackLow.withOpacity(0.5),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: (() {
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+                                      _emailController.clear();
+                                      _passController.clear();
+                                      _firstNameController.clear();
+                                      _lastNameController.clear();
+                                      _passConfirmController.clear();
+                                      _desController.clear();
+                                      _value = "0";
+                                      selectedImage = null;
+                                      selected = false;
+                                      setState(() {
+                                        signPage = 1;
+                                      });
+                                    }),
+                                    child: const Text(
+                                      "Login",
+                                      style: TextStyle(
+                                        color: AppColors.backgroundColour,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (signPage == 1)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "Don't have any account?",
+                                    style: TextStyle(
+                                      color: AppColors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: (() {
+                                      setState(() {
+                                        signPage = 0;
+                                      });
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(false);
+                                      _emailController.clear();
+                                      _passController.clear();
+                                    }),
+                                    child: const Text(
+                                      "SignUp",
+                                      style: TextStyle(
+                                        color: AppColors.backgroundColour,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (signPage == 2)
+                              AuthTextField(
+                                controller: _passController,
+                                hintText: "New Password",
+                                keyboard: TextInputType.visiblePassword,
+                                isPassField: true,
+                                isEmailField: false,
+                                isPassConfirmField: false,
+                                icon: Icons.password,
+                                pageIndex: 2,
+                              ),
+                            if (signPage == 2)
+                              AuthTextField(
+                                controller: _passConfirmController,
+                                hintText: "Confirm Password",
+                                keyboard: TextInputType.visiblePassword,
+                                isPassField: false,
+                                isEmailField: false,
+                                isPassConfirmField: true,
+                                icon: Icons.password,
+                                pageIndex: 2,
+                              ),
 
-                                              // String token =
-                                              //     await StorageServices
-                                              //         .getUsrToken();
-
-                                              String? notificationToken =
-                                                  await FirebaseMessaging
-                                                      .instance
-                                                      .getToken();
-
-                                              log(notificationToken!);
+                            if (signPage == 2)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 30),
+                                child: (allAppProvidersProvider.isLoading)
+                                    ? Container(
+                                        height: 50,
+                                        width: size.width / 2,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.blackLow
+                                                  .withOpacity(0.5),
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Lottie.asset(
+                                            "assets/loading-animation.json",
+                                            width: 100,
+                                            height: 50,
+                                          ),
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          InkWell(
+                                            onTap: (() async {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(true);
 
                                               http.Response response =
                                                   await http.post(
                                                 Uri.parse(
-                                                    "${Keys.apiUsersBaseUrl}/login"),
+                                                  "${Keys.apiUsersBaseUrl}/cancelResetPass/$resetToken/$uid",
+                                                ),
                                                 headers: {
                                                   "content-type":
                                                       "application/json",
-                                                  // 'Authorization':
-                                                  //     'Bearer $token',
                                                 },
-                                                body: jsonEncode({
-                                                  Keys.uid: _emailController
-                                                      .text
-                                                      .trim()
-                                                      .split('@')[0],
-                                                  Keys.usrPassword:
-                                                      _passController.text
-                                                          .trim(),
-                                                  Keys.usrEmail:
-                                                      _emailController.text
-                                                          .trim(),
-                                                  Keys.notificationToken:
-                                                      notificationToken,
-                                                }),
                                               );
-
-                                              log(response.body);
 
                                               if (response.statusCode == 200) {
                                                 Map<String, dynamic>
                                                     responseJson =
                                                     jsonDecode(response.body);
+
                                                 log(responseJson.toString());
-
                                                 if (responseJson["success"]) {
-                                                  // StorageServices
-                                                  //     .setNotificationToken(
-                                                  //         responseJson[Keys
-                                                  //             .notificationToken]);
-
-                                                  StorageServices.setUsrName(
-                                                      "${responseJson[Keys.data][Keys.usrFirstName]} ${responseJson[Keys.data][Keys.usrLastName]}");
-
-                                                  StorageServices.setUID(
-                                                      responseJson[Keys.data]
-                                                          [Keys.uid]);
-
-                                                  StorageServices.setUsrEmail(
-                                                      responseJson[Keys.data]
-                                                          [Keys.usrEmail]);
-
-                                                  StorageServices.setUsrToken(
-                                                      responseJson[Keys.token]);
-
-                                                  StorageServices
-                                                      .setUsrDescription(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][Keys
-                                                              .usrDescription]);
-
-                                                  StorageServices
-                                                      .setUsrProfilePic(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][Keys
-                                                              .usrProfilePic]);
-
-                                                  StorageServices
-                                                      .setUsrProfession(
-                                                          responseJson[
-                                                              Keys
-                                                                  .data][Keys
-                                                              .usrProfession]);
-
-                                                  if (responseJson[Keys.data]
-                                                              [Keys.hasBloc] ==
-                                                          1 ||
-                                                      responseJson[Keys.data]
-                                                              [Keys.hasBloc] ==
-                                                          true) {
-                                                    StorageServices
-                                                        .setUsrHasBloc(true);
-                                                  } else {
-                                                    StorageServices
-                                                        .setUsrHasBloc(false);
-                                                  }
-                                                  StorageServices.setUsrBlocID(
-                                                      responseJson[Keys.data]
-                                                              [Keys.blocID] ??
-                                                          "");
-
-                                                  StorageServices.setUsrBlocName(
-                                                      responseJson[Keys.data]
-                                                              [Keys.blocName] ??
-                                                          "");
-
-                                                  StorageServices.setSignStatus(
-                                                      true);
-                                                  StorageServices.setSignInType(
-                                                      Keys.email);
-
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(
@@ -1277,331 +1589,102 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     ),
                                                   );
 
-                                                  Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder:
-                                                          (nextPageContext) =>
-                                                              const MainScreen(),
-                                                    ),
-                                                  );
-                                                } else {
-                                                  _emailController.clear();
-                                                  _passController.clear();
                                                   setState(() {
-                                                    signPage = 0;
+                                                    signPage = 1;
                                                   });
+                                                  _passController.clear();
+                                                  _passConfirmController
+                                                      .clear();
+                                                } else {
                                                   ScaffoldMessenger.of(
                                                           allAppProvidersContext)
                                                       .showSnackBar(
                                                     AppSnackbar()
                                                         .customizedAppSnackbar(
                                                       message: responseJson[
-                                                          "message"],
+                                                          Keys.message],
                                                       context:
                                                           allAppProvidersContext,
                                                     ),
                                                   );
                                                 }
-                                              }
-
-                                              if (response.statusCode == 403) {
-                                                Map<String, dynamic>
-                                                    responseJson =
-                                                    jsonDecode(response.body);
-                                                signPage = 4;
-                                                verificationToken =
-                                                    responseJson[
-                                                        "verificationToken"];
-                                                otp = responseJson["otp"];
-                                                setState(() {});
-
+                                              } else {
                                                 ScaffoldMessenger.of(
                                                         allAppProvidersContext)
                                                     .showSnackBar(
                                                   AppSnackbar()
                                                       .customizedAppSnackbar(
-                                                    message: responseJson[
-                                                        Keys.message],
+                                                    message:
+                                                        "Something went wrong, please try after sometime",
                                                     context:
                                                         allAppProvidersContext,
                                                   ),
                                                 );
-
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(false);
                                               }
 
-                                              if (response.statusCode == 404) {
-                                                Map<String, dynamic>
-                                                    responseJson =
-                                                    jsonDecode(response.body);
-                                                ScaffoldMessenger.of(
-                                                        allAppProvidersContext)
-                                                    .showSnackBar(
-                                                  AppSnackbar()
-                                                      .customizedAppSnackbar(
-                                                    message: responseJson[
-                                                        Keys.message],
-                                                    context:
-                                                        allAppProvidersContext,
-                                                  ),
-                                                );
-
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(false);
-                                              }
-                                            } else {
                                               allAppProvidersProvider
                                                   .isLoadingFunc(false);
-                                              ScaffoldMessenger.of(
-                                                      allAppProvidersContext)
-                                                  .showSnackBar(
-                                                AppSnackbar()
-                                                    .customizedAppSnackbar(
-                                                  message:
-                                                      "Please fill the fields correctly",
-                                                  context:
-                                                      allAppProvidersContext,
-                                                ),
-                                              );
-                                            }
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
-                                          }),
-                                          child: Container(
-                                            height: 50,
-                                            width: size.width / 2,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: AppColors.blackLow
-                                                      .withOpacity(0.5),
-                                                  blurRadius: 10,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Center(
-                                              child: Text(
-                                                "Login",
-                                                style: TextStyle(
-                                                  color: AppColors
-                                                      .backgroundColour,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                              // const Center(
-                              //   child: Text(
-                              //     "or",
-                              //     style: TextStyle(
-                              //       color: AppColors.white,
-                              //       fontSize: 15,
-                              //     ),
-                              //   ),
-                              // ),
-                              // Padding(
-                              //   padding: const EdgeInsets.only(
-                              //     top: 10,
-                              //     bottom: 10,
-                              //     left: 20,
-                              //     right: 20,
-                              //   ),
-                              //   child: Column(
-                              //     crossAxisAlignment:
-                              //         CrossAxisAlignment.stretch,
-                              //     children: [
-                              //       Row(
-                              //         mainAxisAlignment:
-                              //             MainAxisAlignment.center,
-                              //         children: [
-                              //           CompanyAuth(
-                              //             logo: "assets/google-logo.png",
-                              //             onTap: (() async {
-                              //               allAppProvidersProvider
-                              //                   .isLoadingFunc(true);
-                              //               const CircularProgressIndicator(
-                              //                 color: AppColors.backgroundColour,
-                              //               );
-                              //               await googleSignIn(context);
-                              //               allAppProvidersProvider
-                              //                   .isLoadingFunc(false);
-                              //             }),
-                              //           ),
-                              //           SizedBox(
-                              //             width: size.width / 10,
-                              //           ),
-                              //           CompanyAuth(
-                              //             logo: "assets/apple-logo.png",
-                              //             onTap: (() {
-                              //               if (!Platform.isIOS ||
-                              //                   !Platform.isMacOS) {
-                              //                 ScaffoldMessenger.of(
-                              //                         allAppProvidersContext)
-                              //                     .showSnackBar(
-                              //                   AppSnackbar()
-                              //                       .customizedAppSnackbar(
-                              //                     message:
-                              //                         "Your device is not a iOS or macOS device",
-                              //                     context:
-                              //                         allAppProvidersContext,
-                              //                   ),
-                              //                 );
-                              //               }
-                              //             }),
-                              //           ),
-                              //         ],
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-                              if (signPage == 0)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Already have an account?",
-                                      style: TextStyle(
-                                        color:
-                                            AppColors.blackLow.withOpacity(0.5),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: (() {
-                                        allAppProvidersProvider
-                                            .isLoadingFunc(false);
-                                        _emailController.clear();
-                                        _passController.clear();
-                                        _firstNameController.clear();
-                                        _lastNameController.clear();
-                                        _passConfirmController.clear();
-                                        _desController.clear();
-                                        _value = "0";
-                                        selectedImage = null;
-                                        selected = false;
-                                        setState(() {
-                                          signPage = 1;
-                                        });
-                                      }),
-                                      child: const Text(
-                                        "Login",
-                                        style: TextStyle(
-                                          color: AppColors.backgroundColour,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              if (signPage == 1)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      "Don't have any account?",
-                                      style: TextStyle(
-                                        color: AppColors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: (() {
-                                        setState(() {
-                                          signPage = 0;
-                                        });
-                                        allAppProvidersProvider
-                                            .isLoadingFunc(false);
-                                        _emailController.clear();
-                                        _passController.clear();
-                                      }),
-                                      child: const Text(
-                                        "SignUp",
-                                        style: TextStyle(
-                                          color: AppColors.backgroundColour,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              if (signPage == 2)
-                                AuthTextField(
-                                  controller: _passController,
-                                  hintText: "New Password",
-                                  keyboard: TextInputType.visiblePassword,
-                                  isPassField: true,
-                                  isEmailField: false,
-                                  isPassConfirmField: false,
-                                  icon: Icons.password,
-                                  pageIndex: 2,
-                                ),
-                              if (signPage == 2)
-                                AuthTextField(
-                                  controller: _passConfirmController,
-                                  hintText: "Confirm Password",
-                                  keyboard: TextInputType.visiblePassword,
-                                  isPassField: false,
-                                  isEmailField: false,
-                                  isPassConfirmField: true,
-                                  icon: Icons.password,
-                                  pageIndex: 2,
-                                ),
-
-                              if (signPage == 2)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 30),
-                                  child: (allAppProvidersProvider.isLoading)
-                                      ? Container(
-                                          height: 50,
-                                          width: size.width / 2,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: AppColors.blackLow
-                                                    .withOpacity(0.5),
-                                                blurRadius: 10,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Lottie.asset(
-                                              "assets/loading-animation.json",
-                                              width: 100,
+                                            }),
+                                            child: Container(
                                               height: 50,
+                                              width: size.width / 3,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: AppColors.blackLow
+                                                        .withOpacity(0.5),
+                                                    blurRadius: 10,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const Center(
+                                                child: Text(
+                                                  "Cancel",
+                                                  style: TextStyle(
+                                                    color: AppColors
+                                                        .backgroundColour,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 17,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            InkWell(
-                                              onTap: (() async {
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(true);
-
+                                          InkWell(
+                                            onTap: (() async {
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(true);
+                                              if (_passController
+                                                      .text.isNotEmpty &&
+                                                  _passConfirmController
+                                                      .text.isNotEmpty &&
+                                                  _passController.text ==
+                                                      _passConfirmController
+                                                          .text) {
+                                                log(uid);
+                                                log(resetToken);
                                                 http.Response response =
                                                     await http.post(
                                                   Uri.parse(
-                                                    "${Keys.apiUsersBaseUrl}/cancelResetPass/$resetToken/$uid",
+                                                    "${Keys.apiUsersBaseUrl}/updateUserPassword",
                                                   ),
                                                   headers: {
                                                     "content-type":
                                                         "application/json",
                                                   },
+                                                  body: jsonEncode({
+                                                    "usrPassword":
+                                                        _passController.text
+                                                            .trim(),
+                                                    "resetToken": resetToken,
+                                                    Keys.usrEmail:
+                                                        _emailController.text
+                                                            .trim(),
+                                                    Keys.uid: uid,
+                                                  }),
                                                 );
 
                                                 if (response.statusCode ==
@@ -1612,25 +1695,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                                                   log(responseJson.toString());
                                                   if (responseJson["success"]) {
+                                                    setState(() {
+                                                      signPage = 1;
+                                                    });
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
                                                         .showSnackBar(
                                                       AppSnackbar()
                                                           .customizedAppSnackbar(
-                                                        message: responseJson[
-                                                            Keys.message],
+                                                        message:
+                                                            "${responseJson[Keys.message]}\nTry to login",
                                                         context:
                                                             allAppProvidersContext,
                                                       ),
                                                     );
-
-                                                    setState(() {
-                                                      signPage = 1;
-                                                    });
                                                     _passController.clear();
                                                     _passConfirmController
                                                         .clear();
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
                                                   } else {
+                                                    allAppProvidersProvider
+                                                        .isLoadingFunc(false);
                                                     ScaffoldMessenger.of(
                                                             allAppProvidersContext)
                                                         .showSnackBar(
@@ -1638,368 +1724,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                           .customizedAppSnackbar(
                                                         message: responseJson[
                                                             Keys.message],
-                                                        context:
-                                                            allAppProvidersContext,
-                                                      ),
-                                                    );
-                                                  }
-                                                } else {
-                                                  ScaffoldMessenger.of(
-                                                          allAppProvidersContext)
-                                                      .showSnackBar(
-                                                    AppSnackbar()
-                                                        .customizedAppSnackbar(
-                                                      message:
-                                                          "Something went wrong, please try after sometime",
-                                                      context:
-                                                          allAppProvidersContext,
-                                                    ),
-                                                  );
-                                                }
-
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(false);
-                                              }),
-                                              child: Container(
-                                                height: 50,
-                                                width: size.width / 3,
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: AppColors.blackLow
-                                                          .withOpacity(0.5),
-                                                      blurRadius: 10,
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: const Center(
-                                                  child: Text(
-                                                    "Cancel",
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .backgroundColour,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 17,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            InkWell(
-                                              onTap: (() async {
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(true);
-                                                if (_passController
-                                                        .text.isNotEmpty &&
-                                                    _passConfirmController
-                                                        .text.isNotEmpty &&
-                                                    _passController.text ==
-                                                        _passConfirmController
-                                                            .text) {
-                                                  log(uid);
-                                                  log(resetToken);
-                                                  http.Response response =
-                                                      await http.post(
-                                                    Uri.parse(
-                                                      "${Keys.apiUsersBaseUrl}/updateUserPassword",
-                                                    ),
-                                                    headers: {
-                                                      "content-type":
-                                                          "application/json",
-                                                    },
-                                                    body: jsonEncode({
-                                                      "usrPassword":
-                                                          _passController.text
-                                                              .trim(),
-                                                      "resetToken": resetToken,
-                                                      Keys.usrEmail:
-                                                          _emailController.text
-                                                              .trim(),
-                                                      Keys.uid: uid,
-                                                    }),
-                                                  );
-
-                                                  if (response.statusCode ==
-                                                      200) {
-                                                    Map<String, dynamic>
-                                                        responseJson =
-                                                        jsonDecode(
-                                                            response.body);
-
-                                                    log(responseJson
-                                                        .toString());
-                                                    if (responseJson[
-                                                        "success"]) {
-                                                      setState(() {
-                                                        signPage = 1;
-                                                      });
-                                                      ScaffoldMessenger.of(
-                                                              allAppProvidersContext)
-                                                          .showSnackBar(
-                                                        AppSnackbar()
-                                                            .customizedAppSnackbar(
-                                                          message:
-                                                              "${responseJson[Keys.message]}\nTry to login",
-                                                          context:
-                                                              allAppProvidersContext,
-                                                        ),
-                                                      );
-                                                      _passController.clear();
-                                                      _passConfirmController
-                                                          .clear();
-                                                      allAppProvidersProvider
-                                                          .isLoadingFunc(false);
-                                                    } else {
-                                                      allAppProvidersProvider
-                                                          .isLoadingFunc(false);
-                                                      ScaffoldMessenger.of(
-                                                              allAppProvidersContext)
-                                                          .showSnackBar(
-                                                        AppSnackbar()
-                                                            .customizedAppSnackbar(
-                                                          message: responseJson[
-                                                              Keys.message],
-                                                          context:
-                                                              allAppProvidersContext,
-                                                        ),
-                                                      );
-                                                    }
-                                                  } else {
-                                                    allAppProvidersProvider
-                                                        .isLoadingFunc(false);
-                                                    ScaffoldMessenger.of(
-                                                            allAppProvidersContext)
-                                                        .showSnackBar(
-                                                      AppSnackbar()
-                                                          .customizedAppSnackbar(
-                                                        message: response
-                                                            .statusCode
-                                                            .toString(),
-                                                        context:
-                                                            allAppProvidersContext,
-                                                      ),
-                                                    );
-                                                  }
-
-                                                  allAppProvidersProvider
-                                                      .isLoadingFunc(false);
-                                                } else {
-                                                  ScaffoldMessenger.of(
-                                                          allAppProvidersContext)
-                                                      .showSnackBar(
-                                                    AppSnackbar()
-                                                        .customizedAppSnackbar(
-                                                      message:
-                                                          "Please fill the fields correctly",
-                                                      context:
-                                                          allAppProvidersContext,
-                                                    ),
-                                                  );
-                                                }
-
-                                                allAppProvidersProvider
-                                                    .isLoadingFunc(false);
-                                              }),
-                                              child: Container(
-                                                height: 50,
-                                                width: size.width / 3,
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.white,
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: AppColors.blackLow
-                                                          .withOpacity(0.5),
-                                                      blurRadius: 10,
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: const Center(
-                                                  child: Text(
-                                                    "Submit",
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .backgroundColour,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 17,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                ),
-
-                              if (signPage == 4)
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 25,
-                                      top: 30,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          "OTP Verification",
-                                          style: TextStyle(
-                                            color: AppColors.white,
-                                            fontSize: 25,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(
-                                          "Please enter the OTP send to ${_emailController.text.trim()}",
-                                          style: TextStyle(
-                                              color: AppColors.white
-                                                  .withOpacity(0.8),
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300,
-                                              overflow: TextOverflow.clip),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              if (signPage == 4)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 10,
-                                    right: 10,
-                                  ),
-                                  child: AuthTextField(
-                                    controller: _otpController,
-                                    hintText: "OTP",
-                                    keyboard: TextInputType.number,
-                                    isPassField: false,
-                                    isEmailField: false,
-                                    isPassConfirmField: false,
-                                    icon: Icons.password,
-                                    pageIndex: 4,
-                                    maxLen: 8,
-                                  ),
-                                ),
-                              if (signPage == 4)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 20,
-                                    left: 15,
-                                    right: 15,
-                                    bottom: 10,
-                                  ),
-                                  child: (allAppProvidersProvider.isLoading)
-                                      ? Container(
-                                          height: 50,
-                                          width: size.width / 2,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.white,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: AppColors.blackLow
-                                                    .withOpacity(0.5),
-                                                blurRadius: 10,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Center(
-                                            child: Lottie.asset(
-                                              "assets/loading-animation.json",
-                                              width: 100,
-                                              height: 50,
-                                            ),
-                                          ),
-                                        )
-                                      : InkWell(
-                                          onTap: (() async {
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(true);
-                                            const CircularProgressIndicator(
-                                              backgroundColor:
-                                                  AppColors.backgroundColour,
-                                            );
-                                            if (_otpController
-                                                .text.isNotEmpty) {
-                                              // EmailPassAuthServices()
-                                              //     .emailPassSignIn(
-                                              //   email: _emailController.text
-                                              //       .trim(),
-                                              //   pass:
-                                              //       _passController.text.trim(),
-                                              //   context: allAppProvidersContext,
-                                              // );
-
-                                              // String token =
-                                              //     await StorageServices
-                                              //         .getUsrToken();
-
-                                              log(otp.toString());
-                                              if (_otpController.text.trim() ==
-                                                  otp.toString()) {
-                                                http.Response response =
-                                                    await http.post(
-                                                  Uri.parse(
-                                                      "${Keys.apiUsersBaseUrl}/verification/${_emailController.text.trim().split('@')[0]}/$verificationToken/$otp"),
-                                                  headers: {
-                                                    "content-type":
-                                                        "application/json",
-                                                    // 'Authorization':
-                                                    //     'Bearer $token',
-                                                  },
-                                                );
-
-                                                log(response.body);
-
-                                                if (response.statusCode ==
-                                                    200) {
-                                                  Map<String, dynamic>
-                                                      responseJson =
-                                                      jsonDecode(response.body);
-                                                  log(responseJson.toString());
-                                                  allAppProvidersProvider
-                                                      .isLoadingFunc(false);
-
-                                                  if (responseJson["success"]) {
-                                                    setState(() {
-                                                      signPage = 1;
-                                                    });
-                                                    _otpController.clear();
-                                                    allAppProvidersProvider
-                                                        .isLoadingFunc(false);
-                                                    ScaffoldMessenger.of(
-                                                            allAppProvidersContext)
-                                                        .showSnackBar(
-                                                      AppSnackbar()
-                                                          .customizedAppSnackbar(
-                                                        message: responseJson[
-                                                            "message"],
-                                                        context:
-                                                            allAppProvidersContext,
-                                                      ),
-                                                    );
-                                                  } else {
-                                                    allAppProvidersProvider
-                                                        .isLoadingFunc(false);
-                                                    ScaffoldMessenger.of(
-                                                            allAppProvidersContext)
-                                                        .showSnackBar(
-                                                      AppSnackbar()
-                                                          .customizedAppSnackbar(
-                                                        message: responseJson[
-                                                            "message"],
                                                         context:
                                                             allAppProvidersContext,
                                                       ),
@@ -2021,6 +1745,224 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     ),
                                                   );
                                                 }
+
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+                                              } else {
+                                                ScaffoldMessenger.of(
+                                                        allAppProvidersContext)
+                                                    .showSnackBar(
+                                                  AppSnackbar()
+                                                      .customizedAppSnackbar(
+                                                    message:
+                                                        "Please fill the fields correctly",
+                                                    context:
+                                                        allAppProvidersContext,
+                                                  ),
+                                                );
+                                              }
+
+                                              allAppProvidersProvider
+                                                  .isLoadingFunc(false);
+                                            }),
+                                            child: Container(
+                                              height: 50,
+                                              width: size.width / 3,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: AppColors.blackLow
+                                                        .withOpacity(0.5),
+                                                    blurRadius: 10,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: const Center(
+                                                child: Text(
+                                                  "Submit",
+                                                  style: TextStyle(
+                                                    color: AppColors
+                                                        .backgroundColour,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 17,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+
+                            if (signPage == 4)
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 25,
+                                    top: 30,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "OTP Verification",
+                                        style: TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        "Please enter the OTP send to ${_emailController.text.trim()}",
+                                        style: TextStyle(
+                                            color: AppColors.white
+                                                .withOpacity(0.8),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w300,
+                                            overflow: TextOverflow.clip),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            if (signPage == 4)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 10,
+                                  right: 10,
+                                ),
+                                child: AuthTextField(
+                                  controller: _otpController,
+                                  hintText: "OTP",
+                                  keyboard: TextInputType.number,
+                                  isPassField: false,
+                                  isEmailField: false,
+                                  isPassConfirmField: false,
+                                  icon: Icons.password,
+                                  pageIndex: 4,
+                                  maxLen: 8,
+                                ),
+                              ),
+                            if (signPage == 4)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 20,
+                                  left: 15,
+                                  right: 15,
+                                  bottom: 10,
+                                ),
+                                child: (allAppProvidersProvider.isLoading)
+                                    ? Container(
+                                        height: 50,
+                                        width: size.width / 2,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.blackLow
+                                                  .withOpacity(0.5),
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Center(
+                                          child: Lottie.asset(
+                                            "assets/loading-animation.json",
+                                            width: 100,
+                                            height: 50,
+                                          ),
+                                        ),
+                                      )
+                                    : InkWell(
+                                        onTap: (() async {
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(true);
+                                          const CircularProgressIndicator(
+                                            backgroundColor:
+                                                AppColors.backgroundColour,
+                                          );
+                                          if (_otpController.text.isNotEmpty) {
+                                            // EmailPassAuthServices()
+                                            //     .emailPassSignIn(
+                                            //   email: _emailController.text
+                                            //       .trim(),
+                                            //   pass:
+                                            //       _passController.text.trim(),
+                                            //   context: allAppProvidersContext,
+                                            // );
+
+                                            // String token =
+                                            //     await StorageServices
+                                            //         .getUsrToken();
+
+                                            log(otp.toString());
+                                            if (_otpController.text.trim() ==
+                                                otp.toString()) {
+                                              http.Response response =
+                                                  await http.post(
+                                                Uri.parse(
+                                                    "${Keys.apiUsersBaseUrl}/verification/${_emailController.text.trim().split('@')[0]}/$verificationToken/$otp"),
+                                                headers: {
+                                                  "content-type":
+                                                      "application/json",
+                                                  // 'Authorization':
+                                                  //     'Bearer $token',
+                                                },
+                                              );
+
+                                              log(response.body);
+
+                                              if (response.statusCode == 200) {
+                                                Map<String, dynamic>
+                                                    responseJson =
+                                                    jsonDecode(response.body);
+                                                log(responseJson.toString());
+                                                allAppProvidersProvider
+                                                    .isLoadingFunc(false);
+
+                                                if (responseJson["success"]) {
+                                                  setState(() {
+                                                    signPage = 1;
+                                                  });
+                                                  _otpController.clear();
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: responseJson[
+                                                          "message"],
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  allAppProvidersProvider
+                                                      .isLoadingFunc(false);
+                                                  ScaffoldMessenger.of(
+                                                          allAppProvidersContext)
+                                                      .showSnackBar(
+                                                    AppSnackbar()
+                                                        .customizedAppSnackbar(
+                                                      message: responseJson[
+                                                          "message"],
+                                                      context:
+                                                          allAppProvidersContext,
+                                                    ),
+                                                  );
+                                                }
                                               } else {
                                                 allAppProvidersProvider
                                                     .isLoadingFunc(false);
@@ -2029,8 +1971,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                     .showSnackBar(
                                                   AppSnackbar()
                                                       .customizedAppSnackbar(
-                                                    message:
-                                                        "Please check your OTP",
+                                                    message: response.statusCode
+                                                        .toString(),
                                                     context:
                                                         allAppProvidersContext,
                                                   ),
@@ -2045,99 +1987,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 AppSnackbar()
                                                     .customizedAppSnackbar(
                                                   message:
-                                                      "Please enter the OTP",
+                                                      "Please check your OTP",
                                                   context:
                                                       allAppProvidersContext,
                                                 ),
                                               );
                                             }
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
-                                          }),
-                                          child: Container(
-                                            height: 50,
-                                            width: size.width / 2,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: AppColors.blackLow
-                                                      .withOpacity(0.5),
-                                                  blurRadius: 10,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Center(
-                                              child: Text(
-                                                "Submit",
-                                                style: TextStyle(
-                                                  color: AppColors
-                                                      .backgroundColour,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 17,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                ),
-                              if (signPage == 4)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Any problem with OTP?",
-                                      style: TextStyle(
-                                        color:
-                                            AppColors.blackLow.withOpacity(0.5),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: (() async {
-                                        allAppProvidersProvider
-                                            .isLoadingFunc(true);
-                                        _otpController.clear();
-                                        http.Response response =
-                                            await http.post(
-                                          Uri.parse(
-                                              "${Keys.apiUsersBaseUrl}/resendOTP/${_emailController.text.trim()}/${_emailController.text.trim().split('@')[0]}/$verificationToken"),
-                                          headers: {
-                                            "content-type": "application/json",
-                                            // 'Authorization':
-                                            //     'Bearer $token',
-                                          },
-                                        );
-
-                                        log(response.body);
-
-                                        if (response.statusCode == 200) {
-                                          Map<String, dynamic> responseJson =
-                                              jsonDecode(response.body);
-                                          log(responseJson.toString());
-                                          allAppProvidersProvider
-                                              .isLoadingFunc(false);
-
-                                          if (responseJson["success"]) {
-                                            verificationToken = responseJson[
-                                                "verificationToken"];
-                                            otp = responseJson["otp"];
-                                            setState(() {});
-                                            allAppProvidersProvider
-                                                .isLoadingFunc(false);
-                                            _otpController.clear();
-                                            ScaffoldMessenger.of(
-                                                    allAppProvidersContext)
-                                                .showSnackBar(
-                                              AppSnackbar()
-                                                  .customizedAppSnackbar(
-                                                message:
-                                                    responseJson["message"],
-                                                context: allAppProvidersContext,
-                                              ),
-                                            );
                                           } else {
                                             allAppProvidersProvider
                                                 .isLoadingFunc(false);
@@ -2146,12 +2001,95 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 .showSnackBar(
                                               AppSnackbar()
                                                   .customizedAppSnackbar(
-                                                message:
-                                                    responseJson["message"],
+                                                message: "Please enter the OTP",
                                                 context: allAppProvidersContext,
                                               ),
                                             );
                                           }
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
+                                        }),
+                                        child: Container(
+                                          height: 50,
+                                          width: size.width / 2,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.blackLow
+                                                    .withOpacity(0.5),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Center(
+                                            child: Text(
+                                              "Submit",
+                                              style: TextStyle(
+                                                color:
+                                                    AppColors.backgroundColour,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 17,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            if (signPage == 4)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Any problem with OTP?",
+                                    style: TextStyle(
+                                      color:
+                                          AppColors.blackLow.withOpacity(0.5),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: (() async {
+                                      allAppProvidersProvider
+                                          .isLoadingFunc(true);
+                                      _otpController.clear();
+                                      http.Response response = await http.post(
+                                        Uri.parse(
+                                            "${Keys.apiUsersBaseUrl}/resendOTP/${_emailController.text.trim()}/${_emailController.text.trim().split('@')[0]}/$verificationToken"),
+                                        headers: {
+                                          "content-type": "application/json",
+                                          // 'Authorization':
+                                          //     'Bearer $token',
+                                        },
+                                      );
+
+                                      log(response.body);
+
+                                      if (response.statusCode == 200) {
+                                        Map<String, dynamic> responseJson =
+                                            jsonDecode(response.body);
+                                        log(responseJson.toString());
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
+
+                                        if (responseJson["success"]) {
+                                          verificationToken =
+                                              responseJson["verificationToken"];
+                                          otp = responseJson["otp"];
+                                          setState(() {});
+                                          allAppProvidersProvider
+                                              .isLoadingFunc(false);
+                                          _otpController.clear();
+                                          ScaffoldMessenger.of(
+                                                  allAppProvidersContext)
+                                              .showSnackBar(
+                                            AppSnackbar().customizedAppSnackbar(
+                                              message: responseJson["message"],
+                                              context: allAppProvidersContext,
+                                            ),
+                                          );
                                         } else {
                                           allAppProvidersProvider
                                               .isLoadingFunc(false);
@@ -2159,37 +2097,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                   allAppProvidersContext)
                                               .showSnackBar(
                                             AppSnackbar().customizedAppSnackbar(
-                                              message: response.statusCode
-                                                  .toString(),
+                                              message: responseJson["message"],
                                               context: allAppProvidersContext,
                                             ),
                                           );
                                         }
-                                      }),
-                                      child: const Text(
-                                        "Resend it",
-                                        style: TextStyle(
-                                          color: AppColors.backgroundColour,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                        ),
+                                      } else {
+                                        allAppProvidersProvider
+                                            .isLoadingFunc(false);
+                                        ScaffoldMessenger.of(
+                                                allAppProvidersContext)
+                                            .showSnackBar(
+                                          AppSnackbar().customizedAppSnackbar(
+                                            message:
+                                                response.statusCode.toString(),
+                                            context: allAppProvidersContext,
+                                          ),
+                                        );
+                                      }
+                                    }),
+                                    child: const Text(
+                                      "Resend it",
+                                      style: TextStyle(
+                                        color: AppColors.backgroundColour,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
                                       ),
                                     ),
-                                  ],
-                                ),
-                            ],
-                          ),
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
