@@ -113,37 +113,34 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: AppColors.mainColor,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              "assets/logo-first-splash.png",
-              scale: 1,
-              height: MediaQuery.of(context).size.height / 3,
-              opacity: _animation,
+    return Scaffold(
+      backgroundColor: AppColors.mainColor,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            "assets/logo-first-splash.png",
+            scale: 1,
+            height: MediaQuery.of(context).size.height / 3,
+            opacity: _animation,
+          ),
+          TextLiquidFill(
+            loadDuration: const Duration(seconds: 3),
+            waveDuration: const Duration(seconds: 2),
+            boxHeight: MediaQuery.of(context).size.height / 10,
+            boxWidth: MediaQuery.of(context).size.width,
+            waveColor: Colors.white,
+            boxBackgroundColor: AppColors.mainColor,
+            text: 'Achivie',
+            textStyle: const TextStyle(
+              letterSpacing: 7,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 40,
             ),
-            TextLiquidFill(
-              loadDuration: const Duration(seconds: 3),
-              waveDuration: const Duration(seconds: 2),
-              boxHeight: MediaQuery.of(context).size.height / 10,
-              boxWidth: MediaQuery.of(context).size.width,
-              waveColor: Colors.white,
-              boxBackgroundColor: AppColors.mainColor,
-              text: 'Achivie',
-              textStyle: const TextStyle(
-                letterSpacing: 7,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 40,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

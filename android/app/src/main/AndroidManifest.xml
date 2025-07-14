@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
 <!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
 <!--    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+<!--    <uses-permission android:name="android.permission.RECORD_AUDIO"/>-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 <!--    <uses-permission android:name="android.permission.SEND_SMS"/>-->
@@ -15,7 +16,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 <!--    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>-->
-<!--    <uses-permission android:name="android.permission.CALL_PHONE"/>-->
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
@@ -54,6 +56,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="true"/>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" android:host="achivie.com" android:pathPattern="/.."/>
+                <data android:scheme="https"/>
+            </intent-filter>
         </activity>
 
 
@@ -68,6 +79,11 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7050103229809241~5474149923"/>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="sponsor_channel" />
+
 
         <service android:name="com.gomes.nowplaying.NowPlayingListenerService"
             android:label="Play song"

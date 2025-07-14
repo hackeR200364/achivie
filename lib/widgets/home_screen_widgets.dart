@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 // import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:achivie/services/shared_preferences.dart';
 import 'package:connectivity_widget/connectivity_widget.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
@@ -129,6 +130,10 @@ class FocusedMenuTileChildContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(
+        top: 5,
+        bottom: 5,
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: 15,
         vertical: 15,
@@ -589,11 +594,11 @@ class TaskUnDoneDialogChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TaskDialog(
+    return const TaskDialog(
       animation: "assets/cancel-undone-animation.json",
       headMessage: "Canceled!",
       subMessage: "Your this task is canceled",
-      subMessageBottomDivision: 5,
+      // subMessageBottomDivision: 5,
     );
   }
 }
@@ -732,10 +737,6 @@ class CustomTabBarItems extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width / 5,
       height: 25,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 5,
-      ),
       decoration: BoxDecoration(
         border: Border.all(
           color: AppColors.backgroundColour,
@@ -994,48 +995,97 @@ class _CustomFloatingActionButtonChildState
   }
 }
 
-class CustomHomeScreenAppBarTitle extends StatelessWidget {
+class CustomHomeScreenAppBarTitle extends StatefulWidget {
   const CustomHomeScreenAppBarTitle({
     super.key,
     required this.date,
+    required this.expandable,
+    required this.expandedNotifier,
   });
 
   final DateTime date;
+  final void Function(bool status) expandable;
+  final ValueNotifier<bool> expandedNotifier;
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<UserDetailsProvider>(
-      builder: (_, userDetailsProviderProvider, userDetailsProviderChild) {
-        Future.delayed(
-          Duration.zero,
-          (() {
-            userDetailsProviderProvider.userNameFunc();
-          }),
-        );
-        return CustomHomeScreenAppBarTitleChild(
-          date: date,
-          userDetailsProviderProvider: userDetailsProviderProvider,
-        );
-      },
-    );
-  }
+  State<CustomHomeScreenAppBarTitle> createState() =>
+      _CustomHomeScreenAppBarTitleState();
 }
 
-class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
-  const CustomHomeScreenAppBarTitleChild({
-    super.key,
-    required this.date,
-    required this.userDetailsProviderProvider,
-  });
+class _CustomHomeScreenAppBarTitleState
+    extends State<CustomHomeScreenAppBarTitle> {
+  String name = '', image = "", email = "";
+  int rate = 0;
 
-  final DateTime date;
-  final UserDetailsProvider userDetailsProviderProvider;
+  void getUserDetails() async {
+    name = await StorageServices.getUsrName();
+    image = await StorageServices.getUsrProfilePic();
+    email = await StorageServices.getUsrEmail();
+    await completionRate();
+    log(image);
+  }
+
+  Future<void> completionRate() async {
+    // ((totalDone / (totalTasks - totalDelete)) * 100).round();
+
+    String uid = await StorageServices.getUID();
+    String token = await StorageServices.getUsrToken();
+
+    http.Response response = await http.get(
+        Uri.parse("${Keys.apiUsersBaseUrl}/completionRate/$uid"),
+        headers: {
+          "content-type": "application/json",
+          'Authorization': 'Bearer $token',
+        });
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      // log(responseJson.toString());
+      if (responseJson["success"]) {
+        rate = responseJson["completionRate"];
+        setState(() {});
+      }
+    }
+  }
+
+  bool expanded = false;
+
+  @override
+  void initState() {
+    getUserDetails();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.center,
       child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            widget.expandable(false);
+            setState(() {
+              expanded = false;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+          if (details.delta.dy > 0) {
+            widget.expandable(true);
+            setState(() {
+              expanded = true;
+            });
+            widget.expandedNotifier.value = expanded;
+          }
+        },
+        onLongPress: (() {
+          HapticFeedback.lightImpact();
+          // _animationController.forward();
+          widget.expandable(true);
+          setState(() {
+            expanded = true;
+          });
+          widget.expandedNotifier.value = expanded;
+        }),
         onDoubleTap: (() {
           HapticFeedback.lightImpact();
           Navigator.push(
@@ -1045,27 +1095,229 @@ class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
             ),
           );
         }),
-        child: GlassmorphicContainer(
-          width: double.infinity,
-          height: 41,
-          borderRadius: 40,
-          linearGradient: AppColors.customGlassIconButtonGradient,
-          border: 2,
-          blur: 4,
-          borderGradient: AppColors.customGlassIconButtonBorderGradient,
+        onTap: expanded
+            ? (() {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (nextPageContext) => const ProfileScreen(),
+                  ),
+                );
+              })
+            : null,
+        child: AnimatedContainer(
+          width: MediaQuery.of(context).size.width,
+          height: expanded ? 80 : 45,
+          curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
+            gradient: AppColors.customGlassIconButtonGradient,
+            border: Border.all(
+              width: expanded ? 1 : 2,
+              color: AppColors.white.withOpacity(0.4),
+            ),
+          ),
+          duration: Duration(milliseconds: expanded ? 700 : 900),
           child: Center(
-            child: SingleChildScrollView(
-              physics: AppColors.scrollPhysics,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CustomHomeScreenAppBarTitleHeading(
-                    userDetailsProviderProvider: userDetailsProviderProvider,
+            child: (expanded)
+                ? Padding(
+                    padding: const EdgeInsets.only(
+                      left: 10,
+                      right: 10,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: AppColors.white,
+                          backgroundImage: NetworkImage(image),
+                          radius: 31,
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name.trim(),
+                              style: AppColors.headingTextStyle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(
+                              height: 3,
+                            ),
+                            Text(
+                              email.trim(),
+                              style: AppColors.subHeadingTextStyle,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(
+                              height: 3,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Completion rate: ",
+                                  style: AppColors.subHeadingTextStyle,
+                                ),
+                                if (rate <= 25)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (rate > 25 && rate <= 50)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.orange,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                if (rate > 50 && rate <= 100)
+                                  Text(
+                                    "${rate.toString()}%",
+                                    style: const TextStyle(
+                                      color: AppColors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomHomeScreenAppBarTitleHeading(
+                        name: name,
+                      ),
+                      CustomHomeScreenAppBarTitleSubHeading(
+                        date: widget.date,
+                      ),
+                    ],
                   ),
-                  CustomHomeScreenAppBarTitleSubHeading(
-                    date: date,
-                  ),
-                ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomHomeScreenAppBarTitleChild extends StatefulWidget {
+  const CustomHomeScreenAppBarTitleChild({
+    super.key,
+    required this.date,
+    required this.userDetailsProviderProvider,
+    required this.expandable,
+  });
+
+  final DateTime date;
+  final UserDetailsProvider userDetailsProviderProvider;
+  final Function(bool expanded) expandable;
+  @override
+  State<CustomHomeScreenAppBarTitleChild> createState() =>
+      _CustomHomeScreenAppBarTitleChildState();
+}
+
+class _CustomHomeScreenAppBarTitleChildState
+    extends State<CustomHomeScreenAppBarTitleChild>
+    with TickerProviderStateMixin {
+  bool expanded = false;
+  // Animatable<double>? expandHeight;
+  // late AnimationController _animationController;
+
+  @override
+  void initState() {
+    // // expandHeight = Tween<double>(begin: 41.0, end: 150.0);
+    // _animationController = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(milliseconds: 600), // Set the desired duration
+    // );
+    // expandHeight = TweenSequence<double>([
+    //   TweenSequenceItem<double>(
+    //     tween: Tween<double>(begin: 41.0, end: 150.0),
+    //     weight: 1.0,
+    //   ),
+    // ]);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            setState(() {
+              expanded = false;
+            });
+            widget.expandable(expanded);
+          }
+        },
+        onLongPress: (() {
+          HapticFeedback.lightImpact();
+          // _animationController.forward();
+          setState(() {
+            expanded = true;
+          });
+          widget.expandable(expanded);
+        }),
+        onDoubleTap: (() {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (nextPageContext) => const ProfileScreen(),
+            ),
+          );
+        }),
+        child: AnimatedContainer(
+          width: MediaQuery.of(context).size.width,
+          height: expanded ? 200 : 41,
+          curve: !expanded ? Curves.elasticOut : Curves.elasticOut,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
+            border: Border.all(
+              width: expanded ? 1 : 2,
+              color: AppColors.white.withOpacity(0.4),
+            ),
+          ),
+          duration: Duration(milliseconds: expanded ? 700 : 900),
+          child: GlassmorphicContainer(
+            width: double.infinity,
+            height: expanded ? 200 : 41, //150
+            borderRadius: 50,
+            linearGradient: AppColors.customGlassIconButtonGradient,
+            border: 0,
+            blur: 4,
+            borderGradient: expanded
+                ? AppColors.customGlassButtonTransparentGradient
+                : AppColors.customGlassIconButtonBorderGradient,
+            child: Center(
+              child: SingleChildScrollView(
+                physics: AppColors.scrollPhysics,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const CustomHomeScreenAppBarTitleHeading(
+                      name: "",
+                    ),
+                    CustomHomeScreenAppBarTitleSubHeading(
+                      date: widget.date,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1078,10 +1330,10 @@ class CustomHomeScreenAppBarTitleChild extends StatelessWidget {
 class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
   const CustomHomeScreenAppBarTitleHeading({
     super.key,
-    required this.userDetailsProviderProvider,
+    required this.name,
   });
 
-  final UserDetailsProvider userDetailsProviderProvider;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -1092,23 +1344,21 @@ class CustomHomeScreenAppBarTitleHeading extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (userDetailsProviderProvider.userName.trim().length <
-            (size.width / 35).round())
+        if (name.trim().length < (size.width / 35).round())
           Center(
             child: Text(
-              userDetailsProviderProvider.userName.trim(),
+              name.trim(),
               style: AppColors.headingTextStyle,
             ),
           ),
-        if (userDetailsProviderProvider.userName.trim().length >
-            (size.width / 35).round())
+        if (name.trim().length > (size.width / 35).round())
           SizedBox(
             width: MediaQuery.of(context).size.width,
             // height: 41 / 2.3,
             child: Center(
               child: flutter_marquee.Marquee(
                 textStyle: AppColors.headingTextStyle,
-                str: userDetailsProviderProvider.userName.trim(),
+                str: name.trim(),
                 containerWidth: MediaQuery.of(context).size.width,
               ),
             ),
@@ -1130,24 +1380,27 @@ class CustomHomeScreenAppBarTitleSubHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       "${DateFormat.MMMM().format(date)[0]}${DateFormat.MMMM().format(date)[1]}${DateFormat.MMMM().format(date)[2]} ${date.day.toString()}, ${date.year}",
-      style: AppColors.subHeadingTextStyle,
+      style: TextStyle(
+        color: AppColors.white.withOpacity(0.7),
+        fontSize: 12,
+      ),
     );
   }
 }
 
 class TaskDialog extends StatelessWidget {
-  TaskDialog({
+  const TaskDialog({
     super.key,
     required this.animation,
     required this.headMessage,
     required this.subMessage,
-    required this.subMessageBottomDivision,
+    // required this.subMessageBottomDivision,
   });
 
   final String animation;
   final String headMessage;
   final String subMessage;
-  int subMessageBottomDivision = 0;
+  // int subMessageBottomDivision = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -1221,7 +1474,7 @@ class TaskDialog extends StatelessWidget {
 }
 
 class _BarChart extends StatelessWidget {
-  _BarChart({
+  const _BarChart({
     required this.done,
     required this.personal,
     required this.pending,
@@ -1230,12 +1483,12 @@ class _BarChart extends StatelessWidget {
     required this.count,
   });
 
-  int deleted = 0;
-  int done = 0;
-  int pending = 0;
-  int business = 0;
-  int personal = 0;
-  int count = 0;
+  final int deleted;
+  final int done;
+  final int pending;
+  final int business;
+  final int personal;
+  final int count;
 
   @override
   Widget build(BuildContext context) {
@@ -1296,7 +1549,7 @@ class _BarChart extends StatelessWidget {
             showingTooltipIndicators: [0],
           ),
         ],
-        gridData: FlGridData(show: false),
+        gridData: const FlGridData(show: false),
         alignment: BarChartAlignment.spaceAround,
         maxY: count.toDouble(),
       ),
@@ -1345,13 +1598,13 @@ class _BarChart extends StatelessWidget {
             },
           ),
         ),
-        leftTitles: AxisTitles(
+        leftTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: AxisTitles(
+        topTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
-        rightTitles: AxisTitles(
+        rightTitles: const AxisTitles(
           sideTitles: SideTitles(showTitles: false),
         ),
       );
@@ -1723,12 +1976,12 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           // widget.refresh;
                                         }),
                                       );
-                                      return TaskDialog(
+                                      return const TaskDialog(
                                         animation:
                                             "assets/success-done-animation.json",
                                         headMessage: "Congratulations",
                                         subMessage: "You completed your task",
-                                        subMessageBottomDivision: 5,
+                                        // subMessageBottomDivision: 5,
                                       );
                                     },
                                   ).then((value) async {
@@ -1949,13 +2202,13 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                           // widget.refresh;
                                         }),
                                       );
-                                      return TaskDialog(
+                                      return const TaskDialog(
                                         animation:
                                             "assets/success-done-animation.json",
                                         headMessage: "Woohooo...!",
                                         subMessage:
                                             "Your this message is brought back as pending",
-                                        subMessageBottomDivision: 6,
+                                        // subMessageBottomDivision: 6,
                                       );
                                     },
                                   );
@@ -2059,12 +2312,12 @@ class _CustomHomeScreenTabsState extends State<CustomHomeScreenTabs> {
                                         Navigator.pop(deleteContext);
                                       }),
                                     );
-                                    return TaskDialog(
+                                    return const TaskDialog(
                                       animation:
                                           "assets/deleted-animation.json",
                                       headMessage: "Deleted!",
                                       subMessage: "Your this task is deleted",
-                                      subMessageBottomDivision: 5,
+                                      // subMessageBottomDivision: 5,
                                     );
                                   },
                                 ).then((value) {

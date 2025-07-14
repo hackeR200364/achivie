@@ -20,6 +20,8 @@ class AppColors {
   static const goldDark = Color(0xFFF2921D);
   static const mainColor2 = Color(0xFF3845AB);
   static const floatingButton = Colors.deepPurple;
+  static const mentionText = Color(0xffccfdff);
+  static const mentionTextDark = Color(0xFFa3ebff);
   static const scrollPhysics = BouncingScrollPhysics();
   static final LinearGradient customGlassIconButtonGradient = LinearGradient(
     colors: [
@@ -50,12 +52,12 @@ class AppColors {
   static const TextStyle headingTextStyle = TextStyle(
     color: AppColors.white,
     overflow: TextOverflow.fade,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: FontWeight.bold,
     letterSpacing: 3,
   );
   static final TextStyle subHeadingTextStyle = TextStyle(
     color: AppColors.white.withOpacity(0.7),
-    fontSize: 15,
+    fontSize: 10,
   );
 }

@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
+
 
 import '../services/shared_preferences.dart';
 import '../styles.dart';
@@ -10,10 +10,10 @@ import '../widgets/menu_screen_widgets.dart';
 
 class MenuScreen extends StatefulWidget {
   final ValueSetter setIndex;
-  int selectedIndex = 0;
-  ZoomDrawerController zoomDrawerController;
+  final int selectedIndex;
+  final ZoomDrawerController zoomDrawerController;
 
-  MenuScreen({
+  const MenuScreen({
     super.key,
     required this.setIndex,
     required this.selectedIndex,
@@ -30,11 +30,6 @@ class _MenuScreenState extends State<MenuScreen> {
   @override
   void initState() {
     usrPoints();
-    Timer.periodic(const Duration(seconds: 15), (timer) async {
-      points = await StorageServices.getUsrPoints();
-      log("time started");
-      // setState(() {});
-    });
     super.initState();
   }
 
@@ -43,6 +38,11 @@ class _MenuScreenState extends State<MenuScreen> {
     super.reassemble();
     usrPoints();
     // log("message");
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   usrPoints() async {

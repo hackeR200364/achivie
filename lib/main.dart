@@ -1,25 +1,41 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:achivie/providers/app_providers.dart';
+// import 'package:achivie/providers/news_searching_provider.dart';
 import 'package:achivie/providers/song_playing_provider.dart';
 import 'package:achivie/providers/user_details_providers.dart';
 import 'package:achivie/screens/splash_screen.dart';
 import 'package:achivie/services/keys.dart';
+import 'package:achivie/services/notification_services.dart';
 import 'package:achivie/services/shared_preferences.dart';
 import 'package:achivie/styles.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
 import 'package:nowplaying/nowplaying.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//   // Handle background FCM messages here
+//
+//   NotificationServices().onReceiveFCMNotification(message);
+//   // print("onBackgroundMessage: ${message.data}");
+// }
+
 Future main() async {
   FlutterNativeSplash.preserve(
-      widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
+    widgetsBinding: WidgetsFlutterBinding.ensureInitialized(),
+  );
+  await Firebase.initializeApp();
 
   // await isMusicPlaying();
   // await NotificationServices().init();
@@ -60,6 +76,14 @@ Future main() async {
         importance: NotificationImportance.High,
         channelShowBadge: true,
       ),
+      NotificationChannel(
+        channelKey: Keys.sponsorChannelKey,
+        channelName: Keys.sponsorChannelName,
+        channelDescription: Keys.sponsorChannelDes,
+        defaultColor: AppColors.backgroundColour,
+        importance: NotificationImportance.High,
+        channelShowBadge: true,
+      ),
       // NotificationChannel(
       //   channelKey: Keys.tasksScheduledChannelKey,
       //   channelName: Keys.tasksScheduledChannelName,
@@ -70,8 +94,63 @@ Future main() async {
       //   channelShowBadge: true,
       // ),
     ],
+    // channelGroups: [
+    //   NotificationChannelGroup(
+    //     channelGroupKey: Keys.tasksInstantChannelKey,
+    //     channelGroupName: Keys.tasksInstantChannelKeyGroup,
+    //   ),
+    // ],
     debug: true,
   );
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  await firebaseMessaging.requestPermission();
+  // log(await firebaseMessaging.getToken() ?? "");
+  firebaseMessaging.onTokenRefresh.listen((token) async {
+    String usrToken = await StorageServices.getUsrToken();
+    http.Response response = await http.post(
+      Uri.parse("${Keys.apiUsersBaseUrl}/updateNotificationToken/$token"),
+      headers: {
+        "content-type": "application/json",
+        'Authorization': 'Bearer $usrToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      if (responseJson["success"] == true) {
+        StorageServices.setNotificationToken(
+            (await FirebaseMessaging.instance.getToken())!);
+      }
+    }
+  });
+  await firebaseMessaging.subscribeToTopic("SPONSOR");
+  //when foreground
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    log("message");
+    NotificationServices().onReceiveFCMNotification(message);
+  });
+  //
+  // //
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   log("message opened");
+  //   NotificationServices().onReceiveFCMNotification(message);
+  // });
+  //
+  // //
+  // FirebaseMessaging.onBackgroundMessage((message) {
+  //   log("message background");
+  //   return NotificationServices().onReceiveFCMNotification(message);
+  // });
+
+  // FirebaseMessaging.onBackgroundMessage(
+  //   (message) => NotificationServices().onReceiveFCMNotification(message),
+  // );
+
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   NotificationServices().onReceiveFCMNotification(message);
+  // });
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // await Firebase.initializeApp();
   MobileAds.instance.initialize();
   NowPlaying.instance.start();
@@ -103,6 +182,9 @@ Future main() async {
         ChangeNotifierProvider(
           create: (_) => SongPlayingProvider(),
         ),
+        // ChangeNotifierProvider(
+        //   create: (_) => NewsSearchingProvider(),
+        // ),
       ],
       child: StreamProvider.value(
         value: NowPlaying.instance.stream,
@@ -130,7 +212,19 @@ class _TaskAppState extends State<TaskApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      initialRoute: "/",
+      //changesf
+      // onGenerateRoute: ((settings) {
+      //   log(settings.name!);
+      //   if (settings.name == '/newTask') {
+      //     return MaterialPageRoute(
+      //       builder: (context) => const NewTaskScreen(),
+      //     );
+      //   }
+      //   return null;
+      // }),
       theme: ThemeData(
+        textTheme: GoogleFonts.kuraleTextTheme(),
         colorScheme: ColorScheme.fromSwatch().copyWith(
           primary: AppColors.backgroundColour,
           secondary: AppColors.backgroundColour.withOpacity(0.5),

@@ -1,4 +1,3 @@
-import 'package:achivie/screens/send_sms_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 
@@ -38,8 +37,8 @@ class _MainScreenState extends State<MainScreen> {
         return const InfoScreen();
       case 2:
         return const EmailUSScreen();
-      case 3:
-        return const SendSMSScreen();
+      // case 3:
+      //   return const NewsMainScreen();
 
       default:
         return const HomeScreen();

@@ -11,10 +11,18 @@ class Keys {
   static const String usrFirstName = "usrFirstName";
   static const String usrLastName = "usrLastName";
   static const String usrPoints = "usrPoints";
+  static const String blocUID = "blocUID";
+  static const String hasBloc = "hasBloc";
+  static const String blocDes = "blocDes";
+  static const String blocID = "blocID";
+  static const String blocDetails = "blocDetails";
+  static const String blocName = "blocName";
   static const String usrDescription = "usrDescription";
   static const String usrProfession = "usrProfession";
   static const String usrProfilePic = "usrProfilePic";
   static const String uid = "uid";
+  static const String notificationToken = "notificationToken";
+  static const String usrID = "usrID";
   // static const String userPassword = "userPassword";
   static const String usrPassword = "usrPassword";
   // static const String userEmail = "userEmail";
@@ -40,6 +48,11 @@ class Keys {
   static const String notificationID = "notificationID";
   static const String schedule = "schedule";
   static const String tasksInstantChannelKey = "tasks_instant_channel";
+  static const String tasksInstantChannelKeyGroup =
+      "tasks_instant_channel_group";
+  static const String sponsorChannelKey = "sponsor_channel";
+  static const String sponsorChannelName = "Sponsor_channel_name";
+  static const String sponsorChannelDes = "Sponsor Notifications";
   static const String tasksInstantChannelName = "Tasks_Instant";
   static const String tasksInstantChannelDes = "Instant Tasks Notifications";
   static const String tasksScheduledChannelKey = "Tasks_Scheduled";
@@ -53,4 +66,10 @@ class Keys {
       "https://backend-api.achivie.com/v1/production";
   static const String apiUsersBaseUrl = "$apiBaseUrl/api/users";
   static const String apiTasksBaseUrl = "$apiBaseUrl/api/tasks";
+  static const String apiReportsBaseUrl = "$apiBaseUrl/api/newsBloc";
+  static const String blocProfile = "blocProfile";
+  // static const String blocName = "blocName";
+  static const String usrPhoneNo = "usrPhoneNo";
+  static const String blocLat = "blocLat";
+  static const String blocLong = "blocLong";
 }

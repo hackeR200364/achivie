@@ -1,33 +1,81 @@
-import '../services/keys.dart';
+// To parse this JSON data, do
+//
+//     final tasks = tasksFromJson(jsonString);
 
-class TaskModel {
-  final String? taskName;
-  final String? taskDes;
-  final String? taskDate;
-  final String? taskTime;
-  final String? taskNotification;
-  final String? taskType;
-  final String? taskStatus;
+import 'dart:convert';
 
-  const TaskModel({
-    required this.taskType,
+Tasks tasksFromJson(String str) => Tasks.fromJson(json.decode(str));
+
+String tasksToJson(Tasks data) => json.encode(data.toJson());
+
+class Tasks {
+  bool success;
+  String message;
+  List<Task> data;
+
+  Tasks({
+    required this.success,
+    required this.message,
+    required this.data,
+  });
+
+  factory Tasks.fromJson(Map<String, dynamic> json) => Tasks(
+        success: json["success"],
+        message: json["message"],
+        data: List<Task>.from(json["data"].map((x) => Task.fromJson(x))),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "success": success,
+        "message": message,
+        "data": List<dynamic>.from(data.map((x) => x.toJson())),
+      };
+}
+
+class Task {
+  int notificationId;
+  String taskDate;
+  String taskDes;
+  String taskName;
+  String taskNotification;
+  String taskStatus;
+  String taskTime;
+  String taskType;
+  String uid;
+
+  Task({
+    required this.notificationId,
     required this.taskDate,
-    required this.taskTime,
     required this.taskDes,
     required this.taskName,
     required this.taskNotification,
-    this.taskStatus,
+    required this.taskStatus,
+    required this.taskTime,
+    required this.taskType,
+    required this.uid,
   });
 
-  toJson() {
-    return {
-      Keys.taskName: taskName,
-      Keys.taskDes: taskDes,
-      Keys.taskDate: taskDate,
-      Keys.taskTime: taskTime,
-      Keys.taskType: taskType,
-      Keys.taskNotification: taskNotification,
-      Keys.taskStatus: taskStatus,
-    };
-  }
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+        notificationId: json["notificationID"],
+        taskDate: json["taskDate"],
+        taskDes: json["taskDes"],
+        taskName: json["taskName"],
+        taskNotification: json["taskNotification"],
+        taskStatus: json["taskStatus"],
+        taskTime: json["taskTime"],
+        taskType: json["taskType"],
+        uid: json["uid"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "notificationID": notificationId,
+        "taskDate": taskDate,
+        "taskDes": taskDes,
+        "taskName": taskName,
+        "taskNotification": taskNotification,
+        "taskStatus": taskStatus,
+        "taskTime": taskTime,
+        "taskType": taskType,
+        "uid": uid,
+      };
 }
