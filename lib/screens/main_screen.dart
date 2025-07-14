@@ -1,6 +1,5 @@
 import 'package:achivie/screens/send_sms_screen.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 
 import '../styles.dart';

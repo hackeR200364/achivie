@@ -22,6 +22,7 @@ if (flutterVersionName == null) {
 }
 
 apply plugin: 'com.android.application'
+//apply plugin: 'com.google.gms.google-services'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
@@ -34,7 +35,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     compileSdkVersion 33
-    ndkVersion flutter.ndkVersion
+    ndkVersion "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -62,6 +63,13 @@ android {
     }
 
     signingConfigs {
+        debug{
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('./debug.keystore.jks')
+            storePassword 'android'
+        }
+
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
@@ -74,6 +82,9 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+//    useAndroidX = true
+//    enableJetifier = true
 
 //    allprojects{
 //        tasks.withType(JavaCompile){
@@ -88,7 +99,12 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+//    implementation "androidx.core:core-ktx:1.6.0"
+//    implementation "com.mikhaellopez:circularimageview:4.3.1"
+//    implementation 'com.google.android.material:material:1.9.0'
+//    implementation "com.google.firebase:firebase-bom:32.2.0"
+
 }
 
 //apply plugin: 'com.google.gms.google-services'
