@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 
-// import 'package:flutter_zoom_drawer/config.dart';
 
 import '../services/shared_preferences.dart';
 import '../styles.dart';
